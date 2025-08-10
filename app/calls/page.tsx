@@ -33,6 +33,12 @@ interface Call {
   }>
   call_summary: string
   sentiment: string
+  interest_analysis?: {
+    interest_status: 'interested' | 'not_interested' | 'neutral'
+    confidence: number
+    reasoning: string
+    key_indicators: string[]
+  }
   created_at: string
 }
 
@@ -46,6 +52,12 @@ interface CallStats {
     failed: number
     missed: number
   }
+  interest_counts?: {
+    interested: number
+    not_interested: number
+    neutral: number
+  }
+  calls_with_analysis?: number
 }
 
 const API_BASE = process.env.NEXT_CALL_API_URL || 'http://localhost:5004'
@@ -63,6 +75,7 @@ export default function CallsPage() {
   const [selectedCall, setSelectedCall] = useState<Call | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [interestFilter, setInterestFilter] = useState<string>('all')
   const [dateFilter, setDateFilter] = useState<string>('all')
 
   useEffect(() => {
@@ -115,6 +128,40 @@ export default function CallsPage() {
     )
   }
 
+  const getInterestBadge = (interest_analysis?: Call['interest_analysis']) => {
+    if (!interest_analysis) {
+      return (
+        <span className="px-3 py-1 rounded-full text-xs font-medium bg-slate-600/20 text-slate-400 border border-slate-500/30">
+          No Analysis
+        </span>
+      )
+    }
+
+    const { interest_status, confidence } = interest_analysis
+    const styles = {
+      interested: 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30',
+      not_interested: 'bg-red-600/20 text-red-400 border border-red-500/30',
+      neutral: 'bg-yellow-600/20 text-yellow-400 border border-yellow-500/30'
+    }
+    
+    const labels = {
+      interested: 'Interested',
+      not_interested: 'Not Interested',
+      neutral: 'Neutral'
+    }
+    
+    return (
+      <div className="flex items-center space-x-2">
+        <span className={`px-3 py-1 rounded-full text-xs font-medium ${styles[interest_status]}`}>
+          {labels[interest_status]}
+        </span>
+        <span className="text-xs text-slate-400">
+          {Math.round(confidence * 100)}%
+        </span>
+      </div>
+    )
+  }
+
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
     const remainingSeconds = Math.floor(seconds % 60)
@@ -136,7 +183,11 @@ export default function CallsPage() {
     
     const matchesStatus = statusFilter === 'all' || call.status === statusFilter
     
-    return matchesSearch && matchesStatus
+    const matchesInterest = interestFilter === 'all' || 
+      (interestFilter === 'no_analysis' && !call.interest_analysis) ||
+      (call.interest_analysis?.interest_status === interestFilter)
+    
+    return matchesSearch && matchesStatus && matchesInterest
   })
 
   const getSentimentColor = (sentiment: string) => {
@@ -172,7 +223,7 @@ export default function CallsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
         <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 hover:border-slate-700 transition-all">
           <div className="flex items-center justify-between">
             <div>
@@ -198,11 +249,22 @@ export default function CallsPage() {
         <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 hover:border-slate-700 transition-all">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-400">This Week</p>
-              <p className="text-2xl font-bold text-emerald-400">{stats.calls_this_week}</p>
+              <p className="text-sm font-medium text-slate-400">Interested</p>
+              <p className="text-2xl font-bold text-emerald-400">{stats.interest_counts?.interested || 0}</p>
             </div>
             <div className="w-10 h-10 bg-emerald-600/20 rounded-xl flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-emerald-400" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 hover:border-slate-700 transition-all">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-slate-400">Not Interested</p>
+              <p className="text-2xl font-bold text-red-400">{stats.interest_counts?.not_interested || 0}</p>
+            </div>
+            <div className="w-10 h-10 bg-red-600/20 rounded-xl flex items-center justify-center">
+              <XCircle className="w-5 h-5 text-red-400" />
             </div>
           </div>
         </div>
@@ -257,6 +319,19 @@ export default function CallsPage() {
               <option value="missed">Missed</option>
             </select>
           </div>
+          <div>
+            <select
+              value={interestFilter}
+              onChange={(e) => setInterestFilter(e.target.value)}
+              className="px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+            >
+              <option value="all">All Interest</option>
+              <option value="interested">Interested</option>
+              <option value="not_interested">Not Interested</option>
+              <option value="neutral">Neutral</option>
+              <option value="no_analysis">No Analysis</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -269,6 +344,7 @@ export default function CallsPage() {
                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Call Details</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Lead</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Interest</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Duration</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Messages</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Actions</th>
@@ -297,6 +373,9 @@ export default function CallsPage() {
                   </td>
                   <td className="px-6 py-4">
                     {getStatusBadge(call.status)}
+                  </td>
+                  <td className="px-6 py-4">
+                    {getInterestBadge(call.interest_analysis)}
                   </td>
                   <td className="px-6 py-4 text-sm text-white">
                     {formatDuration(call.duration)}
@@ -389,6 +468,46 @@ export default function CallsPage() {
                     <div className="text-white">{selectedCall.lead.email || 'N/A'}</div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Interest Analysis */}
+            {selectedCall.interest_analysis && (
+              <div className="bg-slate-800 rounded-xl p-4 mb-6">
+                <h4 className="text-white font-medium mb-4">Interest Analysis</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm text-slate-400 mb-1">Interest Level</div>
+                    <div className="flex items-center space-x-2">
+                      {getInterestBadge(selectedCall.interest_analysis)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-slate-400 mb-1">Confidence</div>
+                    <div className="text-white font-medium">
+                      {Math.round(selectedCall.interest_analysis.confidence * 100)}%
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <div className="text-sm text-slate-400 mb-1">Reasoning</div>
+                  <p className="text-slate-300 text-sm">{selectedCall.interest_analysis.reasoning}</p>
+                </div>
+                {selectedCall.interest_analysis.key_indicators.length > 0 && (
+                  <div className="mt-4">
+                    <div className="text-sm text-slate-400 mb-2">Key Indicators</div>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedCall.interest_analysis.key_indicators.map((indicator, index) => (
+                        <span
+                          key={index}
+                          className="px-2 py-1 bg-slate-700 text-slate-300 text-xs rounded-md"
+                        >
+                          {indicator}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

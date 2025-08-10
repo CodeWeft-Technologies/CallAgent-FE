@@ -704,6 +704,47 @@ export default function LeadsPage() {
         </div>
       )}
 
+      {/* Automated Status Flow Info */}
+      <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 mb-6">
+        <h4 className="font-semibold text-white mb-3 flex items-center">
+          <Users className="w-4 h-4 mr-2" />
+          Automated Lead Status Flow
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="text-center">
+            <div className="w-8 h-8 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-2">
+              <User className="w-4 h-4 text-blue-400" />
+            </div>
+            <div className="text-sm font-medium text-blue-400">New</div>
+            <div className="text-xs text-slate-400 mt-1">Fresh leads</div>
+          </div>
+          <div className="text-center">
+            <div className="w-8 h-8 bg-emerald-600/20 rounded-full flex items-center justify-center mx-auto mb-2">
+              <Phone className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div className="text-sm font-medium text-emerald-400">Called</div>
+            <div className="text-xs text-slate-400 mt-1">Call initiated</div>
+          </div>
+          <div className="text-center">
+            <div className="w-8 h-8 bg-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-2">
+              <CheckCircle className="w-4 h-4 text-purple-400" />
+            </div>
+            <div className="text-sm font-medium text-purple-400">Contacted</div>
+            <div className="text-xs text-slate-400 mt-1">User answered</div>
+          </div>
+          <div className="text-center">
+            <div className="w-8 h-8 bg-orange-600/20 rounded-full flex items-center justify-center mx-auto mb-2">
+              <CheckCircle className="w-4 h-4 text-orange-400" />
+            </div>
+            <div className="text-sm font-medium text-orange-400">Converted</div>
+            <div className="text-xs text-slate-400 mt-1">Showed interest</div>
+          </div>
+        </div>
+        <p className="text-xs text-slate-500 mt-4 text-center">
+          Lead status automatically updates based on call activity and AI-powered interest analysis
+        </p>
+      </div>
+
       {/* CSV Upload Instructions */}
       <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6">
         <h4 className="font-semibold text-white mb-2 flex items-center">
