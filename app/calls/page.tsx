@@ -46,7 +46,7 @@ interface CallStats {
   total_calls: number
   calls_today: number
   calls_this_week: number
-  avg_duration: number
+  average_duration: number
   status_counts: {
     completed: number
     failed: number
@@ -68,7 +68,7 @@ export default function CallsPage() {
     total_calls: 0,
     calls_today: 0,
     calls_this_week: 0,
-    avg_duration: 0,
+    average_duration: 0,
     status_counts: { completed: 0, failed: 0, missed: 0 }
   })
   const [loading, setLoading] = useState(true)
@@ -272,7 +272,7 @@ export default function CallsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-slate-400">Avg Duration</p>
-              <p className="text-2xl font-bold text-purple-400">{formatDuration(stats.avg_duration)}</p>
+              <p className="text-2xl font-bold text-purple-400">{formatDuration(stats.average_duration)}</p>
             </div>
             <div className="w-10 h-10 bg-purple-600/20 rounded-xl flex items-center justify-center">
               <Clock className="w-5 h-5 text-purple-400" />
