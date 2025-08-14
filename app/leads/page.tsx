@@ -33,6 +33,7 @@ interface LeadStats {
   total_calls: number
 }
 const API_BASE = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:5002'
+const CONFIG_API_BASE = process.env.NEXT_CONFIG_API_URL || 'http://localhost:5001'
 
 export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([])
@@ -45,6 +46,12 @@ export default function LeadsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [uploading, setUploading] = useState(false)
+  
+  // Retry configuration state
+  const [retryConfig, setRetryConfig] = useState({
+    max_retries: 3,
+    retry_delay: 10
+  })
   
   // Call All functionality state
   const [isCallingAll, setIsCallingAll] = useState(false)
@@ -70,7 +77,24 @@ export default function LeadsPage() {
   useEffect(() => {
     loadLeads()
     loadStats()
+    loadRetryConfig()
   }, [])
+
+  const loadRetryConfig = async () => {
+    try {
+      const response = await fetch(`${CONFIG_API_BASE}/api/config`)
+      if (response.ok) {
+        const data = await response.json()
+        setRetryConfig({
+          max_retries: data.max_retries || 3,
+          retry_delay: data.retry_delay || 10
+        })
+      }
+    } catch (error) {
+      console.error('Error loading retry config:', error)
+      // Keep default values on error
+    }
+  }
 
   const loadLeads = async () => {
     try {
@@ -209,7 +233,7 @@ export default function LeadsPage() {
     }
   }
 
-  const handleCallLead = async (lead: Lead) => {
+  const handleCallLead = async (lead: Lead, maxRetries: number = retryConfig.max_retries) => {
     try {
       // Ensure we have a valid lead ID
       const leadId = lead._id || lead.id
@@ -220,6 +244,12 @@ export default function LeadsPage() {
 
       const response = await fetch(`${API_BASE}/api/leads/${leadId}/call`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          max_retries: maxRetries
+        })
       })
 
       const data = await response.json()
@@ -232,7 +262,7 @@ export default function LeadsPage() {
             id: updatedLead._id || updatedLead.id
           } : l))
         }
-        toast.success(`Call initiated to ${lead.name}`)
+        toast.success(`Call initiated to ${lead.name} (max ${maxRetries} retries)`)
         loadStats()
         // Schedule refreshes to reflect webhook updates (answer -> contacted)
         setTimeout(() => { loadLeads(); loadStats(); }, 3000)
@@ -246,30 +276,51 @@ export default function LeadsPage() {
     }
   }
 
-  const checkCallCompletion = async (leadId: string): Promise<boolean> => {
+  const checkCallCompletion = async (leadId: string, callInitiatedTime: number): Promise<boolean> => {
     try {
-      // Check if there are active calls for this lead
-      const response = await fetch(`${API_BASE}/api/calls?lead_id=${leadId}&limit=1`)
+      // Use the dedicated call status endpoint for better accuracy
+      const response = await fetch(`http://localhost:5004/api/calls/status/${leadId}`)
       const data = await response.json()
       
-      if (data.success && data.data.length > 0) {
-        const latestCall = data.data[0]
-        // Check if the call is completed (status is completed or failed, and has duration)
-        return latestCall.status === 'completed' || latestCall.status === 'failed'
+      if (data.success) {
+        const callData = data.data
+        
+        // If there's no recent call, consider it completed
+        if (!callData.has_recent_call) {
+          const elapsed = Date.now() - callInitiatedTime
+          // Give some time for the call to be logged before considering it missing
+          if (elapsed > 15000) {
+            console.log(`No call record found for lead ${leadId} after ${elapsed}ms, considering completed`)
+            return true
+          }
+          return false // Wait a bit more for call to be logged
+        }
+        
+        console.log(`Call status for lead ${leadId}:`, callData.call_status, `Duration: ${callData.duration}s`, `Completed: ${callData.is_completed}`)
+        
+        // Use the backend's determination of completion
+        return callData.is_completed
       }
       
-      // If no call records found, consider it completed (might be an error case)
-      return true
+      // Fallback to time-based completion if API fails
+      const elapsed = Date.now() - callInitiatedTime
+      if (elapsed > 20000) { // Wait at least 20 seconds before giving up
+        console.log(`API check failed for lead ${leadId}, falling back to time-based completion after ${elapsed}ms`)
+        return true
+      }
+      
+      return false
     } catch (error) {
       console.error('Error checking call completion:', error)
-      // If we can't check, assume it's completed to avoid infinite waiting
-      return true
+      // If we can't check, wait a bit before giving up
+      const elapsed = Date.now() - callInitiatedTime
+      return elapsed > 15000 // Give up after 15 seconds if we can't check
     }
   }
 
-  const waitForCallCompletion = async (leadId: string, maxWaitTime: number = 120000): Promise<void> => {
+  const waitForCallCompletion = async (leadId: string, callInitiatedTime: number, maxWaitTime: number = 120000): Promise<void> => {
     const startTime = Date.now()
-    const pollInterval = 2000 // Check every 2 seconds
+    const pollInterval = 3000 // Check every 3 seconds
     
     return new Promise((resolve) => {
       const pollForCompletion = async () => {
@@ -277,17 +328,19 @@ export default function LeadsPage() {
         
         // If max wait time exceeded, resolve anyway
         if (elapsed >= maxWaitTime) {
-          console.log(`Max wait time exceeded for lead ${leadId}`)
+          console.log(`Max wait time exceeded for lead ${leadId} (${elapsed}ms)`)
           resolve()
           return
         }
         
-        const isCompleted = await checkCallCompletion(leadId)
+        const isCompleted = await checkCallCompletion(leadId, callInitiatedTime)
         
         if (isCompleted) {
+          console.log(`Call completed for lead ${leadId} after ${elapsed}ms`)
           resolve()
         } else {
           // Continue polling
+          console.log(`Call still in progress for lead ${leadId}, checking again in ${pollInterval}ms...`)
           setTimeout(pollForCompletion, pollInterval)
         }
       }
@@ -319,88 +372,152 @@ export default function LeadsPage() {
     })
 
     try {
-      for (let i = 0; i < filteredLeads.length; i++) {
-        const lead = filteredLeads[i]
-        
-        // Update progress to show current lead being called
-        setCallAllProgress(prev => ({
-          ...prev,
-          currentIndex: i,
-          currentLead: lead
-        }))
-
-        try {
-          // Initiate call to current lead
-          const leadId = lead._id || lead.id
-          if (!leadId) {
-            console.error(`No valid ID for lead ${lead.name}`)
-            setCallAllProgress(prev => ({ ...prev, failedCalls: prev.failedCalls + 1 }))
-            continue
-          }
-
-          const response = await fetch(`${API_BASE}/api/leads/${leadId}/call`, {
-            method: 'POST',
-          })
-
-          const data = await response.json()
-          
-          if (data.success) {
-            // Update the lead in the list
-            const updatedLead = data.data.lead
-            if (updatedLead) {
-              setLeads(prevLeads => prevLeads.map(l => (l.id === leadId || l._id === leadId) ? {
-                ...updatedLead,
-                id: updatedLead._id || updatedLead.id
-              } : l))
-            }
-
-            // Wait for call to complete before proceeding to next lead
-            await waitForCallCompletion(leadId)
-            
-            setCallAllProgress(prev => ({ ...prev, completedCalls: prev.completedCalls + 1 }))
-          } else {
-            console.error(`Failed to call ${lead.name}: ${data.error}`)
-            setCallAllProgress(prev => ({ ...prev, failedCalls: prev.failedCalls + 1 }))
-          }
-        } catch (error) {
-          console.error(`Error calling ${lead.name}:`, error)
-          setCallAllProgress(prev => ({ ...prev, failedCalls: prev.failedCalls + 1 }))
-        }
-
-        // Small delay between calls for safety
-        await new Promise(resolve => setTimeout(resolve, 1000))
+      // Prepare lead IDs for sequential calling
+      const leadIds = filteredLeads.map(lead => lead._id || lead.id).filter(id => id)
+      
+      if (leadIds.length === 0) {
+        toast.error('No valid lead IDs found')
+        return
       }
 
-      // All calls completed
-      toast.success(`Call All completed! ${callAllProgress.completedCalls + filteredLeads.length - callAllProgress.failedCalls} successful, ${callAllProgress.failedCalls} failed`)
+      console.log(`🔄 Starting sequential calling for ${leadIds.length} leads`)
       
-      // Refresh leads and stats
-      await loadLeads()
-      await loadStats()
+      // Start the sequential calling session using the webhook API
+      const response = await fetch(`${API_BASE}/api/leads/sequential-calling/start`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          lead_ids: leadIds,
+          max_retries: retryConfig.max_retries
+        })
+      })
+
+      const data = await response.json()
+      
+      if (data.success && data.session_id) {
+        console.log(`✅ Sequential calling session started: ${data.session_id}`)
+        
+        // Start polling for progress updates
+        await pollCallAllProgress(data.session_id)
+        
+      } else {
+        console.error(`❌ Failed to start sequential calling: ${data.error}`)
+        toast.error(`Failed to start sequential calling: ${data.error}`)
+        setCallAllProgress(prev => ({ ...prev, failedCalls: filteredLeads.length }))
+      }
       
     } catch (error) {
-      console.error('Error in Call All:', error)
-      toast.error('Call All process encountered an error')
+      console.error('Error starting sequential calling:', error)
+      toast.error('Error starting sequential calling')
+      setCallAllProgress(prev => ({ ...prev, failedCalls: filteredLeads.length }))
     } finally {
-      setIsCallingAll(false)
-      // Keep modal open for a moment to show final results
-      setTimeout(() => {
-        setShowCallModal(false)
-        setCallAllProgress({
-          currentIndex: 0,
-          currentLead: null,
-          totalCalls: 0,
-          completedCalls: 0,
-          failedCalls: 0
-        })
-      }, 3000)
+      // Note: Don't set isCallingAll to false here, let pollCallAllProgress handle it
     }
   }
 
-  const handleStopCallAll = () => {
+  const pollCallAllProgress = async (sessionId: string) => {
+    const pollInterval = 2000 // Poll every 2 seconds
+    const maxPollTime = 600000 // 10 minutes max
+    const startTime = Date.now()
+
+    const poll = async () => {
+      try {
+        if (Date.now() - startTime > maxPollTime) {
+          console.error('❌ Sequential calling polling timeout')
+          toast.error('Sequential calling took too long and was stopped')
+          setIsCallingAll(false)
+          return
+        }
+
+        const response = await fetch(`${API_BASE}/api/leads/sequential-calling/status`)
+        const data = await response.json()
+        
+        if (data.active) {
+          const progress = data.progress
+          const stats = data.stats
+          
+          // Update progress based on session data
+          setCallAllProgress(prev => ({
+            ...prev,
+            currentIndex: progress.current_index,
+            currentLead: progress.current_lead ? {
+              id: progress.current_lead._id,
+              name: progress.current_lead.name,
+              phone: progress.current_lead.phone,
+              _id: progress.current_lead._id
+            } as Lead : null,
+            completedCalls: stats.completed_calls,
+            failedCalls: stats.failed_calls + stats.missed_calls,
+            totalCalls: stats.total_calls
+          }))
+          
+          console.log(`📊 Sequential calling progress: ${progress.current_index + 1}/${progress.total_leads} (${stats.completed_calls} completed, ${stats.failed_calls + stats.missed_calls} failed)`)
+          
+          // Continue polling if still active
+          setTimeout(poll, pollInterval)
+        } else {
+          // Session completed or stopped
+          console.log(`✅ Sequential calling session completed`)
+          const totalCompleted = callAllProgress.completedCalls
+          const totalFailed = callAllProgress.failedCalls
+          
+          toast.success(`Sequential calling completed! ${totalCompleted} successful, ${totalFailed} failed`)
+          
+          // Refresh leads and stats
+          await loadLeads()
+          await loadStats()
+          
+          setIsCallingAll(false)
+          
+          // Keep modal open for a moment to show final results
+          setTimeout(() => {
+            setShowCallModal(false)
+              setCallAllProgress({
+                currentIndex: 0,
+                currentLead: null,
+                totalCalls: 0,
+                completedCalls: 0,
+                failedCalls: 0
+              })
+            }, 3000)
+        }
+        
+      } catch (error) {
+        console.error('Error polling call-all progress:', error)
+        // Continue polling on error, but limit retries
+        setTimeout(poll, pollInterval)
+      }
+    }
+
+    // Start polling
+    poll()
+  }
+
+  const handleStopCallAll = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/leads/sequential-calling/stop`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast('Sequential calling stopped', { icon: 'ℹ️' })
+      } else {
+        toast.error(`Failed to stop: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Error stopping sequential calling:', error)
+      toast.error('Error stopping sequential calling')
+    }
+    
     setIsCallingAll(false)
     setShowCallModal(false)
-    toast('Call All stopped', { icon: 'ℹ️' })
     setCallAllProgress({
       currentIndex: 0,
       currentLead: null,
@@ -963,14 +1080,19 @@ export default function LeadsPage() {
               </div>
               
               <h3 className="text-xl font-semibold text-white mb-2">
-                {isCallingAll ? 'Calling Leads' : 'Call All Completed'}
+                {isCallingAll ? 'Sequential Calling in Progress' : 'Call All Completed'}
               </h3>
               
-              {callAllProgress.currentLead && (
+              {isCallingAll && callAllProgress.currentLead && (
                 <div className="mb-4">
-                  <p className="text-slate-300 text-sm mb-1">Currently calling:</p>
+                  <p className="text-slate-300 text-sm mb-1">
+                    Call {callAllProgress.currentIndex + 1} of {callAllProgress.totalCalls}
+                  </p>
                   <p className="text-white font-medium">{callAllProgress.currentLead.name}</p>
                   <p className="text-slate-400 text-sm">{callAllProgress.currentLead.phone}</p>
+                  <p className="text-slate-500 text-xs mt-2">
+                    ⏳ Waiting for call to complete before next call...
+                  </p>
                 </div>
               )}
               
@@ -982,12 +1104,17 @@ export default function LeadsPage() {
                 </div>
                 <div className="w-full bg-slate-800 rounded-full h-2">
                   <div 
-                    className="bg-orange-600 h-2 rounded-full transition-all duration-300"
+                    className="bg-orange-600 h-2 rounded-full transition-all duration-500"
                     style={{ 
                       width: `${((callAllProgress.currentIndex + 1) / callAllProgress.totalCalls) * 100}%` 
                     }}
                   ></div>
                 </div>
+                {isCallingAll && (
+                  <p className="text-slate-500 text-xs mt-2 text-center">
+                    📞 Sequential calling - each call completes before the next begins
+                  </p>
+                )}
               </div>
               
               {/* Stats */}

@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { Settings, RotateCcw, Save, MessageSquare, ArrowRight, FileText, Database } from 'lucide-react'
+import { Settings, RotateCcw, Save, MessageSquare, ArrowRight, FileText, Database, RefreshCw } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 interface AgentConfig {
@@ -9,6 +9,8 @@ interface AgentConfig {
   system_prompt: string
   knowledge_base_enabled: boolean
   knowledge_base: string
+  max_retries: number
+  retry_delay: number
 }
 
 const PROMPT_TEMPLATES = {
@@ -75,7 +77,9 @@ export default function ConfigPage() {
     exit_message: 'Thank you for calling. Have a great day!',
     system_prompt: 'You are a helpful AI assistant. Provide clear, concise answers.',
     knowledge_base_enabled: false,
-    knowledge_base: ''
+    knowledge_base: '',
+    max_retries: 3,
+    retry_delay: 10
   })
   const [activeTab, setActiveTab] = useState('greeting')
   const [loading, setLoading] = useState(false)
@@ -95,7 +99,9 @@ export default function ConfigPage() {
           exit_message: data.exit_message || '',
           system_prompt: data.system_prompt || '',
           knowledge_base_enabled: data.knowledge_base_enabled || false,
-          knowledge_base: data.knowledge_base || ''
+          knowledge_base: data.knowledge_base || '',
+          max_retries: data.max_retries || 3,
+          retry_delay: data.retry_delay || 10
         })
       }
     } catch (error) {
@@ -132,7 +138,9 @@ export default function ConfigPage() {
       exit_message: 'Thank you for calling. Have a great day!',
       system_prompt: 'You are a helpful AI assistant. Provide clear, concise answers.',
       knowledge_base_enabled: false,
-      knowledge_base: ''
+      knowledge_base: '',
+      max_retries: 3,
+      retry_delay: 10
     })
     toast.success('Configuration reset to defaults')
   }
@@ -195,7 +203,8 @@ export default function ConfigPage() {
     { id: 'greeting', name: 'Greeting', icon: MessageSquare },
     { id: 'exit', name: 'Exit', icon: ArrowRight },
     { id: 'behavior', name: 'Agent Behavior', icon: FileText },
-    { id: 'knowledge', name: 'Knowledge Base', icon: Database }
+    { id: 'knowledge', name: 'Knowledge Base', icon: Database },
+    { id: 'retry', name: 'Call Retry', icon: RefreshCw }
   ]
 
   return (
@@ -350,6 +359,110 @@ export default function ConfigPage() {
               )}
             </div>
           )}
+
+          {activeTab === 'retry' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-2">Call Retry Configuration</h3>
+                <p className="text-slate-400 mb-6">Configure automatic retry behavior for missed calls</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Max Retries */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-200 mb-2">
+                      Maximum Retries
+                    </label>
+                    <select
+                      value={config.max_retries}
+                      onChange={(e) => setConfig(prev => ({ ...prev, max_retries: parseInt(e.target.value) }))}
+                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    >
+                      <option value={0}>No retries</option>
+                      <option value={1}>1 retry</option>
+                      <option value={2}>2 retries</option>
+                      <option value={3}>3 retries (recommended)</option>
+                      <option value={4}>4 retries</option>
+                      <option value={5}>5 retries</option>
+                      <option value={6}>6 retries</option>
+                      <option value={7}>7 retries</option>
+                      <option value={8}>8 retries</option>
+                      <option value={9}>9 retries</option>
+                      <option value={10}>10 retries (maximum)</option>
+                    </select>
+                    <p className="text-sm text-slate-500 mt-2">
+                      Number of times to retry a missed call before giving up
+                    </p>
+                  </div>
+
+                  {/* Retry Delay */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-200 mb-2">
+                      Retry Delay (seconds)
+                    </label>
+                    <select
+                      value={config.retry_delay}
+                      onChange={(e) => setConfig(prev => ({ ...prev, retry_delay: parseInt(e.target.value) }))}
+                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    >
+                      <option value={5}>5 seconds</option>
+                      <option value={10}>10 seconds (recommended)</option>
+                      <option value={15}>15 seconds</option>
+                      <option value={20}>20 seconds</option>
+                      <option value={30}>30 seconds</option>
+                      <option value={45}>45 seconds</option>
+                      <option value={60}>1 minute</option>
+                      <option value={120}>2 minutes</option>
+                      <option value={300}>5 minutes</option>
+                    </select>
+                    <p className="text-sm text-slate-500 mt-2">
+                      Time to wait between retry attempts
+                    </p>
+                  </div>
+                </div>
+
+                {/* Retry Info */}
+                <div className="bg-slate-800 rounded-xl p-6 mt-6">
+                  <h4 className="text-md font-semibold text-white mb-3 flex items-center">
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    How Call Retry Works
+                  </h4>
+                  <div className="space-y-3 text-slate-400">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <p>When a call is missed (no answer, busy, or rejected), the system automatically schedules a retry</p>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <p>Retries happen after the configured delay period</p>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <p>Maximum retry limit prevents infinite calling loops</p>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <p>Works for both individual calls and sequential calling sessions</p>
+                    </div>
+                  </div>
+
+                  {/* Current Configuration Display */}
+                  <div className="mt-4 p-4 bg-slate-700 rounded-lg">
+                    <h5 className="text-sm font-medium text-white mb-2">Current Configuration:</h5>
+                    <div className="text-sm text-slate-300">
+                      <p>• Maximum retries: <span className="text-blue-400 font-medium">{config.max_retries}</span></p>
+                      <p>• Retry delay: <span className="text-blue-400 font-medium">{config.retry_delay} seconds</span></p>
+                      <p className="mt-2 text-slate-400">
+                        {config.max_retries === 0 
+                          ? "⚠️ Retries are disabled - missed calls will not be retried"
+                          : `✅ Missed calls will be retried up to ${config.max_retries} times with ${config.retry_delay}s delay`
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -392,6 +505,10 @@ export default function ConfigPage() {
           <div className="flex items-start space-x-3">
             <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
             <p>Knowledge base provides specific information for your agent to reference</p>
+          </div>
+          <div className="flex items-start space-x-3">
+            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+            <p>Call retry settings automatically retry missed calls to improve contact rates</p>
           </div>
         </div>
       </div>

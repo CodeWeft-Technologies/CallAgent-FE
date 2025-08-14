@@ -5,13 +5,15 @@ import {
   Phone, PhoneCall, Clock, User, MessageSquare, 
   Calendar, Search, Filter, Download, Eye,
   Play, Pause, Volume2, FileText, Users,
-  TrendingUp, Activity, CheckCircle, XCircle
+  TrendingUp, Activity, CheckCircle, XCircle,
+  PhoneIncoming, PhoneOutgoing
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 interface Call {
   _id: string
   phone_number: string | number
+  direction?: 'inbound' | 'outbound'
   lead_id?: string
   lead?: {
     name: string
@@ -40,6 +42,11 @@ interface Call {
     key_indicators: string[]
   }
   created_at: string
+  webhook_data?: {
+    from?: number
+    to?: number
+    [key: string]: any
+  }
 }
 
 interface CallStats {
@@ -76,6 +83,7 @@ export default function CallsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [interestFilter, setInterestFilter] = useState<string>('all')
+  const [directionFilter, setDirectionFilter] = useState<string>('all')
   const [dateFilter, setDateFilter] = useState<string>('all')
 
   useEffect(() => {
@@ -125,6 +133,47 @@ export default function CallsPage() {
       <span className={`px-3 py-1 rounded-full text-xs font-medium ${styles[status as keyof typeof styles]}`}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
+    )
+  }
+
+  const getDirectionBadge = (call: Call) => {
+    const direction = call.direction || 'outbound' // Default to outbound if not specified
+    const isInbound = direction === 'inbound'
+    
+    // Get the relevant phone number to display
+    let displayNumber = ''
+    let label = ''
+    
+    if (isInbound) {
+      // For inbound: show who called us
+      displayNumber = String(call.phone_number || call.webhook_data?.from || '')
+      label = 'Inbound Call'
+    } else {
+      // For outbound: show who we called
+      displayNumber = String(call.phone_number || call.webhook_data?.to || '')
+      label = 'Outbound Call'
+    }
+    
+    return (
+      <div className="flex items-center space-x-2">
+        <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${
+          isInbound 
+            ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' 
+            : 'bg-purple-600/20 text-purple-400 border border-purple-500/30'
+        }`}>
+          {isInbound ? (
+            <PhoneIncoming className="w-3 h-3" />
+          ) : (
+            <PhoneOutgoing className="w-3 h-3" />
+          )}
+          <span>{isInbound ? 'Inbound' : 'Outbound'}</span>
+        </div>
+        {displayNumber && (
+          <div className="text-xs text-slate-400">
+            {isInbound ? 'From:' : 'To:'} {displayNumber}
+          </div>
+        )}
+      </div>
     )
   }
 
@@ -187,7 +236,10 @@ export default function CallsPage() {
       (interestFilter === 'no_analysis' && !call.interest_analysis) ||
       (call.interest_analysis?.interest_status === interestFilter)
     
-    return matchesSearch && matchesStatus && matchesInterest
+    const matchesDirection = directionFilter === 'all' || 
+      (call.direction || 'outbound') === directionFilter
+    
+    return matchesSearch && matchesStatus && matchesInterest && matchesDirection
   })
 
   const getSentimentColor = (sentiment: string) => {
@@ -332,6 +384,17 @@ export default function CallsPage() {
               <option value="no_analysis">No Analysis</option>
             </select>
           </div>
+          <div>
+            <select
+              value={directionFilter}
+              onChange={(e) => setDirectionFilter(e.target.value)}
+              className="px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+            >
+              <option value="all">All Directions</option>
+              <option value="inbound">Inbound Calls</option>
+              <option value="outbound">Outbound Calls</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -341,7 +404,8 @@ export default function CallsPage() {
           <table className="w-full">
             <thead className="bg-slate-800/50 border-b border-slate-700">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Call Details</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Call Direction</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Date & Time</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Lead</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Interest</th>
@@ -354,10 +418,10 @@ export default function CallsPage() {
               {filteredCalls.map((call, index) => (
                 <tr key={call._id} className={`hover:bg-slate-800/50 transition-colors ${index % 2 === 0 ? 'bg-slate-900' : 'bg-slate-900/50'}`}>
                   <td className="px-6 py-4">
-                    <div>
-                      <div className="font-medium text-white">{String(call.phone_number || '—')}</div>
-                      <div className="text-sm text-slate-400">{formatDate(call.call_date)}</div>
-                    </div>
+                    {getDirectionBadge(call)}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-white">{formatDate(call.call_date)}</div>
                   </td>
                   <td className="px-6 py-4">
                     {call.lead ? (
@@ -431,7 +495,11 @@ export default function CallsPage() {
             </div>
             
             {/* Call Info */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+              <div className="bg-slate-800 rounded-xl p-4">
+                <div className="text-sm text-slate-400">Call Direction</div>
+                <div className="text-white font-medium">{getDirectionBadge(selectedCall)}</div>
+              </div>
               <div className="bg-slate-800 rounded-xl p-4">
                 <div className="text-sm text-slate-400">Phone Number</div>
                 <div className="text-white font-medium">{selectedCall.phone_number}</div>
