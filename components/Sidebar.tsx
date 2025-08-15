@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Settings, MessageSquare, Users, Phone, BarChart3 , PhoneCall} from 'lucide-react'
+import { Home, Settings, MessageSquare, Users, Phone, BarChart3, PhoneCall, LogOut } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: Home },
@@ -13,6 +14,11 @@ const navigation = [
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const { logout } = useAuth()
+
+  const handleSignOut = () => {
+      logout()
+  }
   
   return (
     <aside className="h-screen w-72 bg-slate-900 border-r border-slate-800 flex flex-col">
@@ -52,8 +58,8 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Status */}
-      <div className="p-4 border-t border-slate-800">
+      {/* Status & Sign Out */}
+      <div className="p-4 border-t border-slate-800 space-y-3">
         <div className="flex items-center space-x-3 p-3 bg-slate-800/50 rounded-xl">
           <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
           <div>
@@ -61,6 +67,15 @@ export default function Sidebar() {
             <div className="text-xs text-slate-400">All services running</div>
           </div>
         </div>
+        
+        {/* Sign Out Button */}
+        <button 
+          onClick={handleSignOut}
+          className="w-full flex items-center px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-all duration-200 group"
+        >
+          <LogOut className="mr-3 h-5 w-5 flex-shrink-0 text-slate-400 group-hover:text-red-400" />
+          Sign Out
+        </button>
       </div>
     </aside>
   )

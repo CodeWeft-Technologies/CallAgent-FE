@@ -1,0 +1,38 @@
+'use client'
+
+import React from 'react'
+import { useAuth } from '../contexts/AuthContext'
+import LoginForm from './LoginForm'
+import { LogOut, User } from 'lucide-react'
+
+interface AuthWrapperProps {
+  children: React.ReactNode
+}
+
+export default function AuthWrapper({ children }: AuthWrapperProps) {
+  const { isAuthenticated, logout, loading } = useAuth()
+
+  // Show loading spinner while checking authentication status
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-400">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show login form if not authenticated
+  if (!isAuthenticated) {
+    return <LoginForm />
+  }
+
+  // Show authenticated content - just render children as the layout handles the structure
+  return (
+    <div className="relative">
+        {children}
+    </div>
+  )
+}
