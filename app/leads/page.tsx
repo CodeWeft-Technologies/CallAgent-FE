@@ -32,8 +32,9 @@ interface LeadStats {
   converted: number
   total_calls: number
 }
-const API_BASE = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:5002'
-const CONFIG_API_BASE = process.env.NEXT_CONFIG_API_URL || 'http://localhost:5001'
+const API_BASE = process.env.NEXT_PUBLIC_LEAD_API_URL || 'https://callagent-be-2.onrender.com'
+const SEQUENTIAL_CALLER_API_BASE = process.env.NEXT_PUBLIC_SEQUENTIAL_CALLER_API_URL || 'https://callagent-be-2.onrender.com'
+const CONFIG_API_BASE = process.env.NEXT_PUBLIC_CONFIG_API_URL || 'https://callagent-be-2.onrender.com'
 
 export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([])
@@ -55,6 +56,7 @@ export default function LeadsPage() {
   
   // Call All functionality state
   const [isCallingAll, setIsCallingAll] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
   const [callAllProgress, setCallAllProgress] = useState({
     currentIndex: 0,
     currentLead: null as Lead | null,
@@ -279,7 +281,7 @@ export default function LeadsPage() {
   const checkCallCompletion = async (leadId: string, callInitiatedTime: number): Promise<boolean> => {
     try {
       // Use the dedicated call status endpoint for better accuracy
-      const response = await fetch(`http://localhost:5004/api/calls/status/${leadId}`)
+      const response = await fetch(`https://callagent-be-2.onrender.com/api/calls/status/${leadId}`)
       const data = await response.json()
       
       if (data.success) {
@@ -362,6 +364,7 @@ export default function LeadsPage() {
     }
 
     setIsCallingAll(true)
+    setIsPaused(false)
     setShowCallModal(true)
     setCallAllProgress({
       currentIndex: 0,
@@ -372,35 +375,35 @@ export default function LeadsPage() {
     })
 
     try {
-      // Prepare lead IDs for sequential calling
-      const leadIds = filteredLeads.map(lead => lead._id || lead.id).filter(id => id)
-      
-      if (leadIds.length === 0) {
-        toast.error('No valid lead IDs found')
-        return
+      // Build filters based on current search and status filters
+      const filters: any = {}
+      if (statusFilter !== 'all') {
+        filters.status = statusFilter
+      }
+      if (searchTerm.trim()) {
+        filters.search = searchTerm.trim()
       }
 
-      console.log(`🔄 Starting sequential calling for ${leadIds.length} leads`)
+      console.log(`🔄 Starting sequential calling with filters:`, filters)
       
-      // Start the sequential calling session using the webhook API
-      const response = await fetch(`${API_BASE}/api/leads/sequential-calling/start`, {
+      // Start the sequential calling session using the new API
+      const response = await fetch(`${SEQUENTIAL_CALLER_API_BASE}/api/sequential-caller/start`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          lead_ids: leadIds,
-          max_retries: retryConfig.max_retries
+          filters: filters
         })
       })
 
       const data = await response.json()
       
-      if (data.success && data.session_id) {
-        console.log(`✅ Sequential calling session started: ${data.session_id}`)
+      if (data.success) {
+        console.log(`✅ Sequential calling session started`)
         
         // Start polling for progress updates
-        await pollCallAllProgress(data.session_id)
+        await pollCallAllProgress()
         
       } else {
         console.error(`❌ Failed to start sequential calling: ${data.error}`)
@@ -417,7 +420,7 @@ export default function LeadsPage() {
     }
   }
 
-  const pollCallAllProgress = async (sessionId: string) => {
+  const pollCallAllProgress = async () => {
     const pollInterval = 2000 // Poll every 2 seconds
     const maxPollTime = 600000 // 10 minutes max
     const startTime = Date.now()
@@ -431,29 +434,34 @@ export default function LeadsPage() {
           return
         }
 
-        const response = await fetch(`${API_BASE}/api/leads/sequential-calling/status`)
+        const response = await fetch(`${SEQUENTIAL_CALLER_API_BASE}/api/sequential-caller/status`)
         const data = await response.json()
         
         if (data.active) {
-          const progress = data.progress
-          const stats = data.stats
+          const progress = data.progress || {}
+          const stats = data.stats || {}
           
           // Update progress based on session data
           setCallAllProgress(prev => ({
             ...prev,
-            currentIndex: progress.current_index,
+            currentIndex: progress.current_index ?? prev.currentIndex,
             currentLead: progress.current_lead ? {
               id: progress.current_lead._id,
               name: progress.current_lead.name,
               phone: progress.current_lead.phone,
               _id: progress.current_lead._id
             } as Lead : null,
-            completedCalls: stats.completed_calls,
-            failedCalls: stats.failed_calls + stats.missed_calls,
-            totalCalls: stats.total_calls
+            completedCalls: stats.completed_calls ?? prev.completedCalls,
+            failedCalls: (stats.failed_calls ?? 0) + (stats.missed_calls ?? 0),
+            totalCalls: stats.total_calls ?? prev.totalCalls
           }))
           
-          console.log(`📊 Sequential calling progress: ${progress.current_index + 1}/${progress.total_leads} (${stats.completed_calls} completed, ${stats.failed_calls + stats.missed_calls} failed)`)
+          // Update pause state if provided by API
+          if (data.paused !== undefined) {
+            setIsPaused(data.paused)
+          }
+          
+          console.log(`📊 Sequential calling progress: ${(progress.current_index ?? 0) + 1}/${progress.total_leads ?? 0} (${stats.completed_calls ?? 0} completed, ${(stats.failed_calls ?? 0) + (stats.missed_calls ?? 0)} failed)`)
           
           // Continue polling if still active
           setTimeout(poll, pollInterval)
@@ -495,9 +503,55 @@ export default function LeadsPage() {
     poll()
   }
 
+  const handlePauseCallAll = async () => {
+    try {
+      const response = await fetch(`${SEQUENTIAL_CALLER_API_BASE}/api/sequential-caller/pause`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setIsPaused(true)
+        toast('Sequential calling paused', { icon: '⏸️' })
+      } else {
+        toast.error(`Failed to pause: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Error pausing sequential calling:', error)
+      toast.error('Error pausing sequential calling')
+    }
+  }
+
+  const handleResumeCallAll = async () => {
+    try {
+      const response = await fetch(`${SEQUENTIAL_CALLER_API_BASE}/api/sequential-caller/resume`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setIsPaused(false)
+        toast('Sequential calling resumed', { icon: '▶️' })
+      } else {
+        toast.error(`Failed to resume: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Error resuming sequential calling:', error)
+      toast.error('Error resuming sequential calling')
+    }
+  }
+
   const handleStopCallAll = async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/leads/sequential-calling/stop`, {
+      const response = await fetch(`${SEQUENTIAL_CALLER_API_BASE}/api/sequential-caller/stop`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -517,6 +571,7 @@ export default function LeadsPage() {
     }
     
     setIsCallingAll(false)
+    setIsPaused(false)
     setShowCallModal(false)
     setCallAllProgress({
       currentIndex: 0,
@@ -1080,7 +1135,9 @@ export default function LeadsPage() {
               </div>
               
               <h3 className="text-xl font-semibold text-white mb-2">
-                {isCallingAll ? 'Sequential Calling in Progress' : 'Call All Completed'}
+                {isCallingAll ? (
+                  isPaused ? 'Sequential Calling Paused' : 'Sequential Calling in Progress'
+                ) : 'Call All Completed'}
               </h3>
               
               {isCallingAll && callAllProgress.currentLead && (
@@ -1091,7 +1148,11 @@ export default function LeadsPage() {
                   <p className="text-white font-medium">{callAllProgress.currentLead.name}</p>
                   <p className="text-slate-400 text-sm">{callAllProgress.currentLead.phone}</p>
                   <p className="text-slate-500 text-xs mt-2">
-                    ⏳ Waiting for call to complete before next call...
+                    {isPaused ? (
+                      '⏸️ Calling is paused. Click Resume to continue...'
+                    ) : (
+                      '⏳ Waiting for call to complete before next call...'
+                    )}
                   </p>
                 </div>
               )}
@@ -1138,15 +1199,38 @@ export default function LeadsPage() {
               {/* Action Buttons */}
               <div className="flex space-x-3">
                 {isCallingAll ? (
-                  <button
-                    onClick={handleStopCallAll}
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-xl transition-all"
-                  >
-                    <div className="flex items-center justify-center space-x-2">
-                      <X className="w-4 h-4" />
-                      <span>Stop</span>
-                    </div>
-                  </button>
+                  <>
+                    {isPaused ? (
+                      <button
+                        onClick={handleResumeCallAll}
+                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-xl transition-all"
+                      >
+                        <div className="flex items-center justify-center space-x-2">
+                          <span>▶️</span>
+                          <span>Resume</span>
+                        </div>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handlePauseCallAll}
+                        className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-xl transition-all"
+                      >
+                        <div className="flex items-center justify-center space-x-2">
+                          <span>⏸️</span>
+                          <span>Pause</span>
+                        </div>
+                      </button>
+                    )}
+                    <button
+                      onClick={handleStopCallAll}
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-xl transition-all"
+                    >
+                      <div className="flex items-center justify-center space-x-2">
+                        <X className="w-4 h-4" />
+                        <span>Stop</span>
+                      </div>
+                    </button>
+                  </>
                 ) : (
                   <button
                     onClick={() => setShowCallModal(false)}

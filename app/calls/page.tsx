@@ -67,7 +67,7 @@ interface CallStats {
   calls_with_analysis?: number
 }
 
-const API_BASE = process.env.NEXT_CALL_API_URL || 'http://localhost:5004'
+const API_BASE = process.env.NEXT_PUBLIC_CALL_API_URL || 'https://callagent-be-2.onrender.com'
 
 export default function CallsPage() {
   const [calls, setCalls] = useState<Call[]>([])
