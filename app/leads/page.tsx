@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { 
   Users, Plus, Upload, Phone, Edit, Trash, 
   RefreshCw, Download, Filter, Search, 
@@ -76,13 +76,46 @@ export default function LeadsPage() {
     notes: ''
   })
 
+  const handleFormDataChange = useCallback((field: keyof typeof formData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }, [])
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchTerm(value)
+  }, [])
+
+  const handleStatusFilterChange = useCallback((value: string) => {
+    setStatusFilter(value)
+  }, [])
+
+  const handleShowAddForm = useCallback(() => {
+    setShowAddForm(true)
+  }, [])
+
+  const handleHideAddForm = useCallback(() => {
+    setShowAddForm(false)
+    setFormData({ name: '', phone: '', email: '', company: '', notes: '' })
+  }, [])
+
+  const handleEditLead = useCallback((lead: Lead) => {
+    setEditingLead(lead)
+  }, [])
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingLead(null)
+  }, [])
+
+  const handleFileInputClick = useCallback(() => {
+    fileInputRef.current?.click()
+  }, [])
+
   useEffect(() => {
     loadLeads()
     loadStats()
     loadRetryConfig()
   }, [])
 
-  const loadRetryConfig = async () => {
+  const loadRetryConfig = useCallback(async () => {
     try {
       const response = await fetch(`${CONFIG_API_BASE}/api/config`)
       if (response.ok) {
@@ -96,9 +129,9 @@ export default function LeadsPage() {
       console.error('Error loading retry config:', error)
       // Keep default values on error
     }
-  }
+  }, [])
 
-  const loadLeads = async () => {
+  const loadLeads = useCallback(async () => {
     try {
       const response = await fetch(`${API_BASE}/api/leads`)
       const data = await response.json()
@@ -119,9 +152,9 @@ export default function LeadsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     try {
       const response = await fetch(`${API_BASE}/api/leads/stats`)
       const data = await response.json()
@@ -132,9 +165,9 @@ export default function LeadsPage() {
     } catch (error) {
       console.error('Error loading stats:', error)
     }
-  }
+  }, [])
 
-  const handleAddLead = async (e: React.FormEvent) => {
+  const handleAddLead = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     
     try {
@@ -153,7 +186,7 @@ export default function LeadsPage() {
           ...data.data,
           id: data.data._id || data.data.id
         }
-        setLeads([newLead, ...leads])
+        setLeads(prevLeads => [newLead, ...prevLeads])
         setFormData({ name: '', phone: '', email: '', company: '', notes: '' })
         setShowAddForm(false)
         toast.success('Lead added successfully!')
@@ -165,9 +198,9 @@ export default function LeadsPage() {
       toast.error('Error adding lead')
       console.error('Error adding lead:', error)
     }
-  }
+  }, [formData, loadStats])
 
-  const handleUpdateLead = async (lead: Lead) => {
+  const handleUpdateLead = useCallback(async (lead: Lead) => {
     try {
       const leadId = lead._id || lead.id
       if (!leadId) {
@@ -197,7 +230,7 @@ export default function LeadsPage() {
           ...data.data,
           id: data.data._id || data.data.id
         }
-        setLeads(leads.map(l => (l._id === leadId || l.id === leadId) ? updatedLead : l))
+        setLeads(prevLeads => prevLeads.map(l => (l._id === leadId || l.id === leadId) ? updatedLead : l))
         setEditingLead(null)
         toast.success('Lead updated successfully!')
         loadStats()
@@ -208,9 +241,9 @@ export default function LeadsPage() {
       toast.error('Error updating lead')
       console.error('Error updating lead:', error)
     }
-  }
+  }, [loadStats])
 
-  const handleDeleteLead = async (leadId: string) => {
+  const handleDeleteLead = useCallback(async (leadId: string) => {
     if (!confirm('Are you sure you want to delete this lead?')) {
       return
     }
@@ -223,7 +256,7 @@ export default function LeadsPage() {
       const data = await response.json()
       
       if (data.success) {
-        setLeads(leads.filter(l => (l._id !== leadId && l.id !== leadId)))
+        setLeads(prevLeads => prevLeads.filter(l => (l._id !== leadId && l.id !== leadId)))
         toast.success('Lead deleted successfully!')
         loadStats()
       } else {
@@ -233,9 +266,9 @@ export default function LeadsPage() {
       toast.error('Error deleting lead')
       console.error('Error deleting lead:', error)
     }
-  }
+  }, [loadStats])
 
-  const handleCallLead = async (lead: Lead, maxRetries: number = retryConfig.max_retries) => {
+  const handleCallLead = useCallback(async (lead: Lead, maxRetries: number = retryConfig.max_retries) => {
     try {
       // Ensure we have a valid lead ID
       const leadId = lead._id || lead.id
@@ -259,7 +292,7 @@ export default function LeadsPage() {
         // Update the lead in the list with the new data
         const updatedLead = data.data.lead
         if (updatedLead) {
-          setLeads(leads.map(l => (l.id === leadId || l._id === leadId) ? {
+          setLeads(prevLeads => prevLeads.map(l => (l.id === leadId || l._id === leadId) ? {
             ...updatedLead,
             id: updatedLead._id || updatedLead.id
           } : l))
@@ -276,7 +309,7 @@ export default function LeadsPage() {
       toast.error('Error initiating call')
       console.error('Error calling lead:', error)
     }
-  }
+  }, [retryConfig.max_retries, loadStats, loadLeads])
 
   const checkCallCompletion = async (leadId: string, callInitiatedTime: number): Promise<boolean> => {
     try {
@@ -352,7 +385,7 @@ export default function LeadsPage() {
     })
   }
 
-  const handleCallAll = async () => {
+  const handleCallAll = useCallback(async () => {
     if (filteredLeads.length === 0) {
       toast.error('No leads to call')
       return
@@ -418,9 +451,9 @@ export default function LeadsPage() {
     } finally {
       // Note: Don't set isCallingAll to false here, let pollCallAllProgress handle it
     }
-  }
+  }, [leads.length, isCallingAll, statusFilter, searchTerm])
 
-  const pollCallAllProgress = async () => {
+  const pollCallAllProgress = useCallback(async () => {
     const pollInterval = 2000 // Poll every 2 seconds
     const maxPollTime = 600000 // 10 minutes max
     const startTime = Date.now()
@@ -482,13 +515,13 @@ export default function LeadsPage() {
           // Keep modal open for a moment to show final results
           setTimeout(() => {
             setShowCallModal(false)
-              setCallAllProgress({
-                currentIndex: 0,
-                currentLead: null,
-                totalCalls: 0,
-                completedCalls: 0,
-                failedCalls: 0
-              })
+                              setCallAllProgress({
+                  currentIndex: 0,
+                  currentLead: null,
+                  totalCalls: 0,
+                  completedCalls: 0,
+                  failedCalls: 0
+                })
             }, 3000)
         }
         
@@ -501,9 +534,9 @@ export default function LeadsPage() {
 
     // Start polling
     poll()
-  }
+  }, [loadLeads, loadStats])
 
-  const handlePauseCallAll = async () => {
+  const handlePauseCallAll = useCallback(async () => {
     try {
       const response = await fetch(`${SEQUENTIAL_CALLER_API_BASE}/api/sequential-caller/pause`, {
         method: 'POST',
@@ -524,9 +557,9 @@ export default function LeadsPage() {
       console.error('Error pausing sequential calling:', error)
       toast.error('Error pausing sequential calling')
     }
-  }
+  }, [])
 
-  const handleResumeCallAll = async () => {
+  const handleResumeCallAll = useCallback(async () => {
     try {
       const response = await fetch(`${SEQUENTIAL_CALLER_API_BASE}/api/sequential-caller/resume`, {
         method: 'POST',
@@ -547,9 +580,9 @@ export default function LeadsPage() {
       console.error('Error resuming sequential calling:', error)
       toast.error('Error resuming sequential calling')
     }
-  }
+  }, [])
 
-  const handleStopCallAll = async () => {
+  const handleStopCallAll = useCallback(async () => {
     try {
       const response = await fetch(`${SEQUENTIAL_CALLER_API_BASE}/api/sequential-caller/stop`, {
         method: 'POST',
@@ -580,9 +613,9 @@ export default function LeadsPage() {
       completedCalls: 0,
       failedCalls: 0
     })
-  }
+  }, [])
 
-  const handleCSVUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCSVUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
 
@@ -618,9 +651,9 @@ export default function LeadsPage() {
         fileInputRef.current.value = ''
       }
     }
-  }
+  }, [loadLeads, loadStats])
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = useCallback((status: string) => {
     const styles = {
       new: 'bg-blue-600/20 text-blue-400 border border-blue-500/30',
       called: 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30',
@@ -633,18 +666,20 @@ export default function LeadsPage() {
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     )
-  }
+  }, [])
 
-  const filteredLeads = leads.filter(lead => {
-    const matchesSearch = lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         lead.phone.includes(searchTerm) ||
-                         lead.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         lead.company.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesStatus = statusFilter === 'all' || lead.status === statusFilter
-    
-    return matchesSearch && matchesStatus
-  })
+  const filteredLeads = useMemo(() => {
+    return leads.filter(lead => {
+      const matchesSearch = lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           lead.phone.includes(searchTerm) ||
+                           lead.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           lead.company.toLowerCase().includes(searchTerm.toLowerCase())
+      
+      const matchesStatus = statusFilter === 'all' || lead.status === statusFilter
+      
+      return matchesSearch && matchesStatus
+    })
+  }, [leads, searchTerm, statusFilter])
 
   if (loading) {
     return (
@@ -676,7 +711,7 @@ export default function LeadsPage() {
             className="hidden"
           />
           <button
-            onClick={() => fileInputRef.current?.click()}
+            onClick={handleFileInputClick}
             disabled={uploading}
             className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl transition-all"
           >
@@ -700,7 +735,7 @@ export default function LeadsPage() {
             <span>{isCallingAll ? 'Calling...' : `Call All (${filteredLeads.length})`}</span>
           </button>
           <button
-            onClick={() => setShowAddForm(true)}
+            onClick={handleShowAddForm}
             className="flex items-center space-x-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-all"
           >
             <Plus className="w-4 h-4" />
@@ -789,7 +824,7 @@ export default function LeadsPage() {
                 type="text"
                 placeholder="Search leads..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
               />
             </div>
@@ -797,7 +832,7 @@ export default function LeadsPage() {
           <div>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => handleStatusFilterChange(e.target.value)}
               className="px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
             >
               <option value="all">All Status</option>
@@ -871,7 +906,7 @@ export default function LeadsPage() {
                         <PhoneCall className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => setEditingLead(lead)}
+                        onClick={() => handleEditLead(lead)}
                         className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-all"
                         title="Edit Lead"
                       >
@@ -913,7 +948,7 @@ export default function LeadsPage() {
                   type="text"
                   required
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) => handleFormDataChange('name', e.target.value)}
                   className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 />
               </div>
@@ -923,7 +958,7 @@ export default function LeadsPage() {
                   type="tel"
                   required
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={(e) => handleFormDataChange('phone', e.target.value)}
                   className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 />
               </div>
@@ -932,8 +967,8 @@ export default function LeadsPage() {
                 <input
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  onChange={(e) => handleFormDataChange('email', e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 />
               </div>
               <div>
@@ -941,15 +976,15 @@ export default function LeadsPage() {
                 <input
                   type="text"
                   value={formData.company}
-                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  onChange={(e) => handleFormDataChange('company', e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-200 mb-1">Notes</label>
                 <textarea
                   value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  onChange={(e) => handleFormDataChange('notes', e.target.value)}
                   rows={3}
                   className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 />
@@ -963,10 +998,7 @@ export default function LeadsPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowAddForm(false)
-                    setFormData({ name: '', phone: '', email: '', company: '', notes: '' })
-                  }}
+                  onClick={handleHideAddForm}
                   className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2 px-4 rounded-xl transition-all"
                 >
                   Cancel
@@ -1052,7 +1084,7 @@ export default function LeadsPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setEditingLead(null)}
+                                      onClick={handleCancelEdit}
                   className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2 px-4 rounded-xl transition-all"
                 >
                   Cancel

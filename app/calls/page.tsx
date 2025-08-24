@@ -1,6 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import MemoizedCallRow from '../../components/MemoizedCallRow'
+import VirtualList from '../../components/VirtualList'
+import { usePagination } from '../../hooks/usePagination'
+import { useCallsCache, useStatsCache } from '../../hooks/useDataCache'
+import { useDebouncedSearch } from '../../hooks/useDebounce'
 import { 
   Phone, PhoneCall, Clock, User, MessageSquare, 
   Calendar, Search, Filter, Download, Eye,
@@ -70,59 +75,66 @@ interface CallStats {
 const API_BASE = process.env.NEXT_PUBLIC_CALL_API_URL || 'https://callagent-be-2.onrender.com'
 
 export default function CallsPage() {
-  const [calls, setCalls] = useState<Call[]>([])
-  const [stats, setStats] = useState<CallStats>({
+  // Use optimized data fetching with caching
+  const { data: callsData, loading: callsLoading, refresh: refreshCalls } = useCallsCache()
+  const calls = callsData || []
+  const { data: statsData, loading: statsLoading } = useStatsCache()
+  const stats = statsData || {
     total_calls: 0,
     calls_today: 0,
     calls_this_week: 0,
     average_duration: 0,
-    status_counts: { completed: 0, failed: 0, missed: 0 }
-  })
-  const [loading, setLoading] = useState(true)
+    status_counts: { completed: 0, failed: 0, missed: 0 },
+    interest_counts: { interested: 0, not_interested: 0, neutral: 0 },
+    calls_with_analysis: 0
+  }
+  
   const [selectedCall, setSelectedCall] = useState<Call | null>(null)
-  const [searchTerm, setSearchTerm] = useState('')
+  
+  // Use debounced search to reduce API calls
+  const { searchTerm, debouncedSearchTerm, handleSearchChange, clearSearch } = useDebouncedSearch('', 300)
+  
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [interestFilter, setInterestFilter] = useState<string>('all')
   const [directionFilter, setDirectionFilter] = useState<string>('all')
   const [dateFilter, setDateFilter] = useState<string>('all')
-
-  useEffect(() => {
-    loadCalls()
-    loadStats()
-  }, [])
-
-  const loadCalls = async () => {
-    try {
-      const response = await fetch(`${API_BASE}/api/calls`)
-      const data = await response.json()
+  
+  // Filtered calls calculation
+  const filteredCalls = useMemo(() => {
+    if (!calls) return []
+    return calls.filter((call: Call) => {
+      const phoneStr = String(call.phone_number ?? '')
+      const leadName = call.lead?.name ? call.lead.name.toLowerCase() : ''
+      const term = debouncedSearchTerm.toLowerCase()
+      const matchesSearch = phoneStr.includes(debouncedSearchTerm) || leadName.includes(term)
       
-      if (data.success) {
-        setCalls(data.data)
-      } else {
-        toast.error('Failed to load calls')
-      }
-    } catch (error) {
-      toast.error('Error connecting to backend')
-      console.error('Error loading calls:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const loadStats = async () => {
-    try {
-      const response = await fetch(`${API_BASE}/api/calls/stats`)
-      const data = await response.json()
+      const matchesStatus = statusFilter === 'all' || call.status === statusFilter
       
-      if (data.success) {
-        setStats(data.data)
-      }
-    } catch (error) {
-      console.error('Error loading stats:', error)
-    }
-  }
+      const matchesInterest = interestFilter === 'all' || 
+        (interestFilter === 'no_analysis' && !call.interest_analysis) ||
+        (call.interest_analysis?.interest_status === interestFilter)
+      
+      const matchesDirection = directionFilter === 'all' || 
+        (call.direction || 'outbound') === directionFilter
+      
+      return matchesSearch && matchesStatus && matchesInterest && matchesDirection
+    })
+  }, [calls, debouncedSearchTerm, statusFilter, interestFilter, directionFilter])
 
-  const getStatusBadge = (status: string) => {
+  // Pagination for better performance with large datasets
+  const ITEMS_PER_PAGE = 50
+  const pagination = usePagination({
+    totalItems: filteredCalls.length,
+    itemsPerPage: ITEMS_PER_PAGE
+  })
+  
+  const loading = callsLoading || statsLoading
+
+  // Remove old useEffect since we're using the cache hooks now
+
+  // Remove old loadStats since we're using the cache hooks now
+
+  const getStatusBadge = useCallback((status: string) => {
     const styles = {
       completed: 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30',
       failed: 'bg-red-600/20 text-red-400 border border-red-500/30',
@@ -134,9 +146,9 @@ export default function CallsPage() {
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     )
-  }
+  }, [])
 
-  const getDirectionBadge = (call: Call) => {
+  const getDirectionBadge = useCallback((call: Call) => {
     const direction = call.direction || 'outbound' // Default to outbound if not specified
     const isInbound = direction === 'inbound'
     
@@ -171,13 +183,13 @@ export default function CallsPage() {
         {displayNumber && (
           <div className="text-xs text-slate-400">
             {isInbound ? 'From:' : 'To:'} {displayNumber}
-          </div>
+        </div>
         )}
       </div>
     )
-  }
+  }, [])
 
-  const getInterestBadge = (interest_analysis?: Call['interest_analysis']) => {
+  const getInterestBadge = useCallback((interest_analysis?: Call['interest_analysis']) => {
     if (!interest_analysis) {
       return (
         <span className="px-3 py-1 rounded-full text-xs font-medium bg-slate-600/20 text-slate-400 border border-slate-500/30">
@@ -209,47 +221,51 @@ export default function CallsPage() {
         </span>
       </div>
     )
-  }
+  }, [])
 
-  const formatDuration = (seconds: number) => {
+  const formatDuration = useCallback((seconds: number) => {
     const minutes = Math.floor(seconds / 60)
     const remainingSeconds = Math.floor(seconds % 60)
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
-  }
+  }, [])
 
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string) => {
     if (!dateString) return '—'
     const d = new Date(dateString)
     if (isNaN(d.getTime())) return '—'
     return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  }
+  }, [])
 
-  const filteredCalls = calls.filter(call => {
-    const phoneStr = String(call.phone_number ?? '')
-    const leadName = call.lead?.name ? call.lead.name.toLowerCase() : ''
-    const term = searchTerm.toLowerCase()
-    const matchesSearch = phoneStr.includes(searchTerm) || leadName.includes(term)
-    
-    const matchesStatus = statusFilter === 'all' || call.status === statusFilter
-    
-    const matchesInterest = interestFilter === 'all' || 
-      (interestFilter === 'no_analysis' && !call.interest_analysis) ||
-      (call.interest_analysis?.interest_status === interestFilter)
-    
-    const matchesDirection = directionFilter === 'all' || 
-      (call.direction || 'outbound') === directionFilter
-    
-    return matchesSearch && matchesStatus && matchesInterest && matchesDirection
-  })
-
-  const getSentimentColor = (sentiment: string) => {
+  const getSentimentColor = useCallback((sentiment: string) => {
     switch (sentiment.toLowerCase()) {
       case 'positive': return 'text-emerald-400'
       case 'negative': return 'text-red-400'
       case 'neutral': return 'text-slate-400'
       default: return 'text-slate-400'
     }
-  }
+  }, [])
+
+  // Remove duplicate function since we're using the debounced search hook
+
+  const handleStatusFilterChange = useCallback((value: string) => {
+    setStatusFilter(value)
+  }, [])
+
+  const handleInterestFilterChange = useCallback((value: string) => {
+    setInterestFilter(value)
+  }, [])
+
+  const handleDirectionFilterChange = useCallback((value: string) => {
+    setDirectionFilter(value)
+  }, [])
+
+  const handleSelectCall = useCallback((call: Call) => {
+    setSelectedCall(call)
+  }, [])
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedCall(null)
+  }, [])
 
   if (loading) {
     return (
@@ -354,7 +370,7 @@ export default function CallsPage() {
                 type="text"
                 placeholder="Search by phone number or lead name..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
               />
             </div>
@@ -362,7 +378,7 @@ export default function CallsPage() {
           <div>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => handleStatusFilterChange(e.target.value)}
               className="px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
             >
               <option value="all">All Status</option>
@@ -374,7 +390,7 @@ export default function CallsPage() {
           <div>
             <select
               value={interestFilter}
-              onChange={(e) => setInterestFilter(e.target.value)}
+              onChange={(e) => handleInterestFilterChange(e.target.value)}
               className="px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
             >
               <option value="all">All Interest</option>
@@ -387,7 +403,7 @@ export default function CallsPage() {
           <div>
             <select
               value={directionFilter}
-              onChange={(e) => setDirectionFilter(e.target.value)}
+              onChange={(e) => handleDirectionFilterChange(e.target.value)}
               className="px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
             >
               <option value="all">All Directions</option>
@@ -415,58 +431,21 @@ export default function CallsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
-              {filteredCalls.map((call, index) => (
-                <tr key={call._id} className={`hover:bg-slate-800/50 transition-colors ${index % 2 === 0 ? 'bg-slate-900' : 'bg-slate-900/50'}`}>
-                  <td className="px-6 py-4">
-                    {getDirectionBadge(call)}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-white">{formatDate(call.call_date)}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    {call.lead ? (
-                      <div>
-                        <div className="font-medium text-white">{call.lead.name || '—'}</div>
-                        {call.lead.company && (
-                          <div className="text-sm text-slate-400">{call.lead.company}</div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-slate-500">No lead</div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    {getStatusBadge(call.status)}
-                  </td>
-                  <td className="px-6 py-4">
-                    {getInterestBadge(call.interest_analysis)}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-white">
-                    {formatDuration(call.duration)}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm">
-                      <div className="text-white">
-                        {call.transcription.length} user messages
-                      </div>
-                      <div className="text-slate-400">
-                        {call.ai_responses.length} AI responses
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => setSelectedCall(call)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-all"
-                        title="View Details"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {filteredCalls
+                .slice(pagination.startIndex, pagination.endIndex)
+                .map((call: Call, index: number) => (
+                  <MemoizedCallRow
+                    key={call._id}
+                    call={call}
+                    index={pagination.startIndex + index}
+                    getStatusBadge={getStatusBadge}
+                    getDirectionBadge={getDirectionBadge}
+                    getInterestBadge={getInterestBadge}
+                    formatDuration={formatDuration}
+                    formatDate={formatDate}
+                    onSelectCall={handleSelectCall}
+                  />
+                ))}
             </tbody>
           </table>
           
@@ -478,6 +457,51 @@ export default function CallsPage() {
             </div>
           )}
         </div>
+        
+        {/* Pagination Controls */}
+        {pagination.totalPages > 1 && (
+          <div className="px-6 py-4 bg-slate-800/50 border-t border-slate-700">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-slate-400">
+                Showing {pagination.startIndex + 1} to {pagination.endIndex} of {filteredCalls.length} calls
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={pagination.prevPage}
+                  disabled={!pagination.hasPrevPage}
+                  className="px-3 py-2 text-sm bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-lg transition-all"
+                >
+                  Previous
+                </button>
+                
+                {pagination.pageNumbers.map((pageNum, index) => (
+                  <button
+                    key={index}
+                    onClick={() => pageNum > 0 ? pagination.goToPage(pageNum) : null}
+                    disabled={pageNum === -1}
+                    className={`px-3 py-2 text-sm rounded-lg transition-all ${
+                      pageNum === pagination.currentPage
+                        ? 'bg-blue-600 text-white'
+                        : pageNum === -1
+                        ? 'text-slate-500 cursor-default'
+                        : 'bg-slate-700 hover:bg-slate-600 text-white'
+                    }`}
+                  >
+                    {pageNum === -1 ? '...' : pageNum}
+                  </button>
+                ))}
+                
+                <button
+                  onClick={pagination.nextPage}
+                  disabled={!pagination.hasNextPage}
+                  className="px-3 py-2 text-sm bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-lg transition-all"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Call Details Modal */}
@@ -487,7 +511,7 @@ export default function CallsPage() {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-white">Call Details</h3>
               <button
-                onClick={() => setSelectedCall(null)}
+                onClick={handleCloseModal}
                 className="text-slate-400 hover:text-white transition-colors"
               >
                 <XCircle className="w-6 h-6" />

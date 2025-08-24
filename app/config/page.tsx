@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Settings, RotateCcw, Save, MessageSquare, ArrowRight, FileText, Database, RefreshCw } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -89,7 +89,7 @@ export default function ConfigPage() {
     loadConfig()
   }, [])
 
-  const loadConfig = async () => {
+  const loadConfig = useCallback(async () => {
     try {
       const response = await fetch(`${API_BASE}/api/config`)
       if (response.ok) {
@@ -108,9 +108,9 @@ export default function ConfigPage() {
       console.error('Error loading config:', error)
       toast.error('Failed to load configuration')
     }
-  }
+  }, [])
 
-  const saveConfig = async () => {
+  const saveConfig = useCallback(async () => {
     setLoading(true)
     try {
       const response = await fetch(`${API_BASE}/api/config`, {
@@ -130,9 +130,9 @@ export default function ConfigPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [config])
 
-  const resetConfig = () => {
+  const resetConfig = useCallback(() => {
     setConfig({
       greeting_message: 'Hello! How can I help you today?',
       exit_message: 'Thank you for calling. Have a great day!',
@@ -143,25 +143,25 @@ export default function ConfigPage() {
       retry_delay: 10
     })
     toast.success('Configuration reset to defaults')
-  }
+  }, [])
 
-  const handleTemplateChange = (template: string) => {
+  const handleTemplateChange = useCallback((template: string) => {
     setSelectedTemplate(template)
     const templateData = PROMPT_TEMPLATES[template as keyof typeof PROMPT_TEMPLATES]
     setConfig(prev => ({
       ...prev,
       system_prompt: templateData.prompt
     }))
-  }
+  }, [])
 
-  const handleKnowledgeBaseToggle = () => {
+  const handleKnowledgeBaseToggle = useCallback(() => {
     setConfig(prev => ({
       ...prev,
       knowledge_base_enabled: !prev.knowledge_base_enabled
     }))
-  }
+  }, [])
 
-  const handleKnowledgeBaseFieldChange = (field: string, value: string) => {
+  const handleKnowledgeBaseFieldChange = useCallback((field: string, value: string) => {
     try {
       const currentKB = config.knowledge_base ? JSON.parse(config.knowledge_base) : {}
       const updatedKB = { ...currentKB, [field]: value }
@@ -172,9 +172,9 @@ export default function ConfigPage() {
     } catch (error) {
       console.error('Error updating knowledge base:', error)
     }
-  }
+  }, [config.knowledge_base])
 
-  const renderKnowledgeBaseField = (field: any) => {
+  const renderKnowledgeBaseField = useCallback((field: any) => {
     let currentValue = ''
     try {
       const kb = config.knowledge_base ? JSON.parse(config.knowledge_base) : {}
@@ -197,7 +197,31 @@ export default function ConfigPage() {
         />
       </div>
     )
-  }
+  }, [config.knowledge_base, handleKnowledgeBaseFieldChange])
+
+  const handleGreetingMessageChange = useCallback((value: string) => {
+    setConfig(prev => ({ ...prev, greeting_message: value }))
+  }, [])
+
+  const handleExitMessageChange = useCallback((value: string) => {
+    setConfig(prev => ({ ...prev, exit_message: value }))
+  }, [])
+
+  const handleSystemPromptChange = useCallback((value: string) => {
+    setConfig(prev => ({ ...prev, system_prompt: value }))
+  }, [])
+
+  const handleMaxRetriesChange = useCallback((value: string) => {
+    setConfig(prev => ({ ...prev, max_retries: parseInt(value) }))
+  }, [])
+
+  const handleRetryDelayChange = useCallback((value: string) => {
+    setConfig(prev => ({ ...prev, retry_delay: parseInt(value) }))
+  }, [])
+
+  const handleTabChange = useCallback((tabId: string) => {
+    setActiveTab(tabId)
+  }, [])
 
   const tabs = [
     { id: 'greeting', name: 'Greeting', icon: MessageSquare },
@@ -227,7 +251,7 @@ export default function ConfigPage() {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={`
                 flex items-center space-x-2 px-6 py-4 text-sm font-medium transition-all
                 ${activeTab === tab.id
@@ -251,7 +275,7 @@ export default function ConfigPage() {
                 <p className="text-slate-400 mb-4">This message will be played when a call starts</p>
                 <textarea
                   value={config.greeting_message || ''}
-                  onChange={(e) => setConfig(prev => ({ ...prev, greeting_message: e.target.value }))}
+                  onChange={(e) => handleGreetingMessageChange(e.target.value)}
                   rows={4}
                   className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                   placeholder="Enter your greeting message..."
@@ -268,7 +292,7 @@ export default function ConfigPage() {
                 <p className="text-slate-400 mb-4">This message will be played when a call ends</p>
                 <textarea
                   value={config.exit_message || ''}
-                  onChange={(e) => setConfig(prev => ({ ...prev, exit_message: e.target.value }))}
+                  onChange={(e) => handleExitMessageChange(e.target.value)}
                   rows={4}
                   className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                   placeholder="Enter your exit message..."
@@ -309,7 +333,7 @@ export default function ConfigPage() {
                   </label>
                   <textarea
                     value={config.system_prompt || ''}
-                    onChange={(e) => setConfig(prev => ({ ...prev, system_prompt: e.target.value }))}
+                    onChange={(e) => handleSystemPromptChange(e.target.value)}
                     rows={6}
                     className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                     placeholder="Enter your custom system prompt..."
@@ -374,7 +398,7 @@ export default function ConfigPage() {
                     </label>
                     <select
                       value={config.max_retries}
-                      onChange={(e) => setConfig(prev => ({ ...prev, max_retries: parseInt(e.target.value) }))}
+                      onChange={(e) => handleMaxRetriesChange(e.target.value)}
                       className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                     >
                       <option value={0}>No retries</option>
@@ -401,7 +425,7 @@ export default function ConfigPage() {
                     </label>
                     <select
                       value={config.retry_delay}
-                      onChange={(e) => setConfig(prev => ({ ...prev, retry_delay: parseInt(e.target.value) }))}
+                      onChange={(e) => handleRetryDelayChange(e.target.value)}
                       className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                     >
                       <option value={5}>5 seconds</option>
