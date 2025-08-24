@@ -6,6 +6,7 @@ import VirtualList from '../../components/VirtualList'
 import { usePagination } from '../../hooks/usePagination'
 import { useCallsCache, useStatsCache } from '../../hooks/useDataCache'
 import { useDebouncedSearch } from '../../hooks/useDebounce'
+import { useIST } from '../../hooks/useIST'
 import { 
   Phone, PhoneCall, Clock, User, MessageSquare, 
   Calendar, Search, Filter, Download, Eye,
@@ -229,12 +230,8 @@ export default function CallsPage() {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
   }, [])
 
-  const formatDate = useCallback((dateString: string) => {
-    if (!dateString) return '—'
-    const d = new Date(dateString)
-    if (isNaN(d.getTime())) return '—'
-    return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  }, [])
+  // Use IST conversion hook
+  const { formatDateTime, formatTime } = useIST()
 
   const getSentimentColor = useCallback((sentiment: string) => {
     switch (sentiment.toLowerCase()) {
@@ -281,117 +278,117 @@ export default function CallsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">Call History</h1>
-          <p className="text-slate-400 mt-1">View call details, transcriptions, and analytics</p>
+          <p className="text-slate-400 mt-2">View call details, transcriptions, and analytics</p>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 hover:border-slate-700 transition-all">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-400">Total Calls</p>
-              <p className="text-2xl font-bold text-white">{stats.total_calls}</p>
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <div className="bg-slate-900 rounded-xl border border-slate-800 p-4 hover:border-slate-700 transition-all">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center">
+              <Phone className="w-4 h-4 text-slate-400" />
             </div>
-            <div className="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center">
-              <Phone className="w-5 h-5 text-slate-400" />
+            <div>
+              <p className="text-xs font-medium text-slate-400">Total Calls</p>
+              <p className="text-xl font-bold text-white">{stats.total_calls}</p>
             </div>
           </div>
         </div>
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 hover:border-slate-700 transition-all">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-400">Today</p>
-              <p className="text-2xl font-bold text-blue-400">{stats.calls_today}</p>
+        <div className="bg-slate-900 rounded-xl border border-slate-800 p-4 hover:border-slate-700 transition-all">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-blue-600/20 rounded-lg flex items-center justify-center">
+              <Calendar className="w-4 h-4 text-blue-400" />
             </div>
-            <div className="w-10 h-10 bg-blue-600/20 rounded-xl flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-blue-400" />
+            <div>
+              <p className="text-xs font-medium text-slate-400">Today</p>
+              <p className="text-xl font-bold text-blue-400">{stats.calls_today}</p>
             </div>
           </div>
         </div>
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 hover:border-slate-700 transition-all">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-400">Interested</p>
-              <p className="text-2xl font-bold text-emerald-400">{stats.interest_counts?.interested || 0}</p>
+        <div className="bg-slate-900 rounded-xl border border-slate-800 p-4 hover:border-slate-700 transition-all">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-emerald-600/20 rounded-lg flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
             </div>
-            <div className="w-10 h-10 bg-emerald-600/20 rounded-xl flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-emerald-400" />
+            <div>
+              <p className="text-xs font-medium text-slate-400">Interested</p>
+              <p className="text-xl font-bold text-emerald-400">{stats.interest_counts?.interested || 0}</p>
             </div>
           </div>
         </div>
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 hover:border-slate-700 transition-all">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-400">Not Interested</p>
-              <p className="text-2xl font-bold text-red-400">{stats.interest_counts?.not_interested || 0}</p>
+        <div className="bg-slate-900 rounded-xl border border-slate-800 p-4 hover:border-slate-700 transition-all">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-red-600/20 rounded-lg flex items-center justify-center">
+              <XCircle className="w-4 h-4 text-red-400" />
             </div>
-            <div className="w-10 h-10 bg-red-600/20 rounded-xl flex items-center justify-center">
-              <XCircle className="w-5 h-5 text-red-400" />
+            <div>
+              <p className="text-xs font-medium text-slate-400">Not Interested</p>
+              <p className="text-xl font-bold text-red-400">{stats.interest_counts?.not_interested || 0}</p>
             </div>
           </div>
         </div>
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 hover:border-slate-700 transition-all">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-400">Avg Duration</p>
-              <p className="text-2xl font-bold text-purple-400">{formatDuration(stats.average_duration)}</p>
+        <div className="bg-slate-900 rounded-xl border border-slate-800 p-4 hover:border-slate-700 transition-all">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-purple-600/20 rounded-lg flex items-center justify-center">
+              <Clock className="w-4 h-4 text-purple-400" />
             </div>
-            <div className="w-10 h-10 bg-purple-600/20 rounded-xl flex items-center justify-center">
-              <Clock className="w-5 h-5 text-purple-400" />
+            <div>
+              <p className="text-xs font-medium text-slate-400">Avg Duration</p>
+              <p className="text-xl font-bold text-purple-400">{formatDuration(stats.average_duration)}</p>
             </div>
           </div>
         </div>
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 hover:border-slate-700 transition-all">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-400">Completed</p>
-              <p className="text-2xl font-bold text-emerald-400">{stats.status_counts.completed}</p>
+        <div className="bg-slate-900 rounded-xl border border-slate-800 p-4 hover:border-slate-700 transition-all">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-emerald-600/20 rounded-lg flex items-center justify-center">
+              <CheckCircle className="w-4 h-4 text-emerald-400" />
             </div>
-            <div className="w-10 h-10 bg-emerald-600/20 rounded-xl flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-emerald-400" />
+            <div>
+              <p className="text-xs font-medium text-slate-400">Completed</p>
+              <p className="text-xl font-bold text-emerald-400">{stats.status_counts.completed}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6">
-        <div className="flex items-center space-x-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search by phone number or lead name..."
-                value={searchTerm}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
-              />
-            </div>
+      <div className="bg-slate-900 rounded-xl border border-slate-800 p-5">
+        <div className="space-y-4">
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search by phone number or lead name..."
+              value={searchTerm}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+            />
           </div>
-          <div>
+          
+          {/* Filter Dropdowns */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <select
               value={statusFilter}
               onChange={(e) => handleStatusFilterChange(e.target.value)}
-              className="px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+              className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
             >
               <option value="all">All Status</option>
               <option value="completed">Completed</option>
               <option value="failed">Failed</option>
               <option value="missed">Missed</option>
             </select>
-          </div>
-          <div>
+            
             <select
               value={interestFilter}
               onChange={(e) => handleInterestFilterChange(e.target.value)}
-              className="px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+              className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
             >
               <option value="all">All Interest</option>
               <option value="interested">Interested</option>
@@ -399,12 +396,11 @@ export default function CallsPage() {
               <option value="neutral">Neutral</option>
               <option value="no_analysis">No Analysis</option>
             </select>
-          </div>
-          <div>
+            
             <select
               value={directionFilter}
               onChange={(e) => handleDirectionFilterChange(e.target.value)}
-              className="px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+              className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
             >
               <option value="all">All Directions</option>
               <option value="inbound">Inbound Calls</option>
@@ -415,19 +411,19 @@ export default function CallsPage() {
       </div>
 
       {/* Calls Table */}
-      <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
+      <div className="bg-slate-900 rounded-xl border border-slate-800 shadow-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-800/50 border-b border-slate-700">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Call Direction</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Date & Time</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Lead</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Interest</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Duration</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Messages</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Actions</th>
+                <th className="px-4 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Call Direction</th>
+                <th className="px-4 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Date & Time</th>
+                <th className="px-4 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Lead</th>
+                <th className="px-4 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Interest</th>
+                <th className="px-4 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Duration</th>
+                <th className="px-4 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Messages</th>
+                <th className="px-4 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
@@ -442,7 +438,7 @@ export default function CallsPage() {
                     getDirectionBadge={getDirectionBadge}
                     getInterestBadge={getInterestBadge}
                     formatDuration={formatDuration}
-                    formatDate={formatDate}
+                    formatDate={formatDateTime}
                     onSelectCall={handleSelectCall}
                   />
                 ))}
@@ -450,9 +446,9 @@ export default function CallsPage() {
           </table>
           
           {filteredCalls.length === 0 && (
-            <div className="text-center py-12">
-              <Phone className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-400">No calls found</p>
+            <div className="text-center py-16">
+              <Phone className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+              <p className="text-slate-400 text-lg">No calls found</p>
               <p className="text-sm text-slate-500">Calls will appear here after they are completed</p>
             </div>
           )}
@@ -460,8 +456,8 @@ export default function CallsPage() {
         
         {/* Pagination Controls */}
         {pagination.totalPages > 1 && (
-          <div className="px-6 py-4 bg-slate-800/50 border-t border-slate-700">
-            <div className="flex items-center justify-between">
+          <div className="px-4 py-4 bg-slate-800/50 border-t border-slate-700">
+            <div className="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
               <div className="text-sm text-slate-400">
                 Showing {pagination.startIndex + 1} to {pagination.endIndex} of {filteredCalls.length} calls
               </div>
@@ -538,7 +534,7 @@ export default function CallsPage() {
               </div>
               <div className="bg-slate-800 rounded-xl p-4">
                 <div className="text-sm text-slate-400">Date</div>
-                <div className="text-white font-medium">{formatDate(selectedCall.call_date)}</div>
+                <div className="text-white font-medium">{formatDateTime(selectedCall.call_date)}</div>
               </div>
             </div>
 
@@ -635,7 +631,7 @@ export default function CallsPage() {
                           </span>
                         </div>
                         <span className="text-xs text-slate-400">
-                          {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {formatTime(message.timestamp)}
                         </span>
                       </div>
                       <div className="text-white text-sm">{message.content}</div>

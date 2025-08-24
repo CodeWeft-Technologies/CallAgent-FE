@@ -124,6 +124,7 @@ export function useCallsCache() {
     async () => {
       const response = await fetch(`${API_BASE}/api/calls`)
       const data = await response.json()
+      console.log(data)
       return data.success ? data.data : []
     },
     { ttl: 1 * 60 * 1000 } // 1 minute TTL for calls

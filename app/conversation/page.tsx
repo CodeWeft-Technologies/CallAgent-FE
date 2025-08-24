@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { MessageSquare, Wifi, WifiOff, Trash2, Activity, Phone, Users, TrendingUp } from 'lucide-react'
+import { useIST } from '../../hooks/useIST'
 
 interface Message {
   id: number
@@ -137,38 +138,8 @@ export default function ConversationPage() {
     })
   }
 
-  const formatTime = (timestamp: string) => {
-    try {
-      // Handle different timestamp formats
-      let date: Date
-      
-      if (timestamp.includes('T')) {
-        // ISO format: "2023-08-07T16:30:26.123456"
-        date = new Date(timestamp)
-      } else if (timestamp.includes('-')) {
-        // Date format: "2023-08-07 16:30:26"
-        date = new Date(timestamp.replace(' ', 'T'))
-      } else {
-        // Unix timestamp or other format
-        date = new Date(timestamp)
-      }
-      
-      // Check if date is valid
-      if (isNaN(date.getTime())) {
-        console.warn('Invalid timestamp:', timestamp)
-        return 'Invalid Date'
-      }
-      
-      return date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      })
-    } catch (error) {
-      console.error('Error formatting timestamp:', timestamp, error)
-      return 'Invalid Date'
-    }
-  }
+  // Use IST conversion hook
+  const { formatTimeWithSeconds } = useIST()
 
   return (
     <div className="space-y-8">
@@ -282,7 +253,7 @@ export default function ConversationPage() {
                         {message.type === 'user' ? 'User' : 'Bot'}
                       </span>
                     </div>
-                    <span className="text-xs text-slate-500">{formatTime(message.timestamp)}</span>
+                    <span className="text-xs text-slate-500">{formatTimeWithSeconds(message.timestamp)}</span>
                   </div>
                   <p className="text-white text-sm leading-relaxed">{message.content}</p>
                 </div>

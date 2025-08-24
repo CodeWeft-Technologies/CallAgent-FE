@@ -894,7 +894,16 @@ export default function LeadsPage() {
                     {lead.call_attempts}
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-400">
-                    {lead.last_call ? new Date(lead.last_call).toLocaleDateString() : 'Never'}
+                    {lead.last_call ? (() => {
+                  const d = new Date(lead.last_call)
+                  const istDate = new Date(d.getTime() + (5.5 * 60 * 60 * 1000))
+                  return istDate.toLocaleDateString('en-IN', {
+                    timeZone: 'Asia/Kolkata',
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  })
+                })() : 'Never'}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">

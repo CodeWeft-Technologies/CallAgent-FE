@@ -63,35 +63,35 @@ const MemoizedCallRow = React.memo<MemoizedCallRowProps>(({
 }) => {
   return (
     <tr className={`hover:bg-slate-800/50 transition-colors ${index % 2 === 0 ? 'bg-slate-900' : 'bg-slate-900/50'}`}>
-      <td className="px-6 py-4">
+      <td className="px-4 py-4">
         {getDirectionBadge(call)}
       </td>
-      <td className="px-6 py-4">
-        <div className="text-sm text-white">{formatDate(call.call_date)}</div>
+      <td className="px-4 py-4">
+        <div className="text-sm text-white font-medium">{formatDate(call.call_date)}</div>
       </td>
-      <td className="px-6 py-4">
+      <td className="px-4 py-4">
         {call.lead ? (
-          <div>
+          <div className="space-y-1">
             <div className="font-medium text-white">{call.lead.name || '—'}</div>
             {call.lead.company && (
-              <div className="text-sm text-slate-400">{call.lead.company}</div>
+              <div className="text-xs text-slate-400">{call.lead.company}</div>
             )}
           </div>
         ) : (
-          <div className="text-slate-500">No lead</div>
+          <div className="text-slate-500 text-sm">No lead</div>
         )}
       </td>
-      <td className="px-6 py-4">
+      <td className="px-4 py-4">
         {getStatusBadge(call.status)}
       </td>
-      <td className="px-6 py-4">
+      <td className="px-4 py-4">
         {getInterestBadge(call.interest_analysis)}
       </td>
-      <td className="px-6 py-4 text-sm text-white">
-        {formatDuration(call.duration)}
+      <td className="px-4 py-4">
+        <div className="text-sm text-white font-medium">{formatDuration(call.duration)}</div>
       </td>
-      <td className="px-6 py-4">
-        <div className="text-sm">
+      <td className="px-4 py-4">
+        <div className="text-xs space-y-1">
           <div className="text-white">
             {call.transcription.length} user messages
           </div>
@@ -100,11 +100,11 @@ const MemoizedCallRow = React.memo<MemoizedCallRowProps>(({
           </div>
         </div>
       </td>
-      <td className="px-6 py-4">
-        <div className="flex items-center space-x-2">
+      <td className="px-4 py-4">
+        <div className="flex items-center justify-center">
           <button
             onClick={() => onSelectCall(call)}
-            className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-all"
+            className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-all hover:scale-105"
             title="View Details"
           >
             <Eye className="w-4 h-4" />
