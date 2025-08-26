@@ -231,7 +231,7 @@ export default function CallsPage() {
   }, [])
 
   // Use IST conversion hook
-  const { formatDateTime, formatTime } = useIST()
+  const { formatDateTime, formatTime, formatIST, formatTimeOnly } = useIST()
 
   const getSentimentColor = useCallback((sentiment: string) => {
     switch (sentiment.toLowerCase()) {
@@ -631,7 +631,7 @@ export default function CallsPage() {
                           </span>
                         </div>
                         <span className="text-xs text-slate-400">
-                          {formatTime(message.timestamp)}
+                          {formatTimeOnly(message.timestamp)}
                         </span>
                       </div>
                       <div className="text-white text-sm">{message.content}</div>

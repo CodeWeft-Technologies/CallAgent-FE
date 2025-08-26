@@ -49,6 +49,33 @@ export const useIST = () => {
     })
   }, [convertToIST])
 
+  const formatIST = useCallback((dateString: string | Date | null | undefined) => {
+
+    if (!dateString) return '—'
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) return '—'
+    
+    return date.toLocaleString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    })
+  }, [])
+
+  // Format time without timezone conversion (assumes timestamp is already in correct timezone)
+  const formatTimeOnly = useCallback((dateString: string | Date | null | undefined) => {
+    if (!dateString) return '—'
+    
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) return '—'
+    
+    return date.toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    })
+  }, [])
+
   // Format only date in IST
   const formatDate = useCallback((dateString: string | Date | null | undefined) => {
     const istDate = convertToIST(dateString)
@@ -81,6 +108,8 @@ export const useIST = () => {
     formatDateTime,
     formatTime,
     formatDate,
-    formatTimeWithSeconds
+    formatTimeWithSeconds,
+    formatIST,
+    formatTimeOnly
   }
 }
