@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react'
 // Fixed credentials - these will be hardcoded for now
 const FIXED_CREDENTIALS = {
   username: 'codeweft.ai',
-  password: 'admin@123'
+  password: 'cWt@123'
 }
 
 interface AuthContextType {
