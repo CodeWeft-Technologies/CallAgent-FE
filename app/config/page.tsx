@@ -73,13 +73,13 @@ const API_BASE = process.env.NEXT_PUBLIC_CONFIG_API_URL || 'https://callagent-be
 
 export default function ConfigPage() {
   const [config, setConfig] = useState<AgentConfig>({
-    greeting_message: 'Hello! How can I help you today?',
-    exit_message: 'Thank you for calling. Have a great day!',
-    system_prompt: 'You are a helpful AI assistant. Provide clear, concise answers.',
+    greeting_message: '',
+    exit_message: '',
+    system_prompt: '',
     knowledge_base_enabled: false,
     knowledge_base: '',
-    max_retries: 3,
-    retry_delay: 10
+    max_retries: 0,
+    retry_delay: 0
   })
   const [activeTab, setActiveTab] = useState('greeting')
   const [loading, setLoading] = useState(false)
@@ -100,8 +100,8 @@ export default function ConfigPage() {
           system_prompt: data.system_prompt || '',
           knowledge_base_enabled: data.knowledge_base_enabled || false,
           knowledge_base: data.knowledge_base || '',
-          max_retries: data.max_retries || 3,
-          retry_delay: data.retry_delay || 10
+          max_retries: data.max_retries || 0,
+          retry_delay: data.retry_delay || 0
         })
       }
     } catch (error) {
@@ -134,15 +134,15 @@ export default function ConfigPage() {
 
   const resetConfig = useCallback(() => {
     setConfig({
-      greeting_message: 'Hello! How can I help you today?',
-      exit_message: 'Thank you for calling. Have a great day!',
-      system_prompt: 'You are a helpful AI assistant. Provide clear, concise answers.',
+      greeting_message: '',
+      exit_message: '',
+      system_prompt: '',
       knowledge_base_enabled: false,
       knowledge_base: '',
-      max_retries: 3,
-      retry_delay: 10
+      max_retries: 0,
+      retry_delay: 0
     })
-    toast.success('Configuration reset to defaults')
+    toast.success('Configuration reset to empty')
   }, [])
 
   const handleTemplateChange = useCallback((template: string) => {
@@ -497,7 +497,7 @@ export default function ConfigPage() {
           className="flex items-center space-x-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl transition-all"
         >
           <RotateCcw className="w-4 h-4" />
-          <span>Reset to Defaults</span>
+          <span>Reset to Empty</span>
         </button>
 
         <button
