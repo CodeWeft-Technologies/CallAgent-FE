@@ -72,6 +72,7 @@ const KNOWLEDGE_BASE_FIELDS = {
 const API_BASE = process.env.NEXT_PUBLIC_CONFIG_API_URL || 'https://callagent-be-2.onrender.com'
 
 export default function ConfigPage() {
+  
   const [config, setConfig] = useState<AgentConfig>({
     greeting_message: '',
     exit_message: '',
@@ -105,7 +106,7 @@ export default function ConfigPage() {
         })
       }
     } catch (error) {
-      console.error('Error loading config:', error)
+      console.error('❌ Error loading config:', error)
       toast.error('Failed to load configuration')
     }
   }, [])

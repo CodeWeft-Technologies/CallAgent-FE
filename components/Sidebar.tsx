@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Settings, MessageSquare, Users, Phone, BarChart3, PhoneCall, LogOut } from 'lucide-react'
@@ -12,7 +13,9 @@ const navigation = [
   { name: 'Leads', href: '/leads', icon: Users },
 ]
 
-export default function Sidebar() {
+const Sidebar = React.memo(() => {
+  console.log('🔄 Rendering Sidebar')
+  
   const pathname = usePathname()
   const { logout } = useAuth()
 
@@ -79,4 +82,8 @@ export default function Sidebar() {
       </div>
     </aside>
   )
-} 
+})
+
+Sidebar.displayName = 'Sidebar'
+
+export default Sidebar 

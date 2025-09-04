@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { 
   Phone, Users, TrendingUp, PhoneCall, 
   CheckCircle, AlertCircle, User, Calendar,
@@ -7,7 +7,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 
-export default function DashboardPage() {
+export default function DashboardPage() {  
   const [stats, setStats] = useState({
     leads: {
       total: 0,
@@ -31,35 +31,30 @@ export default function DashboardPage() {
   })
   const [loading, setLoading] = useState(true)
 
-  const loadDashboardStats = async () => {
+  const loadDashboardStats = useCallback(async () => {
     try {
       setLoading(true)
       
-      // Load leads stats
       const leadsResponse = await fetch(`${process.env.NEXT_PUBLIC_LEAD_API_URL || 'https://callagent-be-2.onrender.com'}/api/leads/stats`)
       const leadsData = await leadsResponse.json()
       
-      // Load calls stats
       const callsResponse = await fetch(`${process.env.NEXT_PUBLIC_CALL_API_URL || 'https://callagent-be-2.onrender.com'}/api/calls/stats`)
       const callsData = await callsResponse.json()
       
-      setStats({
-        leads: leadsData.success ? leadsData.data : stats.leads,
-        calls: callsData.success ? callsData.data : stats.calls
-      })
+      setStats(prevStats => ({
+        leads: leadsData.success ? leadsData.data : prevStats.leads,
+        calls: callsData.success ? callsData.data : prevStats.calls
+      }))
     } catch (error) {
-      console.error('Error loading dashboard stats:', error)
+      console.error('❌ Error loading dashboard stats:', error)
     } finally {
       setLoading(false)
     }
-  }
+  }, []) // Removed stats dependency to prevent infinite loop
 
   useEffect(() => {
     loadDashboardStats()
-    // Refresh stats every 30 seconds
-    const interval = setInterval(loadDashboardStats, 30000)
-    return () => clearInterval(interval)
-  }, [])
+  }, [loadDashboardStats])
 
   return (
     <div className="space-y-8">

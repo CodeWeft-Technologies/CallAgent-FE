@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
 
 // Fixed credentials - these will be hardcoded for now
 const FIXED_CREDENTIALS = {
@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkAuth()
   }, [])
 
-  const login = (username: string, password: string): boolean => {
+  const login = useCallback((username: string, password: string): boolean => {
     // Check against fixed credentials
     if (username === FIXED_CREDENTIALS.username && password === FIXED_CREDENTIALS.password) {
       setIsAuthenticated(true)
@@ -73,16 +73,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     
     return false
-  }
+  }, [])
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setIsAuthenticated(false)
     try {
       localStorage.removeItem('ai_agent_auth')
     } catch (error) {
       console.error('Error removing authentication:', error)
     }
-  }
+  }, [])
 
   const value: AuthContextType = {
     isAuthenticated,

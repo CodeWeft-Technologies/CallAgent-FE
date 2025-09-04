@@ -37,6 +37,7 @@ const SEQUENTIAL_CALLER_API_BASE = process.env.NEXT_PUBLIC_SEQUENTIAL_CALLER_API
 const CONFIG_API_BASE = process.env.NEXT_PUBLIC_CONFIG_API_URL || 'https://callagent-be-2.onrender.com'
 
 export default function LeadsPage() {
+  
   const [leads, setLeads] = useState<Lead[]>([])
   const [stats, setStats] = useState<LeadStats>({
     total: 0, new: 0, called: 0, contacted: 0, converted: 0, total_calls: 0
@@ -126,7 +127,7 @@ export default function LeadsPage() {
         })
       }
     } catch (error) {
-      console.error('Error loading retry config:', error)
+      console.error('❌ Error loading retry config:', error)
       // Keep default values on error
     }
   }, [])
@@ -145,10 +146,11 @@ export default function LeadsPage() {
         setLeads(transformedLeads)
       } else {
         toast.error('Failed to load leads')
+        console.error('❌ Failed to load leads')
       }
     } catch (error) {
       toast.error('Error connecting to backend')
-      console.error('Error loading leads:', error)
+      console.error('❌ Error loading leads:', error)
     } finally {
       setLoading(false)
     }
@@ -163,7 +165,7 @@ export default function LeadsPage() {
         setStats(data.data)
       }
     } catch (error) {
-      console.error('Error loading stats:', error)
+      console.error('❌ Error loading stats:', error)
     }
   }, [])
 
@@ -325,14 +327,11 @@ export default function LeadsPage() {
           const elapsed = Date.now() - callInitiatedTime
           // Give some time for the call to be logged before considering it missing
           if (elapsed > 15000) {
-            console.log(`No call record found for lead ${leadId} after ${elapsed}ms, considering completed`)
             return true
           }
           return false // Wait a bit more for call to be logged
         }
-        
-        console.log(`Call status for lead ${leadId}:`, callData.call_status, `Duration: ${callData.duration}s`, `Completed: ${callData.is_completed}`)
-        
+                
         // Use the backend's determination of completion
         return callData.is_completed
       }
@@ -340,7 +339,6 @@ export default function LeadsPage() {
       // Fallback to time-based completion if API fails
       const elapsed = Date.now() - callInitiatedTime
       if (elapsed > 20000) { // Wait at least 20 seconds before giving up
-        console.log(`API check failed for lead ${leadId}, falling back to time-based completion after ${elapsed}ms`)
         return true
       }
       
@@ -363,7 +361,6 @@ export default function LeadsPage() {
         
         // If max wait time exceeded, resolve anyway
         if (elapsed >= maxWaitTime) {
-          console.log(`Max wait time exceeded for lead ${leadId} (${elapsed}ms)`)
           resolve()
           return
         }
@@ -371,11 +368,9 @@ export default function LeadsPage() {
         const isCompleted = await checkCallCompletion(leadId, callInitiatedTime)
         
         if (isCompleted) {
-          console.log(`Call completed for lead ${leadId} after ${elapsed}ms`)
           resolve()
         } else {
           // Continue polling
-          console.log(`Call still in progress for lead ${leadId}, checking again in ${pollInterval}ms...`)
           setTimeout(pollForCompletion, pollInterval)
         }
       }
@@ -417,7 +412,6 @@ export default function LeadsPage() {
         filters.search = searchTerm.trim()
       }
 
-      console.log(`🔄 Starting sequential calling with filters:`, filters)
       
       // Start the sequential calling session using the new API
       const response = await fetch(`${SEQUENTIAL_CALLER_API_BASE}/api/sequential-caller/start`, {
@@ -433,7 +427,6 @@ export default function LeadsPage() {
       const data = await response.json()
       
       if (data.success) {
-        console.log(`✅ Sequential calling session started`)
         
         // Start polling for progress updates
         await pollCallAllProgress()
@@ -494,13 +487,11 @@ export default function LeadsPage() {
             setIsPaused(data.paused)
           }
           
-          console.log(`📊 Sequential calling progress: ${(progress.current_index ?? 0) + 1}/${progress.total_leads ?? 0} (${stats.completed_calls ?? 0} completed, ${(stats.failed_calls ?? 0) + (stats.missed_calls ?? 0)} failed)`)
           
           // Continue polling if still active
           setTimeout(poll, pollInterval)
         } else {
-          // Session completed or stopped
-          console.log(`✅ Sequential calling session completed`)
+          // Session completed or stopped 
           const totalCompleted = callAllProgress.completedCalls
           const totalFailed = callAllProgress.failedCalls
           

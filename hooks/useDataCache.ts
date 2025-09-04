@@ -16,6 +16,7 @@ export function useDataCache<T>(
   fetcher: () => Promise<T>,
   options: UseDataCacheOptions = {}
 ) {
+  
   const { ttl = 5 * 60 * 1000, maxSize = 100 } = options // Default 5 minutes TTL
   const cache = useRef<Map<string, CacheEntry<T>>>(new Map())
   const [data, setData] = useState<T | null>(null)
@@ -24,7 +25,9 @@ export function useDataCache<T>(
 
   const getCachedData = useCallback((cacheKey: string): T | null => {
     const entry = cache.current.get(cacheKey)
-    if (!entry) return null
+    if (!entry) {
+      return null
+    }
 
     const now = Date.now()
     if (now - entry.timestamp > entry.ttl) {
@@ -36,6 +39,7 @@ export function useDataCache<T>(
   }, [])
 
   const setCachedData = useCallback((cacheKey: string, data: T, customTtl?: number) => {
+    
     // Clean up old entries if cache is too large
     if (cache.current.size >= maxSize) {
       const oldestKey = cache.current.keys().next().value
@@ -72,6 +76,7 @@ export function useDataCache<T>(
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown error')
       setError(error)
+      console.error(`❌ Error fetching data for key: ${key}:`, error)
     } finally {
       setLoading(false)
     }
@@ -113,7 +118,7 @@ export function useLeadsCache() {
       const data = await response.json()
       return data.success ? data.data : []
     },
-    { ttl: 2 * 60 * 1000 } // 2 minutes TTL for leads
+    { ttl: 10 * 60 * 1000 } // 10 minutes TTL for leads (increased from 2 min)
   )
 }
 
@@ -124,10 +129,9 @@ export function useCallsCache() {
     async () => {
       const response = await fetch(`${API_BASE}/api/calls`)
       const data = await response.json()
-      console.log(data)
       return data.success ? data.data : []
     },
-    { ttl: 1 * 60 * 1000 } // 1 minute TTL for calls
+    { ttl: 5 * 60 * 1000 } // 5 minutes TTL for calls (increased from 1 min)
   )
 }
 
@@ -140,6 +144,6 @@ export function useStatsCache() {
       const data = await response.json()
       return data.success ? data.data : null
     },
-    { ttl: 30 * 1000 } // 30 seconds TTL for stats
+    { ttl: 2 * 60 * 1000 } // 2 minutes TTL for stats (increased from 30s)
   )
 }

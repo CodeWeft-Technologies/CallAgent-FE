@@ -3,13 +3,13 @@
 import React from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import LoginForm from './LoginForm'
-import { LogOut, User } from 'lucide-react'
 
 interface AuthWrapperProps {
   children: React.ReactNode
 }
 
-export default function AuthWrapper({ children }: AuthWrapperProps) {
+const AuthWrapper = React.memo<AuthWrapperProps>(({ children }) => {
+  
   const { isAuthenticated, logout, loading } = useAuth()
 
   // Show loading spinner while checking authentication status
@@ -35,4 +35,8 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
         {children}
     </div>
   )
-}
+})
+
+AuthWrapper.displayName = 'AuthWrapper'
+
+export default AuthWrapper

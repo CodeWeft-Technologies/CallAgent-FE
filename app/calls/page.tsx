@@ -76,6 +76,7 @@ interface CallStats {
 const API_BASE = process.env.NEXT_PUBLIC_CALL_API_URL || 'https://callagent-be-2.onrender.com'
 
 export default function CallsPage() {
+  
   // Use optimized data fetching with caching
   const { data: callsData, loading: callsLoading, refresh: refreshCalls } = useCallsCache()
   const calls = callsData || []
@@ -121,6 +122,7 @@ export default function CallsPage() {
       return matchesSearch && matchesStatus && matchesInterest && matchesDirection
     })
   }, [calls, debouncedSearchTerm, statusFilter, interestFilter, directionFilter])
+
 
   // Pagination for better performance with large datasets
   const ITEMS_PER_PAGE = 50

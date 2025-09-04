@@ -61,6 +61,8 @@ const MemoizedCallRow = React.memo<MemoizedCallRowProps>(({
   formatDate,
   onSelectCall
 }) => {
+  console.log(`🔄 Rendering MemoizedCallRow for call ${call._id} (index: ${index})`)
+  
   return (
     <tr className={`hover:bg-slate-800/50 transition-colors ${index % 2 === 0 ? 'bg-slate-900' : 'bg-slate-900/50'}`}>
       <td className="px-4 py-4">
@@ -101,15 +103,13 @@ const MemoizedCallRow = React.memo<MemoizedCallRowProps>(({
         </div>
       </td>
       <td className="px-4 py-4">
-        <div className="flex items-center justify-center">
-          <button
-            onClick={() => onSelectCall(call)}
-            className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-all hover:scale-105"
-            title="View Details"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
-        </div>
+        <button
+          onClick={() => onSelectCall(call)}
+          className="flex items-center space-x-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-all text-sm"
+        >
+          <Eye className="w-4 h-4" />
+          <span>View</span>
+        </button>
       </td>
     </tr>
   )
