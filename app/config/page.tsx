@@ -8,6 +8,8 @@ interface AgentConfig {
   exit_message: string
   system_prompt: string
   knowledge_base_enabled: boolean
+  language_selection_enabled: boolean
+  language_selection_prompt: string
   knowledge_base: any
   language_code: string
   voice_name: string
@@ -107,6 +109,8 @@ export default function ConfigPage() {
     exit_message: '',
     system_prompt: '',
     knowledge_base_enabled: false,
+    language_selection_enabled: true,
+    language_selection_prompt: 'Welcome. For English, continue in English. Hindi me baat karne ke liye, Hindi bolen.',
     knowledge_base: '{}',
     language_code: 'en-US',
     voice_name: 'en-US-Standard-B',
@@ -131,6 +135,8 @@ export default function ConfigPage() {
           exit_message: data.exit_message || '',
           system_prompt: data.system_prompt || '',
           knowledge_base_enabled: data.knowledge_base_enabled || false,
+          language_selection_enabled: data.language_selection_enabled !== false, // default to true
+          language_selection_prompt: data.language_selection_prompt || 'Welcome. For English, continue in English. Hindi me baat karne ke liye, Hindi bolen.',
           knowledge_base: data.knowledge_base || '{}',
           language_code: data.language_code || 'en-US',
           voice_name: data.voice_name || 'en-US-Standard-B',
@@ -172,6 +178,8 @@ export default function ConfigPage() {
       exit_message: '',
       system_prompt: '',
       knowledge_base_enabled: false,
+      language_selection_enabled: true,
+      language_selection_prompt: 'Welcome. For English, continue in English. Hindi me baat karne ke liye, Hindi bolen.',
       knowledge_base: '{}',
       language_code: 'en-US',
       voice_name: 'en-US-Standard-B',
@@ -265,6 +273,17 @@ export default function ConfigPage() {
     setConfig(prev => ({ ...prev, voice_name: value }))
   }, [])
 
+  const handleLanguageSelectionToggle = useCallback(() => {
+    setConfig(prev => ({
+      ...prev,
+      language_selection_enabled: !prev.language_selection_enabled
+    }))
+  }, [])
+
+  const handleLanguageSelectionPromptChange = useCallback((value: string) => {
+    setConfig(prev => ({ ...prev, language_selection_prompt: value }))
+  }, [])
+
   const handleTabChange = useCallback((tabId: string) => {
     setActiveTab(tabId)
   }, [])
@@ -336,6 +355,35 @@ export default function ConfigPage() {
             <div className="space-y-6">
               <div>
                 <h3 className="text-lg font-semibold text-white mb-2">Default Language and Voice</h3>
+                <p className="text-slate-400 mb-6">Set the default TTS language and voice for the agent after language selection.</p>
+
+                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-semibold text-white">Ask User for Language</h4>
+                      <p className="text-sm text-slate-400">If enabled, the agent will ask the user to select a language at the start of the call.</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={config.language_selection_enabled || false}
+                      onChange={handleLanguageSelectionToggle}
+                      className="w-5 h-5 text-blue-600 bg-slate-800 border-slate-700 rounded focus:ring-blue-500 focus:ring-2"
+                    />
+                  </div>
+                  {config.language_selection_enabled && (
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-slate-200 mb-2">Language Selection Prompt</label>
+                      <textarea
+                        value={config.language_selection_prompt || ''}
+                        onChange={(e) => handleLanguageSelectionPromptChange(e.target.value)}
+                        rows={3}
+                        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                        placeholder="e.g., For English, press 1. Hindi ke liye, 2 dabaye."
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <p className="text-slate-400 mb-6">Set the default TTS language and voice for the agent.</p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
