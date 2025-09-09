@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { Settings, RotateCcw, Save, MessageSquare, ArrowRight, FileText, Database, RefreshCw } from 'lucide-react'
+import { Settings, RotateCcw, Save, MessageSquare, ArrowRight, FileText, Database, RefreshCw, Languages } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 interface AgentConfig {
@@ -8,7 +8,9 @@ interface AgentConfig {
   exit_message: string
   system_prompt: string
   knowledge_base_enabled: boolean
-  knowledge_base: string
+  knowledge_base: any
+  language_code: string
+  voice_name: string
   max_retries: number
   retry_delay: number
 }
@@ -69,6 +71,33 @@ const KNOWLEDGE_BASE_FIELDS = {
   ]
 }
 
+const VOICE_OPTIONS: Record<string, { name: string; value: string }[]> = {
+  'en-US': [
+    { name: 'English (US) - Male', value: 'en-US-Standard-B' },
+    { name: 'English (US) - Female', value: 'en-US-Standard-C' },
+    { name: 'English (US) - Wavenet Male', value: 'en-US-Wavenet-D' },
+    { name: 'English (US) - Wavenet Female', value: 'en-US-Wavenet-F' },
+  ],
+  'hi-IN': [
+    { name: 'Hindi (India) - Female', value: 'hi-IN-Wavenet-A' },
+    { name: 'Hindi (India) - Male', value: 'hi-IN-Wavenet-B' },
+    { name: 'Hindi (India) - Female (Standard)', value: 'hi-IN-Standard-A' },
+    { name: 'Hindi (India) - Male (Standard)', value: 'hi-IN-Standard-B' },
+  ],
+  'bn-IN': [
+    { name: 'Bengali (India) - Female', value: 'bn-IN-Wavenet-A' },
+    { name: 'Bengali (India) - Male', value: 'bn-IN-Wavenet-B' },
+  ],
+  'ta-IN': [
+    { name: 'Tamil (India) - Female', value: 'ta-IN-Wavenet-A' },
+    { name: 'Tamil (India) - Male', value: 'ta-IN-Wavenet-B' },
+  ],
+  'te-IN': [
+    { name: 'Telugu (India) - Female', value: 'te-IN-Standard-A' },
+    { name: 'Telugu (India) - Male', value: 'te-IN-Standard-B' },
+  ],
+}
+
 const API_BASE = process.env.NEXT_PUBLIC_CONFIG_API_URL || 'https://callagent-be-2.onrender.com'
 
 export default function ConfigPage() {
@@ -78,7 +107,9 @@ export default function ConfigPage() {
     exit_message: '',
     system_prompt: '',
     knowledge_base_enabled: false,
-    knowledge_base: '',
+    knowledge_base: '{}',
+    language_code: 'en-US',
+    voice_name: 'en-US-Standard-B',
     max_retries: 0,
     retry_delay: 0
   })
@@ -100,7 +131,9 @@ export default function ConfigPage() {
           exit_message: data.exit_message || '',
           system_prompt: data.system_prompt || '',
           knowledge_base_enabled: data.knowledge_base_enabled || false,
-          knowledge_base: data.knowledge_base || '',
+          knowledge_base: data.knowledge_base || '{}',
+          language_code: data.language_code || 'en-US',
+          voice_name: data.voice_name || 'en-US-Standard-B',
           max_retries: data.max_retries || 0,
           retry_delay: data.retry_delay || 0
         })
@@ -115,7 +148,7 @@ export default function ConfigPage() {
     setLoading(true)
     try {
       const response = await fetch(`${API_BASE}/api/config`, {
-        method: 'POST',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config)
       })
@@ -139,7 +172,9 @@ export default function ConfigPage() {
       exit_message: '',
       system_prompt: '',
       knowledge_base_enabled: false,
-      knowledge_base: '',
+      knowledge_base: '{}',
+      language_code: 'en-US',
+      voice_name: 'en-US-Standard-B',
       max_retries: 0,
       retry_delay: 0
     })
@@ -220,12 +255,23 @@ export default function ConfigPage() {
     setConfig(prev => ({ ...prev, retry_delay: parseInt(value) }))
   }, [])
 
+  const handleLanguageChange = useCallback((value: string) => {
+    // When language changes, set to the first available voice for that language
+    const firstVoice = VOICE_OPTIONS[value]?.[0]?.value || ''
+    setConfig(prev => ({ ...prev, language_code: value, voice_name: firstVoice }))
+  }, [])
+
+  const handleVoiceChange = useCallback((value: string) => {
+    setConfig(prev => ({ ...prev, voice_name: value }))
+  }, [])
+
   const handleTabChange = useCallback((tabId: string) => {
     setActiveTab(tabId)
   }, [])
 
   const tabs = [
     { id: 'greeting', name: 'Greeting', icon: MessageSquare },
+    { id: 'language', name: 'Language & Voice', icon: Languages },
     { id: 'exit', name: 'Exit', icon: ArrowRight },
     { id: 'behavior', name: 'Agent Behavior', icon: FileText },
     { id: 'knowledge', name: 'Knowledge Base', icon: Database },
@@ -282,6 +328,46 @@ export default function ConfigPage() {
                   placeholder="Enter your greeting message..."
                 />
                 <p className="text-sm text-slate-500 mt-2">Character count: {(config.greeting_message || '').length}</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'language' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-2">Default Language and Voice</h3>
+                <p className="text-slate-400 mb-6">Set the default TTS language and voice for the agent.</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-200 mb-2">
+                      Language
+                    </label>
+                    <select
+                      value={config.language_code}
+                      onChange={(e) => handleLanguageChange(e.target.value)}
+                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    >
+                      {Object.keys(VOICE_OPTIONS).map(langCode => (
+                        <option key={langCode} value={langCode}>{VOICE_OPTIONS[langCode][0].name.split(' (')[0]}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-200 mb-2">
+                      Voice
+                    </label>
+                    <select
+                      value={config.voice_name}
+                      onChange={(e) => handleVoiceChange(e.target.value)}
+                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    >
+                      {(VOICE_OPTIONS[config.language_code] || []).map(voice => (
+                        <option key={voice.value} value={voice.value}>{voice.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </div>
             </div>
           )}
