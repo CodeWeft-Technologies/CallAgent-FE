@@ -8,11 +8,7 @@ interface AgentConfig {
   exit_message: string
   system_prompt: string
   knowledge_base_enabled: boolean
-  language_selection_enabled: boolean
-  language_selection_prompt: string
-  knowledge_base: any
-  language_code: string
-  voice_name: string
+  knowledge_base: string
   max_retries: number
   retry_delay: number
 }
@@ -80,11 +76,15 @@ const VOICE_OPTIONS: Record<string, { name: string; value: string }[]> = {
     { name: 'English (US) - Wavenet Male', value: 'en-US-Wavenet-D' },
     { name: 'English (US) - Wavenet Female', value: 'en-US-Wavenet-F' },
   ],
+  'en-IN': [
+    { name: 'English (India) - Chirp3 HD Achird', value: 'en-IN-Chirp3-HD-Achird' },
+  ],
   'hi-IN': [
     { name: 'Hindi (India) - Female', value: 'hi-IN-Wavenet-A' },
     { name: 'Hindi (India) - Male', value: 'hi-IN-Wavenet-B' },
     { name: 'Hindi (India) - Female (Standard)', value: 'hi-IN-Standard-A' },
     { name: 'Hindi (India) - Male (Standard)', value: 'hi-IN-Standard-B' },
+    { name: 'Hindi (India) - Chirp3 HD Sadaltager', value: 'hi-IN-Chirp3-HD-Sadaltager' },
   ],
   'bn-IN': [
     { name: 'Bengali (India) - Female', value: 'bn-IN-Wavenet-A' },
@@ -109,11 +109,7 @@ export default function ConfigPage() {
     exit_message: '',
     system_prompt: '',
     knowledge_base_enabled: false,
-    language_selection_enabled: true,
-    language_selection_prompt: 'Welcome. For English, continue in English. Hindi me baat karne ke liye, Hindi bolen.',
     knowledge_base: '{}',
-    language_code: 'en-US',
-    voice_name: 'en-US-Standard-B',
     max_retries: 0,
     retry_delay: 0
   })
@@ -135,11 +131,7 @@ export default function ConfigPage() {
           exit_message: data.exit_message || '',
           system_prompt: data.system_prompt || '',
           knowledge_base_enabled: data.knowledge_base_enabled || false,
-          language_selection_enabled: data.language_selection_enabled !== false, // default to true
-          language_selection_prompt: data.language_selection_prompt || 'Welcome. For English, continue in English. Hindi me baat karne ke liye, Hindi bolen.',
           knowledge_base: data.knowledge_base || '{}',
-          language_code: data.language_code || 'en-US',
-          voice_name: data.voice_name || 'en-US-Standard-B',
           max_retries: data.max_retries || 0,
           retry_delay: data.retry_delay || 0
         })
@@ -178,11 +170,7 @@ export default function ConfigPage() {
       exit_message: '',
       system_prompt: '',
       knowledge_base_enabled: false,
-      language_selection_enabled: true,
-      language_selection_prompt: 'Welcome. For English, continue in English. Hindi me baat karne ke liye, Hindi bolen.',
       knowledge_base: '{}',
-      language_code: 'en-US',
-      voice_name: 'en-US-Standard-B',
       max_retries: 0,
       retry_delay: 0
     })
@@ -206,14 +194,15 @@ export default function ConfigPage() {
   }, [])
 
   const handleKnowledgeBaseFieldChange = useCallback((field: string, value: string) => {
+    const currentKB = config.knowledge_base ? JSON.parse(config.knowledge_base) : {};
     try {
-      const currentKB = config.knowledge_base ? JSON.parse(config.knowledge_base) : {}
       const updatedKB = { ...currentKB, [field]: value }
       setConfig(prev => ({
         ...prev,
         knowledge_base: JSON.stringify(updatedKB, null, 2)
       }))
     } catch (error) {
+      // If parsing fails, it might be because the knowledge_base is not a valid JSON string yet.
       console.error('Error updating knowledge base:', error)
     }
   }, [config.knowledge_base])
@@ -221,7 +210,7 @@ export default function ConfigPage() {
   const renderKnowledgeBaseField = useCallback((field: any) => {
     let currentValue = ''
     try {
-      const kb = config.knowledge_base ? JSON.parse(config.knowledge_base) : {}
+      const kb = config.knowledge_base ? JSON.parse(config.knowledge_base as string) : {}
       currentValue = kb[field.key] || ''
     } catch (error) {
       currentValue = ''
@@ -263,34 +252,12 @@ export default function ConfigPage() {
     setConfig(prev => ({ ...prev, retry_delay: parseInt(value) }))
   }, [])
 
-  const handleLanguageChange = useCallback((value: string) => {
-    // When language changes, set to the first available voice for that language
-    const firstVoice = VOICE_OPTIONS[value]?.[0]?.value || ''
-    setConfig(prev => ({ ...prev, language_code: value, voice_name: firstVoice }))
-  }, [])
-
-  const handleVoiceChange = useCallback((value: string) => {
-    setConfig(prev => ({ ...prev, voice_name: value }))
-  }, [])
-
-  const handleLanguageSelectionToggle = useCallback(() => {
-    setConfig(prev => ({
-      ...prev,
-      language_selection_enabled: !prev.language_selection_enabled
-    }))
-  }, [])
-
-  const handleLanguageSelectionPromptChange = useCallback((value: string) => {
-    setConfig(prev => ({ ...prev, language_selection_prompt: value }))
-  }, [])
-
   const handleTabChange = useCallback((tabId: string) => {
     setActiveTab(tabId)
   }, [])
 
   const tabs = [
     { id: 'greeting', name: 'Greeting', icon: MessageSquare },
-    { id: 'language', name: 'Language & Voice', icon: Languages },
     { id: 'exit', name: 'Exit', icon: ArrowRight },
     { id: 'behavior', name: 'Agent Behavior', icon: FileText },
     { id: 'knowledge', name: 'Knowledge Base', icon: Database },
@@ -347,75 +314,6 @@ export default function ConfigPage() {
                   placeholder="Enter your greeting message..."
                 />
                 <p className="text-sm text-slate-500 mt-2">Character count: {(config.greeting_message || '').length}</p>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'language' && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-2">Default Language and Voice</h3>
-                <p className="text-slate-400 mb-6">Set the default TTS language and voice for the agent after language selection.</p>
-
-                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-semibold text-white">Ask User for Language</h4>
-                      <p className="text-sm text-slate-400">If enabled, the agent will ask the user to select a language at the start of the call.</p>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={config.language_selection_enabled || false}
-                      onChange={handleLanguageSelectionToggle}
-                      className="w-5 h-5 text-blue-600 bg-slate-800 border-slate-700 rounded focus:ring-blue-500 focus:ring-2"
-                    />
-                  </div>
-                  {config.language_selection_enabled && (
-                    <div className="mt-4">
-                      <label className="block text-sm font-medium text-slate-200 mb-2">Language Selection Prompt</label>
-                      <textarea
-                        value={config.language_selection_prompt || ''}
-                        onChange={(e) => handleLanguageSelectionPromptChange(e.target.value)}
-                        rows={3}
-                        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
-                        placeholder="e.g., For English, press 1. Hindi ke liye, 2 dabaye."
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <p className="text-slate-400 mb-6">Set the default TTS language and voice for the agent.</p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-200 mb-2">
-                      Language
-                    </label>
-                    <select
-                      value={config.language_code}
-                      onChange={(e) => handleLanguageChange(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
-                    >
-                      {Object.keys(VOICE_OPTIONS).map(langCode => (
-                        <option key={langCode} value={langCode}>{VOICE_OPTIONS[langCode][0].name.split(' (')[0]}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-200 mb-2">
-                      Voice
-                    </label>
-                    <select
-                      value={config.voice_name}
-                      onChange={(e) => handleVoiceChange(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
-                    >
-                      {(VOICE_OPTIONS[config.language_code] || []).map(voice => (
-                        <option key={voice.value} value={voice.value}>{voice.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
               </div>
             </div>
           )}
@@ -673,4 +571,5 @@ export default function ConfigPage() {
       </div>
     </div>
   )
-} 
+}
+ 
