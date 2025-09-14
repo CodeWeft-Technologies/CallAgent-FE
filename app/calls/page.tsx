@@ -282,15 +282,15 @@ export default function CallsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-white">Call History</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Call History</h1>
           <p className="text-slate-400 mt-2">View call details, transcriptions, and analytics</p>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         <div className="bg-slate-900 rounded-xl border border-slate-800 p-4 hover:border-slate-700 transition-all">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center">
@@ -646,4 +646,4 @@ export default function CallsPage() {
       )}
     </div>
   )
-} 
+}

@@ -267,12 +267,12 @@ export default function ConfigPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center space-x-4">
+      <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
         <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
           <Settings className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-white">Agent Configuration</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Agent Configuration</h1>
           <p className="text-slate-400 mt-1">Customize your AI agent's behavior and responses</p>
         </div>
       </div>
@@ -280,13 +280,13 @@ export default function ConfigPage() {
       {/* Main Configuration Card */}
       <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl">
         {/* Tabs */}
-        <div className="flex border-b border-slate-800">
+        <div className="flex flex-wrap border-b border-slate-800">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
               className={`
-                flex items-center space-x-2 px-6 py-4 text-sm font-medium transition-all
+                flex items-center space-x-2 px-3 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all flex-1 sm:flex-none justify-center sm:justify-start
                 ${activeTab === tab.id
                   ? 'text-blue-400 border-b-2 border-blue-400 bg-slate-800/50'
                   : 'text-slate-400 hover:text-slate-300 hover:bg-slate-800/30'
@@ -294,13 +294,14 @@ export default function ConfigPage() {
               `}
             >
               <tab.icon className="w-4 h-4" />
-              <span>{tab.name}</span>
+              <span className="hidden sm:inline">{tab.name}</span>
+              <span className="sm:hidden">{tab.name.split(' ')[0]}</span>
             </button>
           ))}
         </div>
 
         {/* Tab Content */}
-        <div className="p-8">
+        <div className="p-4 sm:p-6 lg:p-8">
           {activeTab === 'greeting' && (
             <div className="space-y-6">
               <div>
@@ -341,7 +342,7 @@ export default function ConfigPage() {
                 <h3 className="text-lg font-semibold text-white mb-2">System Prompt Template</h3>
                 <p className="text-slate-400 mb-4">Choose a template or customize your system prompt</p>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                   {Object.entries(PROMPT_TEMPLATES).map(([key, template]) => (
                     <button
                       key={key}
@@ -396,7 +397,7 @@ export default function ConfigPage() {
 
               {config.knowledge_base_enabled && (
                 <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     {KNOWLEDGE_BASE_FIELDS[selectedTemplate as keyof typeof KNOWLEDGE_BASE_FIELDS]?.map(renderKnowledgeBaseField)}
                   </div>
                   

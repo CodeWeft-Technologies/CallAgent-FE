@@ -81,7 +81,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 hover:border-slate-700 transition-all">
           <div className="flex items-center justify-between">
             <div>
@@ -150,7 +150,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <Link href="/leads" className="group">
           <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 hover:border-slate-700 hover:bg-slate-800/50 transition-all">
             <div className="flex items-center justify-between mb-4">
@@ -274,4 +274,4 @@ export default function DashboardPage() {
       )}
     </div>
   )
-} 
+}

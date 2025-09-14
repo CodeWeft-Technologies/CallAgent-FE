@@ -688,12 +688,12 @@ export default function LeadsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-white">Leads Management</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Leads Management</h1>
           <p className="text-slate-400 mt-1">Manage your leads, upload CSV files, and initiate calls</p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
           <input
             type="file"
             ref={fileInputRef}
@@ -736,7 +736,7 @@ export default function LeadsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
         <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 hover:border-slate-700 transition-all">
           <div className="flex items-center justify-between">
             <div>
@@ -806,8 +806,8 @@ export default function LeadsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6">
-        <div className="flex items-center space-x-4">
+      <div className="bg-slate-900 rounded-2xl border border-slate-800 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
           <div className="flex-1">
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
@@ -820,11 +820,11 @@ export default function LeadsPage() {
               />
             </div>
           </div>
-          <div>
+          <div className="w-full sm:w-auto">
             <select
               value={statusFilter}
               onChange={(e) => handleStatusFilterChange(e.target.value)}
-              className="px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+              className="w-full sm:w-auto px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
             >
               <option value="all">All Status</option>
               <option value="new">New</option>
@@ -836,8 +836,8 @@ export default function LeadsPage() {
         </div>
       </div>
 
-      {/* Leads Table */}
-      <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
+      {/* Leads Table - Desktop */}
+      <div className="hidden lg:block bg-slate-900 rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-800/50 border-b border-slate-700">
@@ -934,6 +934,95 @@ export default function LeadsPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Leads Cards - Mobile */}
+      <div className="lg:hidden space-y-4">
+        {filteredLeads.map((lead) => (
+          <div key={lead._id || lead.id} className="bg-slate-900 rounded-2xl border border-slate-800 p-4 shadow-xl">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex-1">
+                <h3 className="font-medium text-white text-lg">{lead.name}</h3>
+                {lead.company && (
+                  <div className="text-sm text-slate-400 flex items-center mt-1">
+                    <Building className="w-3 h-3 mr-1" />
+                    {lead.company}
+                  </div>
+                )}
+              </div>
+              <div className="ml-3">
+                {getStatusBadge(lead.status)}
+              </div>
+            </div>
+            
+            <div className="space-y-2 mb-4">
+              <div className="flex items-center text-sm">
+                <Phone className="w-4 h-4 mr-2 text-slate-400" />
+                <span className="text-white">{lead.phone}</span>
+              </div>
+              {lead.email && (
+                <div className="flex items-center text-sm">
+                  <Mail className="w-4 h-4 mr-2 text-slate-400" />
+                  <span className="text-slate-400">{lead.email}</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex items-center justify-between text-sm text-slate-400 mb-4">
+              <div className="flex items-center">
+                <PhoneCall className="w-4 h-4 mr-1" />
+                <span>{lead.call_attempts} calls</span>
+              </div>
+              <div className="flex items-center">
+                <Calendar className="w-4 h-4 mr-1" />
+                <span>
+                  {lead.last_call ? (() => {
+                    const d = new Date(lead.last_call)
+                    const istDate = new Date(d.getTime() + (5.5 * 60 * 60 * 1000))
+                    return istDate.toLocaleDateString('en-IN', {
+                      timeZone: 'Asia/Kolkata',
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })
+                  })() : 'Never'}
+                </span>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => handleCallLead(lead)}
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-3 rounded-lg transition-all flex items-center justify-center"
+              >
+                <PhoneCall className="w-4 h-4 mr-2" />
+                Call
+              </button>
+              <button
+                onClick={() => handleEditLead(lead)}
+                className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-all"
+                title="Edit Lead"
+              >
+                <Edit className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleDeleteLead(lead._id || lead.id || '')}
+                className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition-all"
+                title="Delete Lead"
+              >
+                <Trash className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        ))}
+        
+        {filteredLeads.length === 0 && (
+          <div className="text-center py-12 bg-slate-900 rounded-2xl border border-slate-800">
+            <Users className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+            <p className="text-slate-400">No leads found</p>
+            <p className="text-sm text-slate-500">Add leads manually or upload a CSV file</p>
+          </div>
+        )}
       </div>
 
       {/* Add Lead Modal */}
@@ -1278,4 +1367,4 @@ export default function LeadsPage() {
       )}
     </div>
   )
-} 
+}
