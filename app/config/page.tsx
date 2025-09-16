@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { Settings, RotateCcw, Save, MessageSquare, ArrowRight, FileText, Database, RefreshCw, Languages } from 'lucide-react'
+import { Settings, RotateCcw, Save, MessageSquare, ArrowRight, FileText, Database, RefreshCw, Languages, Mic } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 interface AgentConfig {
@@ -11,6 +11,8 @@ interface AgentConfig {
   knowledge_base: string
   max_retries: number
   retry_delay: number
+  tts_provider?: string
+  stt_provider?: string
 }
 
 const PROMPT_TEMPLATES = {
@@ -183,7 +185,9 @@ export default function ConfigPage() {
     knowledge_base_enabled: false,
     knowledge_base: '{}',
     max_retries: 0,
-    retry_delay: 0
+    retry_delay: 0,
+    tts_provider: 'google',
+    stt_provider: 'deepgram'
   })
   const [activeTab, setActiveTab] = useState('greeting')
   const [loading, setLoading] = useState(false)
@@ -333,6 +337,7 @@ export default function ConfigPage() {
     { id: 'exit', name: 'Exit', icon: ArrowRight },
     { id: 'behavior', name: 'Agent Behavior', icon: FileText },
     { id: 'knowledge', name: 'Knowledge Base', icon: Database },
+    { id: 'voice', name: 'Voice Settings', icon: Mic },
     { id: 'retry', name: 'Call Retry', icon: RefreshCw }
   ]
 
@@ -511,6 +516,98 @@ export default function ConfigPage() {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === 'voice' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-2">Voice Settings</h3>
+                <p className="text-slate-400 mb-6">Configure Text-to-Speech (TTS) and Speech-to-Text (STT) providers</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* TTS Provider */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-200 mb-2">
+                      Text-to-Speech Provider
+                    </label>
+                    <select
+                      value={config.tts_provider || 'google'}
+                      onChange={(e) => setConfig(prev => ({ ...prev, tts_provider: e.target.value }))}
+                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    >
+                      <option value="google">Google TTS</option>
+                      <option value="cartesia">Cartesia TTS</option>
+                    </select>
+                    <p className="text-sm text-slate-500 mt-2">
+                      {config.tts_provider === 'cartesia' 
+                        ? 'Cartesia provides high-quality, low-latency voice synthesis'
+                        : 'Google TTS offers reliable voice synthesis with multiple language support'
+                      }
+                    </p>
+                  </div>
+
+                  {/* STT Provider */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-200 mb-2">
+                      Speech-to-Text Provider
+                    </label>
+                    <select
+                      value={config.stt_provider || 'deepgram'}
+                      onChange={(e) => setConfig(prev => ({ ...prev, stt_provider: e.target.value }))}
+                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    >
+                      <option value="deepgram">Deepgram STT</option>
+                      <option value="cartesia">Cartesia STT</option>
+                    </select>
+                    <p className="text-sm text-slate-500 mt-2">
+                      {config.stt_provider === 'cartesia' 
+                        ? 'Cartesia provides accurate real-time speech recognition'
+                        : 'Deepgram offers industry-leading speech recognition accuracy'
+                      }
+                    </p>
+                  </div>
+                </div>
+
+                {/* Provider Information */}
+                <div className="mt-8 p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                  <h4 className="text-md font-medium text-white mb-3">Provider Information</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <h5 className="font-medium text-slate-300 mb-2">Google TTS</h5>
+                      <ul className="text-slate-400 space-y-1">
+                        <li>• Multiple language support</li>
+                        <li>• High-quality voices</li>
+                        <li>• Reliable and stable</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="font-medium text-slate-300 mb-2">Cartesia TTS</h5>
+                      <ul className="text-slate-400 space-y-1">
+                        <li>• Ultra-low latency</li>
+                        <li>• Natural-sounding voices</li>
+                        <li>• Real-time streaming</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="font-medium text-slate-300 mb-2">Deepgram STT</h5>
+                      <ul className="text-slate-400 space-y-1">
+                        <li>• Industry-leading accuracy</li>
+                        <li>• Multi-language support</li>
+                        <li>• Real-time transcription</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="font-medium text-slate-300 mb-2">Cartesia STT</h5>
+                      <ul className="text-slate-400 space-y-1">
+                        <li>• Fast processing</li>
+                        <li>• High accuracy</li>
+                        <li>• Low latency</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
