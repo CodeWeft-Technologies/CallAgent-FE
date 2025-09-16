@@ -248,7 +248,9 @@ export default function ConfigPage() {
       knowledge_base_enabled: false,
       knowledge_base: '{}',
       max_retries: 0,
-      retry_delay: 0
+      retry_delay: 0,
+      tts_provider: 'google',
+      stt_provider: 'deepgram'
     })
     toast.success('Configuration reset to empty')
   }, [])
@@ -267,6 +269,48 @@ export default function ConfigPage() {
       ...prev,
       knowledge_base_enabled: !prev.knowledge_base_enabled
     }))
+  }, [])
+
+  const handleTTSProviderChange = useCallback(async (provider: string) => {
+    setConfig(prev => ({ ...prev, tts_provider: provider }))
+    
+    try {
+      const response = await fetch(`${API_BASE}/api/config/tts-provider`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider })
+      })
+      
+      if (response.ok) {
+        toast.success(`TTS provider updated to ${provider}`)
+      } else {
+        toast.error('Failed to update TTS provider')
+      }
+    } catch (error) {
+      console.error('Error updating TTS provider:', error)
+      toast.error('Failed to update TTS provider')
+    }
+  }, [])
+
+  const handleSTTProviderChange = useCallback(async (provider: string) => {
+    setConfig(prev => ({ ...prev, stt_provider: provider }))
+    
+    try {
+      const response = await fetch(`${API_BASE}/api/config/stt-provider`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider })
+      })
+      
+      if (response.ok) {
+        toast.success(`STT provider updated to ${provider}`)
+      } else {
+        toast.error('Failed to update STT provider')
+      }
+    } catch (error) {
+      console.error('Error updating STT provider:', error)
+      toast.error('Failed to update STT provider')
+    }
   }, [])
 
   const handleKnowledgeBaseFieldChange = useCallback((field: string, value: string) => {
@@ -533,7 +577,7 @@ export default function ConfigPage() {
                     </label>
                     <select
                       value={config.tts_provider || 'google'}
-                      onChange={(e) => setConfig(prev => ({ ...prev, tts_provider: e.target.value }))}
+                      onChange={(e) => handleTTSProviderChange(e.target.value)}
                       className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                     >
                       <option value="google">Google TTS</option>
@@ -554,7 +598,7 @@ export default function ConfigPage() {
                     </label>
                     <select
                       value={config.stt_provider || 'deepgram'}
-                      onChange={(e) => setConfig(prev => ({ ...prev, stt_provider: e.target.value }))}
+                      onChange={(e) => handleSTTProviderChange(e.target.value)}
                       className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                     >
                       <option value="deepgram">Deepgram STT</option>
