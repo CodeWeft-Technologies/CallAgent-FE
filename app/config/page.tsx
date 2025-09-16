@@ -16,35 +16,35 @@ interface AgentConfig {
 const PROMPT_TEMPLATES = {
   'real-estate': {
     name: 'Real Estate Agent',
-    prompt: 'You are a professional real estate agent. Help clients with property inquiries, scheduling viewings, and providing market information. Use the knowledge base to provide specific details about properties, locations, pricing, and amenities. Keep responses concise and professional.'
+    prompt: 'You are a real estate voice agent. ONLY discuss properties/services from knowledge base. Keep responses under 30 words. If asked about topics outside knowledge base, say: "I can only help with our properties. Let me connect you with someone else." Use natural speech: "We have", "Our properties". Ask ONE question: budget/location/type. End with: "Schedule a visit?" Use ONLY knowledge base info - never make up details.'
   },
   'customer-service': {
     name: 'Customer Service',
-    prompt: 'You are a helpful customer service representative. Assist customers with inquiries, complaints, and general support. Use the knowledge base to provide accurate information about policies, products, and procedures. Be polite, patient, and solution-oriented.'
+    prompt: 'You are a customer service voice agent. ONLY help with topics in knowledge base. Keep responses under 30 words. If asked about topics outside knowledge base, say: "Let me transfer you to someone who can help." Use natural speech: "I understand", "Let me help you". Ask ONE clarifying question if needed. End with: "Anything else I can help with?" Use ONLY knowledge base info.'
   },
   'sales': {
     name: 'Sales Agent',
-    prompt: 'You are a skilled sales agent. Help prospects understand products/services, address objections, and guide them through the sales process. Use the knowledge base to highlight benefits, pricing, and competitive advantages. Be persuasive but not pushy.'
+    prompt: 'You are a sales voice agent. ONLY discuss products/services from knowledge base. Keep responses under 30 words. If asked about topics outside knowledge base, say: "Let me connect you with someone for that." Use natural speech: "We offer", "Our solution". Ask ONE qualifying question: needs/budget/timeline. End with: "Ready to move forward?" Use ONLY knowledge base info - highlight benefits, pricing, advantages.'
   },
   'appointment': {
     name: 'Appointment Booking',
-    prompt: 'You are an appointment booking assistant. Help clients schedule, reschedule, or cancel appointments. Use the knowledge base to provide information about services, availability, and booking policies. Collect necessary information and confirm details.'
+    prompt: 'You are an appointment booking voice agent. ONLY handle scheduling from knowledge base. Keep responses under 30 words. If asked about topics outside knowledge base, say: "Let me transfer you for that." Use natural speech: "I can book", "Available times". Ask ONE question: service/date/time preference. End with: "Shall I confirm this appointment?" Use ONLY knowledge base info for services, availability, policies.'
   },
   'healthcare': {
     name: 'Healthcare Assistant',
-    prompt: 'You are a healthcare appointment and information assistant. Help patients with appointment scheduling, provide information about doctors, services, and facilities. Use the knowledge base to give accurate details about specializations, fees, and availability. Always maintain patient confidentiality and professionalism.'
+    prompt: 'You are a healthcare voice agent. ONLY handle appointments/info from knowledge base. Keep responses under 30 words. If asked about topics outside knowledge base, say: "Let me connect you with medical staff." Use natural speech: "Doctor available", "We offer". Ask ONE question: service/doctor/date preference. End with: "Shall I book this appointment?" Use ONLY knowledge base info - maintain confidentiality and professionalism.'
   },
   'education': {
     name: 'Education Counselor',
-    prompt: 'You are an education counselor and admission assistant. Help students and parents with course information, admission procedures, and enrollment. Use the knowledge base to provide details about courses, fees, faculty, and placement support. Be informative and encouraging.'
+    prompt: 'You are an education voice agent. ONLY discuss courses/admissions from knowledge base. Keep responses under 30 words. If asked about topics outside knowledge base, say: "Let me connect you with a counselor." Use natural speech: "We offer", "Our courses". Ask ONE question: course interest/background/timeline. End with: "Ready to enroll?" Use ONLY knowledge base info - be informative and encouraging.'
   },
   'restaurant': {
     name: 'Restaurant Assistant',
-    prompt: 'You are a restaurant assistant helping with reservations, menu inquiries, and general information. Use the knowledge base to provide details about cuisine, menu items, pricing, operating hours, and special services. Be welcoming and helpful in promoting the dining experience.'
+    prompt: 'You are a restaurant voice agent. ONLY handle reservations/menu from knowledge base. Keep responses under 30 words. If asked about topics outside knowledge base, say: "Let me connect you with our manager." Use natural speech: "We serve", "Table available". Ask ONE question: party size/date/time preference. End with: "Shall I reserve this table?" Use ONLY knowledge base info - be welcoming and promote dining experience.'
   },
   'generic': {
     name: 'Generic Assistant',
-    prompt: 'You are a helpful AI assistant. Provide clear, concise answers to user questions using the available knowledge base information. Be friendly and professional in all interactions.'
+    prompt: 'You are a voice agent. ONLY use knowledge base information. Keep responses under 30 words. If asked about topics outside knowledge base, say: "Let me connect you with someone who can help." Use natural speech and be friendly. Ask ONE clarifying question if needed. End with: "Anything else I can help with?" Use ONLY knowledge base info.'
   }
 }
 
@@ -473,17 +473,41 @@ export default function ConfigPage() {
                     {KNOWLEDGE_BASE_FIELDS[selectedTemplate as keyof typeof KNOWLEDGE_BASE_FIELDS]?.map(renderKnowledgeBaseField)}
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-slate-200 mb-2">
-                      Raw Knowledge Base (JSON)
-                    </label>
-                    <textarea
-                      value={config.knowledge_base || ''}
-                      onChange={(e) => setConfig(prev => ({ ...prev, knowledge_base: e.target.value }))}
-                      rows={8}
-                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all font-mono text-sm"
-                      placeholder='{"key": "value"}'
-                    />
+                  <div className="bg-slate-800 rounded-xl p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-md font-semibold text-white flex items-center">
+                        <Database className="w-4 h-4 mr-2" />
+                        Knowledge Base Preview
+                      </h4>
+                      <span className="text-xs text-slate-400 bg-slate-700 px-2 py-1 rounded">
+                        Auto-generated from form fields
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="bg-slate-700 rounded-lg p-4">
+                        <pre className="text-sm text-slate-300 whitespace-pre-wrap font-mono overflow-x-auto">
+                          {config.knowledge_base ? JSON.stringify(JSON.parse(config.knowledge_base), null, 2) : '{}'}
+                        </pre>
+                      </div>
+                      
+                      <div className="flex items-start space-x-3 text-sm text-slate-400">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <p>
+                          This knowledge base is automatically generated from the form fields above. 
+                          Your AI agent will use this structured information to provide accurate, 
+                          business-specific responses to customers.
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-start space-x-3 text-sm text-slate-400">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <p>
+                          Fill out the form fields above to automatically populate this knowledge base 
+                          with your business information. No JSON knowledge required!
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
