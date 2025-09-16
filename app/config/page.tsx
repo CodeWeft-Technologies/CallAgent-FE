@@ -16,56 +16,128 @@ interface AgentConfig {
 const PROMPT_TEMPLATES = {
   'real-estate': {
     name: 'Real Estate Agent',
-    prompt: 'You are a professional real estate agent. Help clients with property inquiries, scheduling viewings, and providing market information. Keep responses concise and professional.'
+    prompt: 'You are a professional real estate agent. Help clients with property inquiries, scheduling viewings, and providing market information. Use the knowledge base to provide specific details about properties, locations, pricing, and amenities. Keep responses concise and professional.'
   },
   'customer-service': {
     name: 'Customer Service',
-    prompt: 'You are a helpful customer service representative. Assist customers with inquiries, complaints, and general support. Be polite, patient, and solution-oriented.'
+    prompt: 'You are a helpful customer service representative. Assist customers with inquiries, complaints, and general support. Use the knowledge base to provide accurate information about policies, products, and procedures. Be polite, patient, and solution-oriented.'
   },
   'sales': {
     name: 'Sales Agent',
-    prompt: 'You are a skilled sales agent. Help prospects understand products/services, address objections, and guide them through the sales process. Be persuasive but not pushy.'
+    prompt: 'You are a skilled sales agent. Help prospects understand products/services, address objections, and guide them through the sales process. Use the knowledge base to highlight benefits, pricing, and competitive advantages. Be persuasive but not pushy.'
   },
   'appointment': {
     name: 'Appointment Booking',
-    prompt: 'You are an appointment booking assistant. Help clients schedule, reschedule, or cancel appointments. Collect necessary information and confirm details.'
+    prompt: 'You are an appointment booking assistant. Help clients schedule, reschedule, or cancel appointments. Use the knowledge base to provide information about services, availability, and booking policies. Collect necessary information and confirm details.'
+  },
+  'healthcare': {
+    name: 'Healthcare Assistant',
+    prompt: 'You are a healthcare appointment and information assistant. Help patients with appointment scheduling, provide information about doctors, services, and facilities. Use the knowledge base to give accurate details about specializations, fees, and availability. Always maintain patient confidentiality and professionalism.'
+  },
+  'education': {
+    name: 'Education Counselor',
+    prompt: 'You are an education counselor and admission assistant. Help students and parents with course information, admission procedures, and enrollment. Use the knowledge base to provide details about courses, fees, faculty, and placement support. Be informative and encouraging.'
+  },
+  'restaurant': {
+    name: 'Restaurant Assistant',
+    prompt: 'You are a restaurant assistant helping with reservations, menu inquiries, and general information. Use the knowledge base to provide details about cuisine, menu items, pricing, operating hours, and special services. Be welcoming and helpful in promoting the dining experience.'
   },
   'generic': {
     name: 'Generic Assistant',
-    prompt: 'You are a helpful AI assistant. Provide clear, concise answers to user questions. Be friendly and professional in all interactions.'
+    prompt: 'You are a helpful AI assistant. Provide clear, concise answers to user questions using the available knowledge base information. Be friendly and professional in all interactions.'
   }
 }
 
 const KNOWLEDGE_BASE_FIELDS = {
   'real-estate': [
-    { key: 'company_name', label: 'Company Name', placeholder: 'Your Real Estate Company' },
-    { key: 'services', label: 'Services Offered', placeholder: 'Buying, selling, renting, property management' },
-    { key: 'areas', label: 'Service Areas', placeholder: 'City, neighborhoods, regions covered' },
-    { key: 'contact_info', label: 'Contact Information', placeholder: 'Phone, email, office hours' }
+    { key: 'company_name', label: 'Company Name', placeholder: 'e.g., ABC Real Estate Group' },
+    { key: 'developer_name', label: 'Developer Name', placeholder: 'e.g., XYZ Developers, Premium Builders' },
+    { key: 'locations', label: 'Project Locations', placeholder: 'e.g., Mumbai, Pune, Bangalore - specific areas' },
+    { key: 'property_types', label: 'Property Types', placeholder: 'e.g., 1BHK, 2BHK, 3BHK, Villas, Commercial' },
+    { key: 'price_range', label: 'Price Range', placeholder: 'e.g., ₹45L - ₹2.5Cr, Starting from ₹65L' },
+    { key: 'amenities', label: 'Amenities', placeholder: 'e.g., Swimming pool, Gym, Parking, Security, Garden' },
+    { key: 'possession_date', label: 'Possession Timeline', placeholder: 'e.g., Ready to move, Dec 2025, Under construction' },
+    { key: 'financing_options', label: 'Financing Options', placeholder: 'e.g., Home loans available, Bank partnerships, EMI options' },
+    { key: 'contact_info', label: 'Contact Information', placeholder: 'Phone, email, office address, visiting hours' },
+    { key: 'special_offers', label: 'Special Offers', placeholder: 'e.g., Festive discounts, Early bird offers, No brokerage' }
   ],
   'customer-service': [
-    { key: 'company_name', label: 'Company Name', placeholder: 'Your Company' },
+    { key: 'company_name', label: 'Company Name', placeholder: 'Your Company Name' },
     { key: 'products', label: 'Products/Services', placeholder: 'Main products or services offered' },
-    { key: 'policies', label: 'Policies', placeholder: 'Return policy, warranty, shipping info' },
-    { key: 'contact_info', label: 'Contact Information', placeholder: 'Support email, phone, hours' }
+    { key: 'support_hours', label: 'Support Hours', placeholder: 'e.g., 24/7, Mon-Fri 9AM-6PM, Business hours' },
+    { key: 'return_policy', label: 'Return Policy', placeholder: 'e.g., 30-day return, No questions asked, Exchange policy' },
+    { key: 'warranty_info', label: 'Warranty Information', placeholder: 'e.g., 1 year warranty, Extended warranty available' },
+    { key: 'shipping_info', label: 'Shipping Information', placeholder: 'e.g., Free shipping above ₹500, 2-3 business days' },
+    { key: 'payment_methods', label: 'Payment Methods', placeholder: 'e.g., Credit/Debit cards, UPI, Net banking, COD' },
+    { key: 'escalation_process', label: 'Escalation Process', placeholder: 'How to escalate issues, manager contact' },
+    { key: 'contact_info', label: 'Contact Information', placeholder: 'Support email, phone, chat, ticket system' },
+    { key: 'faqs', label: 'Common FAQs', placeholder: 'Frequently asked questions and answers' }
   ],
   'sales': [
-    { key: 'company_name', label: 'Company Name', placeholder: 'Your Company' },
-    { key: 'products', label: 'Products/Services', placeholder: 'What you sell' },
-    { key: 'pricing', label: 'Pricing Information', placeholder: 'Price ranges, packages, discounts' },
-    { key: 'benefits', label: 'Key Benefits', placeholder: 'Why choose your products/services' }
+    { key: 'company_name', label: 'Company Name', placeholder: 'Your Company Name' },
+    { key: 'products', label: 'Products/Services', placeholder: 'What you sell - be specific' },
+    { key: 'pricing_tiers', label: 'Pricing Tiers', placeholder: 'e.g., Basic ₹999, Premium ₹1999, Enterprise ₹4999' },
+    { key: 'key_benefits', label: 'Key Benefits', placeholder: 'Why choose your products - unique selling points' },
+    { key: 'target_audience', label: 'Target Audience', placeholder: 'e.g., Small businesses, Enterprises, Individuals' },
+    { key: 'competitors', label: 'Competitive Advantage', placeholder: 'How you\'re better than competitors' },
+    { key: 'case_studies', label: 'Success Stories', placeholder: 'Customer success stories, testimonials' },
+    { key: 'demo_trial', label: 'Demo/Trial Options', placeholder: 'e.g., Free trial, Live demo, Money-back guarantee' },
+    { key: 'sales_process', label: 'Sales Process', placeholder: 'Steps from inquiry to purchase' },
+    { key: 'contact_info', label: 'Sales Contact', placeholder: 'Sales team contact, meeting scheduling' }
   ],
   'appointment': [
-    { key: 'company_name', label: 'Company Name', placeholder: 'Your Business Name' },
-    { key: 'services', label: 'Services Offered', placeholder: 'Types of appointments available' },
-    { key: 'hours', label: 'Business Hours', placeholder: 'Available days and times' },
-    { key: 'location', label: 'Location', placeholder: 'Address or virtual meeting info' }
+    { key: 'business_name', label: 'Business Name', placeholder: 'e.g., Dr. Smith Clinic, Beauty Salon XYZ' },
+    { key: 'service_types', label: 'Service Types', placeholder: 'e.g., Consultation, Treatment, Haircut, Massage' },
+    { key: 'appointment_duration', label: 'Appointment Duration', placeholder: 'e.g., 30 mins, 1 hour, 2 hours' },
+    { key: 'business_hours', label: 'Business Hours', placeholder: 'e.g., Mon-Sat 9AM-7PM, Sunday closed' },
+    { key: 'location_address', label: 'Location & Address', placeholder: 'Full address, landmarks, parking info' },
+    { key: 'booking_advance', label: 'Advance Booking', placeholder: 'e.g., Book 1 day ahead, Same day available' },
+    { key: 'cancellation_policy', label: 'Cancellation Policy', placeholder: 'e.g., 24 hours notice, Cancellation charges' },
+    { key: 'payment_info', label: 'Payment Information', placeholder: 'e.g., Pay at venue, Advance payment, Online payment' },
+    { key: 'staff_info', label: 'Staff Information', placeholder: 'e.g., Dr. Smith (Mon-Wed), Therapist A (Thu-Sat)' },
+    { key: 'contact_info', label: 'Contact Information', placeholder: 'Phone, WhatsApp, email for bookings' }
+  ],
+  'healthcare': [
+    { key: 'clinic_name', label: 'Clinic/Hospital Name', placeholder: 'e.g., City Medical Center' },
+    { key: 'doctor_info', label: 'Doctor Information', placeholder: 'e.g., Dr. John Smith - Cardiologist, 15 years exp' },
+    { key: 'specializations', label: 'Specializations', placeholder: 'e.g., Cardiology, Orthopedics, General Medicine' },
+    { key: 'consultation_fees', label: 'Consultation Fees', placeholder: 'e.g., ₹500 consultation, ₹300 follow-up' },
+    { key: 'appointment_slots', label: 'Available Slots', placeholder: 'e.g., Morning 9-12, Evening 5-8' },
+    { key: 'emergency_services', label: 'Emergency Services', placeholder: 'e.g., 24/7 emergency, Ambulance service' },
+    { key: 'insurance_accepted', label: 'Insurance Accepted', placeholder: 'e.g., Cashless treatment, All major insurances' },
+    { key: 'facilities', label: 'Facilities Available', placeholder: 'e.g., Lab tests, X-ray, Pharmacy, ICU' },
+    { key: 'location_info', label: 'Location Information', placeholder: 'Address, nearby landmarks, parking' },
+    { key: 'contact_emergency', label: 'Contact & Emergency', placeholder: 'Phone, emergency number, WhatsApp' }
+  ],
+  'education': [
+    { key: 'institute_name', label: 'Institute Name', placeholder: 'e.g., ABC Learning Academy' },
+    { key: 'courses_offered', label: 'Courses Offered', placeholder: 'e.g., Web Development, Data Science, Digital Marketing' },
+    { key: 'course_duration', label: 'Course Duration', placeholder: 'e.g., 3 months, 6 months, 1 year programs' },
+    { key: 'fees_structure', label: 'Fees Structure', placeholder: 'e.g., ₹25,000 for 3 months, EMI available' },
+    { key: 'batch_timings', label: 'Batch Timings', placeholder: 'e.g., Morning 9-12, Evening 6-9, Weekend batches' },
+    { key: 'faculty_info', label: 'Faculty Information', placeholder: 'e.g., Industry experts, 10+ years experience' },
+    { key: 'placement_support', label: 'Placement Support', placeholder: 'e.g., 100% placement assistance, Job guarantee' },
+    { key: 'certification', label: 'Certification', placeholder: 'e.g., Industry recognized certificate, Government approved' },
+    { key: 'demo_classes', label: 'Demo Classes', placeholder: 'e.g., Free demo class, Trial week available' },
+    { key: 'contact_admission', label: 'Admission Contact', placeholder: 'Admission office, counselor contact, visit hours' }
+  ],
+  'restaurant': [
+    { key: 'restaurant_name', label: 'Restaurant Name', placeholder: 'e.g., Spice Garden Restaurant' },
+    { key: 'cuisine_type', label: 'Cuisine Type', placeholder: 'e.g., North Indian, Chinese, Continental, Multi-cuisine' },
+    { key: 'menu_highlights', label: 'Menu Highlights', placeholder: 'e.g., Signature dishes, Chef specials, Popular items' },
+    { key: 'price_range', label: 'Price Range', placeholder: 'e.g., ₹200-500 per person, Budget-friendly, Premium dining' },
+    { key: 'operating_hours', label: 'Operating Hours', placeholder: 'e.g., 11AM-11PM, Lunch 12-3PM, Dinner 7-11PM' },
+    { key: 'seating_capacity', label: 'Seating & Ambiance', placeholder: 'e.g., 50 seats, Family dining, AC, Outdoor seating' },
+    { key: 'special_services', label: 'Special Services', placeholder: 'e.g., Home delivery, Party bookings, Live music' },
+    { key: 'location_info', label: 'Location Information', placeholder: 'Address, nearby landmarks, parking availability' },
+    { key: 'reservation_info', label: 'Reservation Information', placeholder: 'e.g., Table booking required, Walk-ins welcome' },
+    { key: 'contact_info', label: 'Contact Information', placeholder: 'Phone, WhatsApp, online ordering platforms' }
   ],
   'generic': [
-    { key: 'company_name', label: 'Company Name', placeholder: 'Your Company' },
-    { key: 'about', label: 'About Us', placeholder: 'Brief company description' },
-    { key: 'services', label: 'Services', placeholder: 'What you offer' },
-    { key: 'contact', label: 'Contact Info', placeholder: 'How to reach you' }
+    { key: 'company_name', label: 'Company Name', placeholder: 'Your Company Name' },
+    { key: 'about', label: 'About Us', placeholder: 'Brief company description and mission' },
+    { key: 'services', label: 'Services/Products', placeholder: 'What you offer to customers' },
+    { key: 'contact', label: 'Contact Information', placeholder: 'Phone, email, address, website' }
   ]
 }
 
