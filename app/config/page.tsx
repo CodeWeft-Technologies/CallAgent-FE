@@ -433,15 +433,15 @@ export default function ConfigPage() {
                 <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4 mb-4">
                   <h4 className="text-blue-300 font-medium mb-2">💡 Personalize with Lead Name</h4>
                   <p className="text-blue-200 text-sm mb-3">
-                    You can include the caller's name in your greeting message by using the variable <code className="bg-blue-800/50 px-2 py-1 rounded text-blue-100">{{lead_name}}</code>
+                    You can include the caller's name in your greeting message by using the variable <code className="bg-blue-800/50 px-2 py-1 rounded text-blue-100">{'{{lead_name}}'}</code>
                   </p>
                   <div className="space-y-2">
                     <p className="text-blue-200 text-sm font-medium">Examples:</p>
                     <div className="bg-slate-800/50 rounded-lg p-3 space-y-1">
-                      <p className="text-slate-300 text-sm">• "Hello {{lead_name}}, thank you for calling ABC Real Estate!"</p>
-                      <p className="text-slate-300 text-sm">• "Hi {{lead_name}}, I'm here to help you with your property needs."</p>
-                      <p className="text-slate-300 text-sm">• "Good day {{lead_name}}, how can I assist you today?"</p>
-                    </div>
+                       <p className="text-slate-300 text-sm">• "Hello {'{{lead_name}}'}, thank you for calling ABC Real Estate!"</p>
+                       <p className="text-slate-300 text-sm">• "Hi {'{{lead_name}}'}, I'm here to help you with your property needs."</p>
+                       <p className="text-slate-300 text-sm">• "Good day {'{{lead_name}}'}, how can I assist you today?"</p>
+                     </div>
                     <p className="text-blue-200 text-xs mt-2">
                       <strong>Note:</strong> If no lead name is available, the variable will be replaced with a generic greeting.
                     </p>
@@ -453,7 +453,7 @@ export default function ConfigPage() {
                   onChange={(e) => handleGreetingMessageChange(e.target.value)}
                   rows={4}
                   className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
-                  placeholder="Enter your greeting message... Use {{lead_name}} to include the caller's name"
+                  placeholder="Enter your greeting message... Use {lead_name} to include the caller's name"
                 />
                 <p className="text-sm text-slate-500 mt-2">Character count: {(config.greeting_message || '').length}</p>
               </div>
