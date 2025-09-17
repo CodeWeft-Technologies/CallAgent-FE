@@ -17,36 +17,36 @@ interface AgentConfig {
 
 const PROMPT_TEMPLATES = {
   'real-estate': {
-    name: 'Real Estate Agent',
-    prompt: 'You are a helpful real estate agent. Use the knowledge base to answer questions about properties, pricing, locations, and amenities. Be friendly, professional, and helpful in your responses.'
+    name: 'Real Estate Agent (Voice Optimized)',
+    prompt: 'You are a professional voice AI agent working as a real estate agent on phone calls. Keep responses short and simple. Use natural, conversational language and ask one question at a time. Be helpful and knowledgeable when discussing properties.'
   },
   'customer-service': {
-    name: 'Customer Service',
-    prompt: 'You are a customer service representative. Help customers with their questions and concerns using the knowledge base information. Be patient, understanding, and solution-focused.'
+    name: 'Customer Service (Voice Optimized)',
+    prompt: 'You are a professional voice AI agent working as a customer service representative on calls. Keep answers short and clear. Be patient and solution-focused. Ask one question at a time to help customers.'
   },
   'sales': {
-    name: 'Sales Agent',
-    prompt: 'You are a sales representative. Help customers understand products and services using the knowledge base. Be enthusiastic about benefits and features while being helpful and informative.'
+    name: 'Sales Agent (Voice Optimized)',
+    prompt: 'You are a professional voice AI agent working as a sales representative on phone calls. Keep responses brief and conversational. Focus on benefits. Ask simple questions to understand customer needs.'
   },
   'appointment': {
-    name: 'Appointment Booking',
-    prompt: 'You are an appointment booking assistant. Help customers schedule appointments using the knowledge base for available services, times, and policies. Be efficient and helpful.'
+    name: 'Appointment Booking (Voice Optimized)',
+    prompt: 'You are a professional voice AI agent booking appointments over the phone. Be efficient and courteous. Ask one question at a time about dates, times, or services. Keep responses short and natural.'
   },
   'healthcare': {
-    name: 'Healthcare Assistant',
-    prompt: 'You are a healthcare appointment assistant. Help patients schedule appointments and get information about doctors and services using the knowledge base. Be professional and caring.'
+    name: 'Healthcare Assistant (Voice Optimized)',
+    prompt: 'You are a professional voice AI agent helping patients book appointments by phone. Be caring and professional. Keep responses short and clear. Ask one simple question at a time.'
   },
   'education': {
-    name: 'Education Counselor',
-    prompt: 'You are an education counselor. Help students and parents with course information and admissions using the knowledge base. Be informative, encouraging, and supportive.'
+    name: 'Education Counselor (Voice Optimized)',
+    prompt: 'You are a professional voice AI agent working as an education counselor on phone calls. Be encouraging and supportive. Keep responses brief and ask one question at a time about courses or admissions.'
   },
   'restaurant': {
-    name: 'Restaurant Assistant',
-    prompt: 'You are a restaurant assistant. Help customers with reservations, menu questions, and dining information using the knowledge base. Be welcoming and enthusiastic about the dining experience.'
+    name: 'Restaurant Assistant (Voice Optimized)',
+    prompt: 'You are a professional voice AI agent taking restaurant calls for reservations and questions. Be welcoming and courteous. Keep responses short and ask one question at a time.'
   },
   'generic': {
-    name: 'Generic Assistant',
-    prompt: 'You are a helpful assistant. Use the knowledge base to answer questions and provide information. Be friendly, professional, and helpful in all interactions.'
+    name: 'Generic Assistant (Voice Optimized)',
+    prompt: 'You are a professional voice AI agent helping customers on phone calls. Keep responses short and simple. Use natural, conversational language. Ask one question at a time to help customers.'
   }
 }
 
@@ -249,8 +249,8 @@ export default function ConfigPage() {
       knowledge_base: '{}',
       max_retries: 0,
       retry_delay: 0,
-      tts_provider: 'google',
-      stt_provider: 'deepgram'
+      tts_provider: 'cartesia',
+      stt_provider: 'cartesia'
     })
     toast.success('Configuration reset to empty')
   }, [])
@@ -428,12 +428,32 @@ export default function ConfigPage() {
               <div>
                 <h3 className="text-lg font-semibold text-white mb-2">Greeting Message</h3>
                 <p className="text-slate-400 mb-4">This message will be played when a call starts</p>
+                
+                {/* Lead Name Instructions */}
+                <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4 mb-4">
+                  <h4 className="text-blue-300 font-medium mb-2">💡 Personalize with Lead Name</h4>
+                  <p className="text-blue-200 text-sm mb-3">
+                    You can include the caller's name in your greeting message by using the variable <code className="bg-blue-800/50 px-2 py-1 rounded text-blue-100">{{lead_name}}</code>
+                  </p>
+                  <div className="space-y-2">
+                    <p className="text-blue-200 text-sm font-medium">Examples:</p>
+                    <div className="bg-slate-800/50 rounded-lg p-3 space-y-1">
+                      <p className="text-slate-300 text-sm">• "Hello {{lead_name}}, thank you for calling ABC Real Estate!"</p>
+                      <p className="text-slate-300 text-sm">• "Hi {{lead_name}}, I'm here to help you with your property needs."</p>
+                      <p className="text-slate-300 text-sm">• "Good day {{lead_name}}, how can I assist you today?"</p>
+                    </div>
+                    <p className="text-blue-200 text-xs mt-2">
+                      <strong>Note:</strong> If no lead name is available, the variable will be replaced with a generic greeting.
+                    </p>
+                  </div>
+                </div>
+                
                 <textarea
                   value={config.greeting_message || ''}
                   onChange={(e) => handleGreetingMessageChange(e.target.value)}
                   rows={4}
                   className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
-                  placeholder="Enter your greeting message..."
+                  placeholder="Enter your greeting message... Use {{lead_name}} to include the caller's name"
                 />
                 <p className="text-sm text-slate-500 mt-2">Character count: {(config.greeting_message || '').length}</p>
               </div>
@@ -576,7 +596,7 @@ export default function ConfigPage() {
                       Text-to-Speech Provider
                     </label>
                     <select
-                      value={config.tts_provider || 'google'}
+                      value={config.tts_provider || 'cartesia'}
                       onChange={(e) => handleTTSProviderChange(e.target.value)}
                       className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                     >
@@ -597,7 +617,7 @@ export default function ConfigPage() {
                       Speech-to-Text Provider
                     </label>
                     <select
-                      value={config.stt_provider || 'deepgram'}
+                      value={config.stt_provider || 'cartesia'}
                       onChange={(e) => handleSTTProviderChange(e.target.value)}
                       className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                     >
@@ -795,11 +815,19 @@ export default function ConfigPage() {
           </div>
           <div className="flex items-start space-x-3">
             <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-            <p>System prompts define your agent's personality and behavior</p>
+            <p>System prompts define your agent's personality and behavior for voice calls</p>
+          </div>
+          <div className="flex items-start space-x-3">
+            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+            <p>Voice-optimized prompts keep responses short and natural for real conversations</p>
           </div>
           <div className="flex items-start space-x-3">
             <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
             <p>Knowledge base provides specific information for your agent to reference</p>
+          </div>
+          <div className="flex items-start space-x-3">
+            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+            <p>Use contractions (I'll, we're, that's) and simple language for phone calls</p>
           </div>
           <div className="flex items-start space-x-3">
             <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
