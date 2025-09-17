@@ -587,7 +587,47 @@ export default function ConfigPage() {
             <div className="space-y-6">
               <div>
                 <h3 className="text-lg font-semibold text-white mb-2">Voice Settings</h3>
-                <p className="text-slate-400 mb-6">Configure Text-to-Speech (TTS) and Speech-to-Text (STT) providers</p>
+                <p className="text-slate-400 mb-4">Configure Text-to-Speech (TTS) and Speech-to-Text (STT) providers</p>
+                
+                {/* Current Status Display */}
+                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 mb-6">
+                  <h4 className="text-white font-medium mb-3 flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    Current Active Services
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium text-slate-200">Text-to-Speech (TTS)</p>
+                        <p className="text-xs text-slate-400">Converting text to speech</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-green-400">
+                          {config.tts_provider === 'cartesia' ? 'Cartesia TTS' : 'Google TTS'}
+                        </p>
+                        <div className="flex items-center text-xs text-green-400">
+                          <div className="w-1.5 h-1.5 bg-green-400 rounded-full mr-1"></div>
+                          Active
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium text-slate-200">Speech-to-Text (STT)</p>
+                        <p className="text-xs text-slate-400">Converting speech to text</p>
+                      </div>
+                      <div className="text-right">
+                         <p className="text-sm font-medium text-green-400">
+                           {config.stt_provider === 'deepgram' ? 'Deepgram STT' : 'Cartesia STT'}
+                         </p>
+                        <div className="flex items-center text-xs text-green-400">
+                          <div className="w-1.5 h-1.5 bg-green-400 rounded-full mr-1"></div>
+                          Active
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* TTS Provider */}
