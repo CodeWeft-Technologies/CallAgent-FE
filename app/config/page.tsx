@@ -275,17 +275,66 @@ export default function ConfigPage() {
     setConfig(prev => ({ ...prev, tts_provider: provider }))
     
     try {
-      const response = await fetch(`${API_BASE}/api/config/tts-provider`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider })
-      })
-      
-      if (response.ok) {
-        toast.success(`TTS provider updated to ${provider}`)
-      } else {
-        toast.error('Failed to update TTS provider')
+      // Try WebSocket command first for real-time switching
+      const wsMessage = {
+        type: "switch_service",
+        service_type: "tts",
+        provider: provider
       }
+      
+      // Create a temporary WebSocket connection for service switching
+      const ws = new WebSocket(`ws://localhost:8000/ws`)
+      
+      ws.onopen = () => {
+        ws.send(JSON.stringify(wsMessage))
+        console.log(`📤 Sent TTS switch command: ${provider}`)
+      }
+      
+      ws.onmessage = (event) => {
+        try {
+          const response = JSON.parse(event.data)
+          if (response.type === "service_switched" && response.service_type === "tts") {
+            toast.success(`TTS provider switched to ${provider} (real-time)`)
+            ws.close()
+          } else if (response.type === "service_switch_error") {
+            toast.error(`Failed to switch TTS: ${response.message}`)
+            ws.close()
+          }
+        } catch (e) {
+          console.error('Error parsing WebSocket response:', e)
+        }
+      }
+      
+      ws.onerror = async () => {
+        console.log('WebSocket failed, falling back to API call')
+        ws.close()
+        
+        // Fallback to API call if WebSocket fails
+        try {
+          const response = await fetch(`${API_BASE}/api/config/tts-provider`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ provider })
+          })
+          
+          if (response.ok) {
+            toast.success(`TTS provider updated to ${provider} (API)`)
+          } else {
+            toast.error('Failed to update TTS provider')
+          }
+        } catch (error) {
+          console.error('Error updating TTS provider via API:', error)
+          toast.error('Failed to update TTS provider')
+        }
+      }
+      
+      // Close WebSocket after 5 seconds if no response
+      setTimeout(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.close()
+        }
+      }, 5000)
+      
     } catch (error) {
       console.error('Error updating TTS provider:', error)
       toast.error('Failed to update TTS provider')
@@ -296,17 +345,66 @@ export default function ConfigPage() {
     setConfig(prev => ({ ...prev, stt_provider: provider }))
     
     try {
-      const response = await fetch(`${API_BASE}/api/config/stt-provider`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider })
-      })
-      
-      if (response.ok) {
-        toast.success(`STT provider updated to ${provider}`)
-      } else {
-        toast.error('Failed to update STT provider')
+      // Try WebSocket command first for real-time switching
+      const wsMessage = {
+        type: "switch_service",
+        service_type: "stt",
+        provider: provider
       }
+      
+      // Create a temporary WebSocket connection for service switching
+      const ws = new WebSocket(`ws://localhost:8000/ws`)
+      
+      ws.onopen = () => {
+        ws.send(JSON.stringify(wsMessage))
+        console.log(`📤 Sent STT switch command: ${provider}`)
+      }
+      
+      ws.onmessage = (event) => {
+        try {
+          const response = JSON.parse(event.data)
+          if (response.type === "service_switched" && response.service_type === "stt") {
+            toast.success(`STT provider switched to ${provider} (real-time)`)
+            ws.close()
+          } else if (response.type === "service_switch_error") {
+            toast.error(`Failed to switch STT: ${response.message}`)
+            ws.close()
+          }
+        } catch (e) {
+          console.error('Error parsing WebSocket response:', e)
+        }
+      }
+      
+      ws.onerror = async () => {
+        console.log('STT WebSocket failed, falling back to API call')
+        ws.close()
+        
+        // Fallback to API call if WebSocket fails
+        try {
+          const response = await fetch(`${API_BASE}/api/config/stt-provider`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ provider })
+          })
+          
+          if (response.ok) {
+            toast.success(`STT provider updated to ${provider} (API)`)
+          } else {
+            toast.error('Failed to update STT provider')
+          }
+        } catch (error) {
+          console.error('Error updating STT provider via API:', error)
+          toast.error('Failed to update STT provider')
+        }
+      }
+      
+      // Close WebSocket after 5 seconds if no response
+      setTimeout(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.close()
+        }
+      }, 5000)
+      
     } catch (error) {
       console.error('Error updating STT provider:', error)
       toast.error('Failed to update STT provider')
