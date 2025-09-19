@@ -209,8 +209,11 @@ export default function ConfigPage() {
           knowledge_base_enabled: data.knowledge_base_enabled || false,
           knowledge_base: data.knowledge_base || '{}',
           max_retries: data.max_retries || 0,
-          retry_delay: data.retry_delay || 0
+          retry_delay: data.retry_delay || 0,
+          tts_provider: data.tts_provider || 'google',
+          stt_provider: data.stt_provider || 'deepgram'
         })
+        console.log('✅ Config loaded:', { tts: data.tts_provider, stt: data.stt_provider })
       }
     } catch (error) {
       console.error('❌ Error loading config:', error)
@@ -249,8 +252,8 @@ export default function ConfigPage() {
       knowledge_base: '{}',
       max_retries: 0,
       retry_delay: 0,
-      tts_provider: 'cartesia',
-      stt_provider: 'cartesia'
+      tts_provider: 'google',
+      stt_provider: 'deepgram'
     })
     toast.success('Configuration reset to empty')
   }, [])
