@@ -14,6 +14,7 @@ interface AgentConfig {
   tts_provider?: string
   stt_provider?: string
   active_template?: string
+  agent_number?: string
 }
 
 const PROMPT_TEMPLATES = {
@@ -409,7 +410,8 @@ export default function ConfigPage() {
           max_retries: data.max_retries || 0,
           retry_delay: data.retry_delay || 0,
           tts_provider: data.tts_provider || 'google',
-          stt_provider: data.stt_provider || 'assemblyai'
+          stt_provider: data.stt_provider || 'assemblyai',
+          agent_number: data.agent_number || ''
         })
         
         // Restore the selected template if it exists in the backend config
@@ -462,7 +464,8 @@ export default function ConfigPage() {
       max_retries: 0,
       retry_delay: 0,
       tts_provider: 'google',
-      stt_provider: 'deepgram'
+      stt_provider: 'deepgram',
+      agent_number: ''
     })
     setSelectedTemplate('generic') // Reset to default template
     toast.success('Configuration reset to empty')
@@ -725,6 +728,10 @@ export default function ConfigPage() {
     setConfig(prev => ({ ...prev, retry_delay: parseInt(value) }))
   }, [])
 
+  const handleAgentNumberChange = useCallback((value: string) => {
+    setConfig(prev => ({ ...prev, agent_number: value }))
+  }, [])
+
   const handleTabChange = useCallback((tabId: string) => {
     setActiveTab(tabId)
   }, [])
@@ -735,7 +742,8 @@ export default function ConfigPage() {
     { id: 'behavior', name: 'Agent Behavior', icon: FileText },
     { id: 'knowledge', name: 'Knowledge Base', icon: Database },
     { id: 'voice', name: 'Voice Settings', icon: Mic },
-    { id: 'retry', name: 'Call Retry', icon: RefreshCw }
+    { id: 'retry', name: 'Call Retry', icon: RefreshCw },
+    { id: 'forwarding', name: 'Call Forwarding', icon: ArrowRight }
   ]
 
   return (
@@ -1279,6 +1287,90 @@ export default function ConfigPage() {
                           : `✅ Missed calls will be retried up to ${config.max_retries} times with ${config.retry_delay}s delay`
                         }
                       </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'forwarding' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-2">Call Forwarding</h3>
+                <p className="text-slate-400 mb-4">Configure agent number for call forwarding when needed</p>
+                
+                <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4 mb-6">
+                  <h4 className="text-blue-300 font-medium mb-2">📞 How Call Forwarding Works</h4>
+                  <div className="space-y-2 text-blue-200 text-sm">
+                    <p>• When an agent number is configured, incoming calls can be forwarded to that number</p>
+                    <p>• If no agent number is set, calls will be handled by the AI assistant</p>
+                    <p>• Forwarded calls have a 5-minute duration limit with 20-second timeout</p>
+                    <p>• System will retry forwarding up to 2 times if the agent doesn't answer</p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-200 mb-2">
+                    Agent Phone Number
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 font-medium">+91</span>
+                    <input
+                      type="tel"
+                      value={config.agent_number ? config.agent_number.replace(/^\+91/, '') : ''}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^\d]/g, ''); // Only allow digits
+                        handleAgentNumberChange(value ? `+91${value}` : '');
+                      }}
+                      placeholder="9876543210"
+                      className="w-full pl-12 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    />
+                  </div>
+                  <p className="text-sm text-slate-500 mt-2">
+                    Enter 10-digit mobile number. +91 prefix will be added automatically. Leave empty to disable call forwarding.
+                  </p>
+                </div>
+
+                {/* Current Configuration Display */}
+                <div className="bg-slate-800 rounded-xl p-6 mt-6">
+                  <h4 className="text-md font-semibold text-white mb-3 flex items-center">
+                    <ArrowRight className="w-4 h-4 mr-2" />
+                    Current Forwarding Configuration
+                  </h4>
+                  <div className="text-sm text-slate-300">
+                    <p>• Agent Number: <span className="text-blue-400 font-medium">{config.agent_number || 'Not configured'}</span></p>
+                    <p className="mt-2 text-slate-400">
+                      {!config.agent_number || config.agent_number.trim() === ''
+                        ? "🤖 Calls will be handled by AI assistant"
+                        : `📞 Calls will be forwarded to ${config.agent_number}`
+                      }
+                    </p>
+                  </div>
+                </div>
+
+                {/* Forwarding Settings Info */}
+                <div className="bg-slate-800 rounded-xl p-6 mt-6">
+                  <h4 className="text-md font-semibold text-white mb-3 flex items-center">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Forwarding Settings
+                  </h4>
+                  <div className="space-y-3 text-slate-400">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <p><strong>Duration:</strong> 5 minutes maximum call duration</p>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <p><strong>Timeout:</strong> 20 seconds ring time before considering no answer</p>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <p><strong>Retries:</strong> Up to 2 retry attempts if agent doesn't answer</p>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <p><strong>Fallback:</strong> If forwarding fails, call will be handled by AI assistant</p>
                     </div>
                   </div>
                 </div>
