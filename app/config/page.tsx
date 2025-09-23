@@ -13,127 +13,136 @@ interface AgentConfig {
   retry_delay: number
   tts_provider?: string
   stt_provider?: string
+  active_template?: string
 }
 
 const PROMPT_TEMPLATES = {
   'real-estate': {
-    name: 'Real Estate Agent (Voice Optimized)',
-    prompt: 'You are a professional voice AI agent working as a real estate agent on phone calls. Keep responses short and simple. Use natural, conversational language and ask one question at a time. Be helpful and knowledgeable when discussing properties.'
+    name: 'Real Estate Agent ',
+    prompt: 'You are a professional real estate sales agent on a voice call. Your goal is to build rapport, understand needs, and schedule property visits. Keep responses under 20 words. Use natural Hindi-English mix when appropriate. Ask one engaging question at a time. Focus on benefits like location, amenities, and investment potential. Show enthusiasm and create urgency around limited availability. Always aim to move the conversation toward scheduling a site visit or meeting.'
   },
   'customer-service': {
-    name: 'Customer Service (Voice Optimized)',
-    prompt: 'You are a professional voice AI agent working as a customer service representative on calls. Keep answers short and clear. Be patient and solution-focused. Ask one question at a time to help customers.'
+    name: 'Customer Service ',
+    prompt: 'You are a helpful customer service representative on a voice call. Your goal is to resolve issues quickly and leave customers satisfied. Keep responses under 15 words. Be empathetic and solution-focused. Ask one clarifying question at a time. Acknowledge concerns immediately, offer specific solutions, and follow up to ensure satisfaction. Use positive language and turn problems into opportunities to exceed expectations.'
   },
   'sales': {
-    name: 'Sales Agent (Voice Optimized)',
-    prompt: 'You are a professional voice AI agent working as a sales representative on phone calls. Keep responses brief and conversational. Focus on benefits. Ask simple questions to understand customer needs.'
+    name: 'Sales Agent ',
+    prompt: 'You are a persuasive sales professional on a voice call. Your goal is to identify needs, present solutions, and close deals. Keep responses under 20 words. Focus on customer benefits and ROI. Ask discovery questions to understand pain points. Use social proof and create urgency. Handle objections with empathy and alternative solutions. Always guide toward next steps like demos, trials, or purchases.'
   },
   'appointment': {
-    name: 'Appointment Booking (Voice Optimized)',
-    prompt: 'You are a professional voice AI agent booking appointments over the phone. Be efficient and courteous. Ask one question at a time about dates, times, or services. Keep responses short and natural.'
+    name: 'Appointment Booking',
+    prompt: 'You are an efficient appointment scheduler on a voice call. Your goal is to book confirmed appointments quickly. Keep responses under 15 words. Be friendly but focused. Ask one specific question at a time about availability. Offer multiple time options and confirm details immediately. Handle scheduling conflicts smoothly and suggest alternatives. Always end with clear next steps and confirmation.'
   },
   'healthcare': {
-    name: 'Healthcare Assistant (Voice Optimized)',
-    prompt: 'You are a professional voice AI agent helping patients book appointments by phone. Be caring and professional. Keep responses short and clear. Ask one simple question at a time.'
+    name: 'Healthcare Assistant ',
+    prompt: 'You are a caring healthcare appointment assistant on a voice call. Your goal is to schedule appointments while being sensitive to patient needs. Keep responses under 15 words. Be compassionate and professional. Ask one gentle question at a time. Prioritize urgent cases and offer flexible scheduling. Provide clear instructions and reassurance. Maintain patient confidentiality and follow HIPAA guidelines.'
   },
   'education': {
-    name: 'Education Counselor (Voice Optimized)',
-    prompt: 'You are a professional voice AI agent working as an education counselor on phone calls. Be encouraging and supportive. Keep responses brief and ask one question at a time about courses or admissions.'
+    name: 'Education Counselor ',
+    prompt: 'You are an inspiring education counselor on a voice call. Your goal is to guide students toward enrollment and success. Keep responses under 20 words. Be encouraging and knowledgeable. Ask about career goals and interests. Highlight program benefits, career outcomes, and success stories. Address concerns about fees, duration, and job prospects. Always guide toward application or campus visit.'
   },
   'restaurant': {
-    name: 'Restaurant Assistant (Voice Optimized)',
-    prompt: 'You are a professional voice AI agent taking restaurant calls for reservations and questions. Be welcoming and courteous. Keep responses short and ask one question at a time.'
+    name: 'Restaurant Assistant ',
+    prompt: 'You are a welcoming restaurant host on a voice call. Your goal is to secure reservations and promote the dining experience. Keep responses under 15 words. Be warm and enthusiastic about the restaurant. Ask about party size, date, and preferences. Suggest popular dishes or special offers. Handle busy times by offering alternatives. Confirm reservations with clear details and express excitement to serve them.'
   },
   'generic': {
-    name: 'Generic Assistant (Voice Optimized)',
-    prompt: 'You are a professional voice AI agent helping customers on phone calls. Keep responses short and simple. Use natural, conversational language. Ask one question at a time to help customers.'
+    name: 'Generic Assistant',
+    prompt: 'You are a professional voice assistant helping customers achieve their goals. Keep responses under 15 words. Use natural, conversational language with appropriate Hindi-English mix. Ask one focused question at a time. Listen actively and provide specific, actionable solutions. Be helpful, efficient, and always guide the conversation toward positive outcomes for the customer.'
   }
 }
 
 const KNOWLEDGE_BASE_FIELDS = {
   'real-estate': [
-    { key: 'company_name', label: 'Company Name', placeholder: 'e.g., ABC Real Estate Group' },
-    { key: 'developer_name', label: 'Developer Name', placeholder: 'e.g., XYZ Developers, Premium Builders' },
-    { key: 'locations', label: 'Project Locations', placeholder: 'e.g., Mumbai, Pune, Bangalore - specific areas' },
-    { key: 'property_types', label: 'Property Types', placeholder: 'e.g., 1BHK, 2BHK, 3BHK, Villas, Commercial' },
-    { key: 'price_range', label: 'Price Range', placeholder: 'e.g., ₹45L - ₹2.5Cr, Starting from ₹65L' },
-    { key: 'amenities', label: 'Amenities', placeholder: 'e.g., Swimming pool, Gym, Parking, Security, Garden' },
-    { key: 'possession_date', label: 'Possession Timeline', placeholder: 'e.g., Ready to move, Dec 2025, Under construction' },
-    { key: 'financing_options', label: 'Financing Options', placeholder: 'e.g., Home loans available, Bank partnerships, EMI options' },
-    { key: 'contact_info', label: 'Contact Information', placeholder: 'Phone, email, office address, visiting hours' },
-    { key: 'special_offers', label: 'Special Offers', placeholder: 'e.g., Festive discounts, Early bird offers, No brokerage' }
+    { key: 'company_name', label: 'Company Name', placeholder: 'e.g., ABC Real Estate Group - Your brand identity' },
+    { key: 'developer_name', label: 'Developer Name', placeholder: 'e.g., XYZ Developers, Premium Builders - Build trust with reputation' },
+    { key: 'locations', label: 'Project Locations', placeholder: 'e.g., Mumbai Andheri, Pune Baner, Bangalore Whitefield - Be specific with areas and connectivity' },
+    { key: 'property_types', label: 'Property Types', placeholder: 'e.g., 1BHK ₹45L, 2BHK ₹65L, 3BHK ₹95L, Villas ₹2Cr - Include pricing for quick reference' },
+    { key: 'price_range', label: 'Price Range & Payment Plans', placeholder: 'e.g., ₹45L-₹2.5Cr, 20% down payment, EMI from ₹25K, Construction-linked payment' },
+    { key: 'amenities', label: 'Amenities & Lifestyle', placeholder: 'e.g., Swimming pool, Gym, Kids play area, 24/7 security, Power backup, Clubhouse - Highlight lifestyle benefits' },
+    { key: 'possession_date', label: 'Possession & Construction Status', placeholder: 'e.g., Ready to move, Dec 2025 possession, RERA approved, 60% construction complete' },
+    { key: 'financing_options', label: 'Financing & Loan Support', placeholder: 'e.g., Pre-approved loans from SBI/HDFC, 80% loan available, Processing fee waived, Loan consultant available' },
+    { key: 'investment_benefits', label: 'Investment Benefits', placeholder: 'e.g., 15% appreciation expected, Rental yield 4-6%, Tax benefits under 80C, Prime location advantage' },
+    { key: 'site_visit_info', label: 'Site Visit & Sample Flat', placeholder: 'e.g., Free site visit, Sample flat available, Weekend site visits, Pick-up facility from metro station' },
+    { key: 'special_offers', label: 'Limited Time Offers', placeholder: 'e.g., Festive discount ₹2L, Early bird offer, No brokerage, Free car parking, Modular kitchen included' },
+    { key: 'contact_info', label: 'Contact & Next Steps', placeholder: 'Sales office: 9AM-7PM, Site visit booking, Documentation support, Immediate possession units available' }
   ],
   'customer-service': [
-    { key: 'company_name', label: 'Company Name', placeholder: 'Your Company Name' },
-    { key: 'products', label: 'Products/Services', placeholder: 'Main products or services offered' },
-    { key: 'support_hours', label: 'Support Hours', placeholder: 'e.g., 24/7, Mon-Fri 9AM-6PM, Business hours' },
-    { key: 'return_policy', label: 'Return Policy', placeholder: 'e.g., 30-day return, No questions asked, Exchange policy' },
-    { key: 'warranty_info', label: 'Warranty Information', placeholder: 'e.g., 1 year warranty, Extended warranty available' },
-    { key: 'shipping_info', label: 'Shipping Information', placeholder: 'e.g., Free shipping above ₹500, 2-3 business days' },
-    { key: 'payment_methods', label: 'Payment Methods', placeholder: 'e.g., Credit/Debit cards, UPI, Net banking, COD' },
-    { key: 'escalation_process', label: 'Escalation Process', placeholder: 'How to escalate issues, manager contact' },
-    { key: 'contact_info', label: 'Contact Information', placeholder: 'Support email, phone, chat, ticket system' },
-    { key: 'faqs', label: 'Common FAQs', placeholder: 'Frequently asked questions and answers' }
+    { key: 'company_name', label: 'Company Name', placeholder: 'Your Company Name - Build brand recognition' },
+    { key: 'products', label: 'Products/Services', placeholder: 'Main products with key features - Focus on customer benefits' },
+    { key: 'support_hours', label: 'Support Hours & Channels', placeholder: 'e.g., 24/7 phone support, Live chat 9AM-9PM, Email response within 2 hours' },
+    { key: 'return_policy', label: 'Return & Exchange Policy', placeholder: 'e.g., 30-day hassle-free return, No questions asked, Free pickup, Instant refund' },
+    { key: 'warranty_info', label: 'Warranty & Protection', placeholder: 'e.g., 2-year comprehensive warranty, Extended warranty available, On-site service' },
+    { key: 'shipping_info', label: 'Shipping & Delivery', placeholder: 'e.g., Free shipping above ₹500, Same-day delivery in metro cities, Express delivery available' },
+    { key: 'payment_methods', label: 'Payment Options', placeholder: 'e.g., All cards accepted, UPI, Net banking, EMI options, Buy now pay later' },
+    { key: 'loyalty_program', label: 'Loyalty & Rewards', placeholder: 'e.g., Cashback on purchases, Loyalty points, Member exclusive discounts, Birthday offers' },
+    { key: 'escalation_process', label: 'Issue Resolution', placeholder: 'Escalation to manager, Priority support for premium customers, Complaint tracking system' },
+    { key: 'contact_info', label: 'Contact Information', placeholder: 'Support phone, WhatsApp, email, live chat - Multiple ways to reach us' }
   ],
   'sales': [
-    { key: 'company_name', label: 'Company Name', placeholder: 'Your Company Name' },
-    { key: 'products', label: 'Products/Services', placeholder: 'What you sell - be specific' },
-    { key: 'pricing_tiers', label: 'Pricing Tiers', placeholder: 'e.g., Basic ₹999, Premium ₹1999, Enterprise ₹4999' },
-    { key: 'key_benefits', label: 'Key Benefits', placeholder: 'Why choose your products - unique selling points' },
-    { key: 'target_audience', label: 'Target Audience', placeholder: 'e.g., Small businesses, Enterprises, Individuals' },
-    { key: 'competitors', label: 'Competitive Advantage', placeholder: 'How you\'re better than competitors' },
-    { key: 'case_studies', label: 'Success Stories', placeholder: 'Customer success stories, testimonials' },
-    { key: 'demo_trial', label: 'Demo/Trial Options', placeholder: 'e.g., Free trial, Live demo, Money-back guarantee' },
-    { key: 'sales_process', label: 'Sales Process', placeholder: 'Steps from inquiry to purchase' },
-    { key: 'contact_info', label: 'Sales Contact', placeholder: 'Sales team contact, meeting scheduling' }
+    { key: 'company_name', label: 'Company Name & USP', placeholder: 'Your Company Name - What makes you unique in the market' },
+    { key: 'products', label: 'Products/Services Portfolio', placeholder: 'Complete product range with key differentiators and customer benefits' },
+    { key: 'pricing_tiers', label: 'Pricing & Packages', placeholder: 'e.g., Starter ₹999/month, Professional ₹2999/month, Enterprise ₹9999/month - Clear value proposition' },
+    { key: 'key_benefits', label: 'Unique Selling Points', placeholder: 'Why choose us: Cost savings, time efficiency, better results, proven track record' },
+    { key: 'target_audience', label: 'Ideal Customer Profile', placeholder: 'e.g., SMEs with 10-100 employees, Annual revenue ₹1-10Cr, Growth-focused businesses' },
+    { key: 'competitors', label: 'Competitive Advantages', placeholder: 'How we beat competition: Better pricing, superior features, faster implementation, local support' },
+    { key: 'case_studies', label: 'Success Stories & ROI', placeholder: 'Customer success: 40% cost reduction, 3x faster processing, 99.9% uptime, 500+ happy clients' },
+    { key: 'demo_trial', label: 'Trial & Demo Options', placeholder: 'e.g., 14-day free trial, Live demo in 15 minutes, Money-back guarantee, No setup fees' },
+    { key: 'sales_process', label: 'Sales Journey', placeholder: 'Demo → Proposal → Trial → Contract → Onboarding - Clear next steps for prospects' },
+    { key: 'urgency_factors', label: 'Limited Time Incentives', placeholder: 'e.g., 20% discount this month, Limited slots available, Price increase from next quarter' },
+    { key: 'objection_handling', label: 'Common Objections & Responses', placeholder: 'Price concerns: ROI in 6 months, Budget constraints: Flexible payment plans, Competitor comparison' },
+    { key: 'contact_info', label: 'Sales Contact & Scheduling', placeholder: 'Sales team direct line, Calendar booking link, WhatsApp for quick queries' }
   ],
   'appointment': [
-    { key: 'business_name', label: 'Business Name', placeholder: 'e.g., Dr. Smith Clinic, Beauty Salon XYZ' },
-    { key: 'service_types', label: 'Service Types', placeholder: 'e.g., Consultation, Treatment, Haircut, Massage' },
-    { key: 'appointment_duration', label: 'Appointment Duration', placeholder: 'e.g., 30 mins, 1 hour, 2 hours' },
-    { key: 'business_hours', label: 'Business Hours', placeholder: 'e.g., Mon-Sat 9AM-7PM, Sunday closed' },
-    { key: 'location_address', label: 'Location & Address', placeholder: 'Full address, landmarks, parking info' },
-    { key: 'booking_advance', label: 'Advance Booking', placeholder: 'e.g., Book 1 day ahead, Same day available' },
-    { key: 'cancellation_policy', label: 'Cancellation Policy', placeholder: 'e.g., 24 hours notice, Cancellation charges' },
-    { key: 'payment_info', label: 'Payment Information', placeholder: 'e.g., Pay at venue, Advance payment, Online payment' },
-    { key: 'staff_info', label: 'Staff Information', placeholder: 'e.g., Dr. Smith (Mon-Wed), Therapist A (Thu-Sat)' },
-    { key: 'contact_info', label: 'Contact Information', placeholder: 'Phone, WhatsApp, email for bookings' }
+    { key: 'business_name', label: 'Business Name & Specialty', placeholder: 'e.g., Dr. Smith Clinic - Specialized in Cardiology, 15+ years experience' },
+    { key: 'service_types', label: 'Services & Treatments', placeholder: 'e.g., Consultation ₹500, Health checkup ₹1500, Specialized treatments available' },
+    { key: 'appointment_duration', label: 'Appointment Duration & Process', placeholder: 'e.g., Consultation 30 mins, Detailed checkup 1 hour, Follow-up 15 mins' },
+    { key: 'business_hours', label: 'Available Time Slots', placeholder: 'e.g., Mon-Sat 9AM-7PM, Sunday emergency only, Lunch break 1-2PM' },
+    { key: 'location_address', label: 'Location & Accessibility', placeholder: 'Full address, nearest metro station, parking available, wheelchair accessible' },
+    { key: 'booking_advance', label: 'Booking Requirements', placeholder: 'e.g., Book 1 day ahead for routine, Same day for urgent, Emergency slots available' },
+    { key: 'cancellation_policy', label: 'Cancellation & Rescheduling', placeholder: 'e.g., 4 hours notice required, Free rescheduling once, Cancellation charges after 2 hours' },
+    { key: 'payment_info', label: 'Payment & Insurance', placeholder: 'e.g., Cash/Card accepted, Insurance cashless, Online payment available, EMI for treatments' },
+    { key: 'preparation_instructions', label: 'Appointment Preparation', placeholder: 'e.g., Bring previous reports, Fasting required for blood tests, Comfortable clothing' },
+    { key: 'contact_info', label: 'Contact & Emergency', placeholder: 'Appointment booking: 9AM-6PM, Emergency: 24/7, WhatsApp for quick booking' }
   ],
   'healthcare': [
-    { key: 'clinic_name', label: 'Clinic/Hospital Name', placeholder: 'e.g., City Medical Center' },
-    { key: 'doctor_info', label: 'Doctor Information', placeholder: 'e.g., Dr. John Smith - Cardiologist, 15 years exp' },
-    { key: 'specializations', label: 'Specializations', placeholder: 'e.g., Cardiology, Orthopedics, General Medicine' },
-    { key: 'consultation_fees', label: 'Consultation Fees', placeholder: 'e.g., ₹500 consultation, ₹300 follow-up' },
-    { key: 'appointment_slots', label: 'Available Slots', placeholder: 'e.g., Morning 9-12, Evening 5-8' },
-    { key: 'emergency_services', label: 'Emergency Services', placeholder: 'e.g., 24/7 emergency, Ambulance service' },
-    { key: 'insurance_accepted', label: 'Insurance Accepted', placeholder: 'e.g., Cashless treatment, All major insurances' },
-    { key: 'facilities', label: 'Facilities Available', placeholder: 'e.g., Lab tests, X-ray, Pharmacy, ICU' },
-    { key: 'location_info', label: 'Location Information', placeholder: 'Address, nearby landmarks, parking' },
-    { key: 'contact_emergency', label: 'Contact & Emergency', placeholder: 'Phone, emergency number, WhatsApp' }
+    { key: 'clinic_name', label: 'Clinic/Hospital Name & Reputation', placeholder: 'e.g., City Medical Center - 25 years of trusted healthcare, NABH accredited' },
+    { key: 'doctor_info', label: 'Doctor Credentials & Experience', placeholder: 'e.g., Dr. John Smith - MD Cardiology, AIIMS Delhi, 20+ years, 10000+ successful cases' },
+    { key: 'specializations', label: 'Medical Specializations', placeholder: 'e.g., Advanced Cardiology, Minimally invasive surgery, Preventive healthcare, Emergency medicine' },
+    { key: 'consultation_fees', label: 'Consultation Fees & Packages', placeholder: 'e.g., First consultation ₹800, Follow-up ₹500, Health packages from ₹2500' },
+    { key: 'appointment_slots', label: 'Doctor Availability', placeholder: 'e.g., Dr. Smith: Mon-Wed-Fri 10AM-2PM, Dr. Patel: Tue-Thu-Sat 3PM-7PM' },
+    { key: 'emergency_services', label: 'Emergency & Critical Care', placeholder: 'e.g., 24/7 emergency, ICU facility, Ambulance service, Trauma care specialist' },
+    { key: 'insurance_accepted', label: 'Insurance & Payment Options', placeholder: 'e.g., Cashless treatment for 50+ insurers, Corporate health packages, EMI available' },
+    { key: 'facilities', label: 'Medical Facilities & Equipment', placeholder: 'e.g., Digital X-ray, ECG, 2D Echo, Pathology lab, Pharmacy, Modern operation theater' },
+    { key: 'patient_care', label: 'Patient Care Services', placeholder: 'e.g., Dedicated patient coordinator, Home sample collection, Telemedicine available' },
+    { key: 'location_info', label: 'Location & Accessibility', placeholder: 'Address, metro connectivity, parking for 50+ cars, wheelchair accessible, patient drop-off area' },
+    { key: 'contact_emergency', label: 'Contact & Emergency Numbers', placeholder: 'Appointment: +91-XXXXXXXXXX, Emergency: +91-YYYYYYYYYY, WhatsApp booking available' }
   ],
   'education': [
-    { key: 'institute_name', label: 'Institute Name', placeholder: 'e.g., ABC Learning Academy' },
-    { key: 'courses_offered', label: 'Courses Offered', placeholder: 'e.g., Web Development, Data Science, Digital Marketing' },
-    { key: 'course_duration', label: 'Course Duration', placeholder: 'e.g., 3 months, 6 months, 1 year programs' },
-    { key: 'fees_structure', label: 'Fees Structure', placeholder: 'e.g., ₹25,000 for 3 months, EMI available' },
-    { key: 'batch_timings', label: 'Batch Timings', placeholder: 'e.g., Morning 9-12, Evening 6-9, Weekend batches' },
-    { key: 'faculty_info', label: 'Faculty Information', placeholder: 'e.g., Industry experts, 10+ years experience' },
-    { key: 'placement_support', label: 'Placement Support', placeholder: 'e.g., 100% placement assistance, Job guarantee' },
-    { key: 'certification', label: 'Certification', placeholder: 'e.g., Industry recognized certificate, Government approved' },
-    { key: 'demo_classes', label: 'Demo Classes', placeholder: 'e.g., Free demo class, Trial week available' },
-    { key: 'contact_admission', label: 'Admission Contact', placeholder: 'Admission office, counselor contact, visit hours' }
+    { key: 'institute_name', label: 'Institute Name & Accreditation', placeholder: 'e.g., ABC Learning Academy - ISO certified, Government recognized, 15+ years experience' },
+    { key: 'courses_offered', label: 'Course Portfolio & Specializations', placeholder: 'e.g., Full Stack Development, Data Science with AI/ML, Digital Marketing with Google certification' },
+    { key: 'course_duration', label: 'Course Duration & Format', placeholder: 'e.g., 6-month intensive, Weekend batches available, Online + Offline hybrid mode' },
+    { key: 'fees_structure', label: 'Fees & Payment Options', placeholder: 'e.g., ₹45,000 total, ₹15K per installment, 0% EMI available, Scholarship for meritorious students' },
+    { key: 'batch_timings', label: 'Batch Schedule & Flexibility', placeholder: 'e.g., Morning 9AM-12PM, Evening 6PM-9PM, Weekend 10AM-5PM, Flexible timing options' },
+    { key: 'faculty_info', label: 'Faculty & Industry Experts', placeholder: 'e.g., Industry professionals from Google/Microsoft, 10+ years experience, Live project mentoring' },
+    { key: 'placement_support', label: 'Placement & Career Support', placeholder: 'e.g., 95% placement record, Salary range ₹4-12 LPA, Interview preparation, Resume building' },
+    { key: 'certification', label: 'Certification & Recognition', placeholder: 'e.g., Industry-recognized certificate, Google/Microsoft partnership, Government skill development certificate' },
+    { key: 'practical_training', label: 'Hands-on Training & Projects', placeholder: 'e.g., Live projects, Industry internships, Portfolio development, Real-world case studies' },
+    { key: 'demo_classes', label: 'Trial & Demo Options', placeholder: 'e.g., Free demo class this weekend, 1-week trial, Money-back guarantee, Course curriculum preview' },
+    { key: 'student_support', label: 'Student Support Services', placeholder: 'e.g., 24/7 doubt clearing, Learning management system, Peer learning groups, Alumni network' },
+    { key: 'contact_admission', label: 'Admission Process & Contact', placeholder: 'Admission counselor available 9AM-7PM, Online application, Document verification, Immediate enrollment' }
   ],
   'restaurant': [
-    { key: 'restaurant_name', label: 'Restaurant Name', placeholder: 'e.g., Spice Garden Restaurant' },
-    { key: 'cuisine_type', label: 'Cuisine Type', placeholder: 'e.g., North Indian, Chinese, Continental, Multi-cuisine' },
-    { key: 'menu_highlights', label: 'Menu Highlights', placeholder: 'e.g., Signature dishes, Chef specials, Popular items' },
-    { key: 'price_range', label: 'Price Range', placeholder: 'e.g., ₹200-500 per person, Budget-friendly, Premium dining' },
-    { key: 'operating_hours', label: 'Operating Hours', placeholder: 'e.g., 11AM-11PM, Lunch 12-3PM, Dinner 7-11PM' },
-    { key: 'seating_capacity', label: 'Seating & Ambiance', placeholder: 'e.g., 50 seats, Family dining, AC, Outdoor seating' },
-    { key: 'special_services', label: 'Special Services', placeholder: 'e.g., Home delivery, Party bookings, Live music' },
-    { key: 'location_info', label: 'Location Information', placeholder: 'Address, nearby landmarks, parking availability' },
-    { key: 'reservation_info', label: 'Reservation Information', placeholder: 'e.g., Table booking required, Walk-ins welcome' },
-    { key: 'contact_info', label: 'Contact Information', placeholder: 'Phone, WhatsApp, online ordering platforms' }
+    { key: 'restaurant_name', label: 'Restaurant Name & Concept', placeholder: 'e.g., Spice Garden Restaurant - Authentic North Indian cuisine in elegant ambiance' },
+    { key: 'cuisine_type', label: 'Cuisine & Specialty Dishes', placeholder: 'e.g., North Indian, Chinese, Continental - Famous for Butter Chicken, Biryani, Live Tandoor' },
+    { key: 'menu_highlights', label: 'Signature Dishes & Chef Specials', placeholder: 'e.g., Award-winning Butter Chicken ₹320, Chef special Biryani ₹280, Fresh seafood daily' },
+    { key: 'price_range', label: 'Pricing & Value Proposition', placeholder: 'e.g., ₹300-600 per person, Family meals from ₹800, Lunch combos ₹180, Premium dining experience' },
+    { key: 'operating_hours', label: 'Operating Hours & Peak Times', placeholder: 'e.g., 11AM-11PM daily, Lunch rush 12-3PM, Dinner peak 7-10PM, Late night menu till 1AM' },
+    { key: 'seating_capacity', label: 'Seating & Ambiance Options', placeholder: 'e.g., 80 seats, Family sections, Couple booths, AC dining, Outdoor garden seating, Private party hall' },
+    { key: 'special_services', label: 'Special Services & Events', placeholder: 'e.g., Home delivery within 5km, Birthday celebrations, Live music weekends, Corporate lunch packages' },
+    { key: 'offers_promotions', label: 'Current Offers & Promotions', placeholder: 'e.g., 20% off on weekdays, Buy 2 get 1 free desserts, Happy hours 4-7PM, Weekend buffet ₹499' },
+    { key: 'reservation_info', label: 'Reservation & Booking Policy', placeholder: 'e.g., Table booking recommended for dinner, No reservation fee, Group bookings 15+ people, Advance booking for weekends' },
+    { key: 'location_info', label: 'Location & Accessibility', placeholder: 'Address with landmarks, valet parking available, near metro station, wheelchair accessible' },
+    { key: 'contact_info', label: 'Contact & Ordering Options', placeholder: 'Phone reservations, WhatsApp ordering, Zomato/Swiggy delivery, Online table booking available' }
   ],
   'generic': [
     { key: 'company_name', label: 'Company Name', placeholder: 'Your Company Name' },
@@ -174,6 +183,191 @@ const VOICE_OPTIONS: Record<string, { name: string; value: string }[]> = {
   ],
 }
 
+// Conversation Strategy Templates for Different Sales Scenarios
+const CONVERSATION_STRATEGIES = {
+  'cold_calling': {
+    name: 'Cold Calling Strategy',
+    description: 'Proven techniques for successful cold outreach',
+    strategies: [
+      'Open with a compelling hook within first 10 seconds',
+      'Ask permission to continue: "Do you have 2 minutes?"',
+      'Focus on customer pain points, not product features',
+      'Use social proof: "Companies like yours are saving 30%"',
+      'Ask discovery questions to understand needs',
+      'Handle objections with empathy and alternatives',
+      'Always end with a clear next step or appointment'
+    ],
+    sample_openers: [
+      'Hi [Name], I help companies like yours reduce costs by 30%. Do you have 2 minutes?',
+      'Hi [Name], we just helped [Similar Company] save ₹5 lakhs annually. Interested in hearing how?',
+      'Hi [Name], quick question - are you still struggling with [Common Pain Point]?'
+    ]
+  },
+  'warm_leads': {
+    name: 'Warm Lead Conversion',
+    description: 'Converting interested prospects into customers',
+    strategies: [
+      'Reference their previous interest or inquiry',
+      'Acknowledge their specific needs mentioned before',
+      'Provide personalized solutions based on their situation',
+      'Share relevant case studies and success stories',
+      'Create urgency with limited-time offers',
+      'Address any concerns or objections proactively',
+      'Guide toward immediate action or commitment'
+    ],
+    sample_openers: [
+      'Hi [Name], thanks for your interest in [Product]. Based on your inquiry about [Specific Need]...',
+      'Hi [Name], I saw you downloaded our [Resource]. How can we help you achieve [Their Goal]?',
+      'Hi [Name], following up on your request for [Information]. I have some great news...'
+    ]
+  },
+  'follow_up': {
+    name: 'Follow-up Strategy',
+    description: 'Re-engaging prospects and maintaining momentum',
+    strategies: [
+      'Reference previous conversation or interaction',
+      'Provide new value or information since last contact',
+      'Address any concerns raised in previous discussions',
+      'Share updates, new features, or special offers',
+      'Reconfirm their needs and timeline',
+      'Suggest alternative solutions if original didn\'t fit',
+      'Set clear expectations for next steps'
+    ],
+    sample_openers: [
+      'Hi [Name], following up on our conversation about [Topic]. I have an update...',
+      'Hi [Name], you mentioned [Concern] last time. I found a solution that addresses exactly that...',
+      'Hi [Name], I know timing wasn\'t right before. Has your situation changed regarding [Need]?'
+    ]
+  },
+  'objection_handling': {
+    name: 'Objection Handling Framework',
+    description: 'Professional responses to common objections',
+    common_objections: {
+      'price_too_high': {
+        objection: 'Your price is too high',
+        responses: [
+          'I understand price is important. Let\'s look at the ROI - you\'ll save ₹X in Y months',
+          'What if I could show you how this pays for itself in 6 months?',
+          'Many clients felt the same initially. After seeing 40% cost savings, they wished they started sooner'
+        ]
+      },
+      'need_to_think': {
+        objection: 'I need to think about it',
+        responses: [
+          'Of course, it\'s an important decision. What specific aspects would you like to discuss?',
+          'I understand. What information would help you make the best decision?',
+          'That\'s wise. What\'s your typical decision-making process for investments like this?'
+        ]
+      },
+      'budget_constraints': {
+        objection: 'We don\'t have budget right now',
+        responses: [
+          'I understand budget timing. When do you typically plan for investments like this?',
+          'What if we could structure this to fit your current budget with flexible payment terms?',
+          'Many clients start with our basic package and upgrade as they see results. Would that work?'
+        ]
+      },
+      'happy_with_current': {
+        objection: 'We\'re happy with our current solution',
+        responses: [
+          'That\'s great to hear. What do you like most about your current setup?',
+          'I\'m glad it\'s working. Are there any areas where you\'d like to see improvement?',
+          'Excellent. How would you feel about a solution that could enhance what you already have?'
+        ]
+      }
+    }
+  },
+  'closing_techniques': {
+    name: 'Closing Techniques',
+    description: 'Effective ways to secure commitment and next steps',
+    techniques: [
+      {
+        name: 'Assumptive Close',
+        description: 'Assume they\'re ready to proceed',
+        example: 'Great! When would you like to start? This week or next week?'
+      },
+      {
+        name: 'Alternative Close',
+        description: 'Offer two positive choices',
+        example: 'Would you prefer the standard package or premium package?'
+      },
+      {
+        name: 'Urgency Close',
+        description: 'Create time-sensitive motivation',
+        example: 'This offer expires Friday. Shall we get you started today?'
+      },
+      {
+        name: 'Summary Close',
+        description: 'Recap benefits and ask for commitment',
+        example: 'So you\'ll save ₹50K annually and get 24/7 support. Ready to move forward?'
+      },
+      {
+        name: 'Question Close',
+        description: 'Ask a question that leads to yes',
+        example: 'Does this solution address your main concerns about [pain point]?'
+      }
+    ]
+  },
+  'rapport_building': {
+    name: 'Rapport Building Techniques',
+    description: 'Building trust and connection quickly',
+    techniques: [
+      'Use their name frequently throughout the conversation',
+      'Mirror their communication style and pace',
+      'Find common ground or shared experiences',
+      'Show genuine interest in their business challenges',
+      'Use active listening and repeat back their concerns',
+      'Share relevant success stories from similar clients',
+      'Be authentic and admit when you don\'t know something'
+    ],
+    conversation_starters: [
+      'How long have you been with [Company]?',
+      'What\'s the biggest challenge in your role right now?',
+      'I noticed [Company] recently [Achievement/News]. Congratulations!',
+      'What made you interested in exploring solutions like ours?'
+    ]
+  }
+}
+
+// Best Practices for Voice Conversations
+const VOICE_CONVERSATION_BEST_PRACTICES = {
+  'general_guidelines': [
+    'Keep responses under 20 words for better comprehension',
+    'Speak clearly and at moderate pace',
+    'Use natural pauses to let information sink in',
+    'Ask one question at a time to avoid confusion',
+    'Confirm understanding before moving to next topic',
+    'Use positive, enthusiastic tone throughout',
+    'End each response with a clear next step or question'
+  ],
+  'language_tips': [
+    'Use simple, conversational language',
+    'Avoid jargon unless customer uses it first',
+    'Use Hindi-English mix when culturally appropriate',
+    'Repeat important information like prices and dates',
+    'Use numbers clearly: "Forty-five thousand" not "45K"',
+    'Spell out important details when needed',
+    'Confirm spelling of names and contact information'
+  ],
+  'engagement_techniques': [
+    'Start with energy and enthusiasm',
+    'Use customer\'s name at least 3 times in conversation',
+    'Ask engaging questions that require more than yes/no',
+    'Share brief, relevant success stories',
+    'Create mental pictures: "Imagine saving 2 hours daily"',
+    'Use social proof: "Most of our clients see results in 30 days"',
+    'Build urgency without being pushy'
+  ],
+  'handling_silence': [
+    'Allow 3-5 seconds of silence after important questions',
+    'Don\'t rush to fill every pause',
+    'If silence extends, gently check: "Are you still there?"',
+    'Use silence strategically after presenting offers',
+    'Respect thinking time for important decisions',
+    'Break long silences with helpful clarifications'
+  ]
+}
+
 const API_BASE = process.env.NEXT_PUBLIC_CONFIG_API_URL || 'https://callagent-be-2.onrender.com'
 
 export default function ConfigPage() {
@@ -187,11 +381,14 @@ export default function ConfigPage() {
     max_retries: 0,
     retry_delay: 0,
     tts_provider: 'google',
-    stt_provider: 'deepgram'
+    stt_provider: 'assemblyai'
   })
   const [activeTab, setActiveTab] = useState('greeting')
   const [loading, setLoading] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState('generic')
+  const [jsonEditMode, setJsonEditMode] = useState(false)
+  const [jsonEditValue, setJsonEditValue] = useState('')
+  const [jsonError, setJsonError] = useState('')
 
   useEffect(() => {
     loadConfig()
@@ -211,9 +408,15 @@ export default function ConfigPage() {
           max_retries: data.max_retries || 0,
           retry_delay: data.retry_delay || 0,
           tts_provider: data.tts_provider || 'google',
-          stt_provider: data.stt_provider || 'deepgram'
+          stt_provider: data.stt_provider || 'assemblyai'
         })
-        console.log('✅ Config loaded:', { tts: data.tts_provider, stt: data.stt_provider })
+        
+        // Restore the selected template if it exists in the backend config
+        if (data.active_template && PROMPT_TEMPLATES[data.active_template as keyof typeof PROMPT_TEMPLATES]) {
+          setSelectedTemplate(data.active_template)
+        }
+        
+        console.log('✅ Config loaded:', { tts: data.tts_provider, stt: data.stt_provider, template: data.active_template })
       }
     } catch (error) {
       console.error('❌ Error loading config:', error)
@@ -224,10 +427,15 @@ export default function ConfigPage() {
   const saveConfig = useCallback(async () => {
     setLoading(true)
     try {
+      const configToSave = {
+        ...config,
+        active_template: selectedTemplate
+      }
+      
       const response = await fetch(`${API_BASE}/api/config`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config)
+        body: JSON.stringify(configToSave)
       })
       
       if (response.ok) {
@@ -241,7 +449,7 @@ export default function ConfigPage() {
     } finally {
       setLoading(false)
     }
-  }, [config])
+  }, [config, selectedTemplate])
 
   const resetConfig = useCallback(() => {
     setConfig({
@@ -255,6 +463,7 @@ export default function ConfigPage() {
       tts_provider: 'google',
       stt_provider: 'deepgram'
     })
+    setSelectedTemplate('generic') // Reset to default template
     toast.success('Configuration reset to empty')
   }, [])
 
@@ -427,6 +636,48 @@ export default function ConfigPage() {
       console.error('Error updating knowledge base:', error)
     }
   }, [config.knowledge_base])
+
+  const handleJsonEdit = useCallback(() => {
+    setJsonEditMode(true)
+    setJsonEditValue(config.knowledge_base || '{}')
+    setJsonError('')
+  }, [config.knowledge_base])
+
+  const handleJsonSave = useCallback(() => {
+    try {
+      // Validate JSON
+      JSON.parse(jsonEditValue)
+      setConfig(prev => ({
+        ...prev,
+        knowledge_base: jsonEditValue
+      }))
+      setJsonEditMode(false)
+      setJsonError('')
+      toast.success('JSON updated successfully')
+    } catch (error) {
+      setJsonError('Invalid JSON format. Please check your syntax.')
+    }
+  }, [jsonEditValue])
+
+  const handleJsonCancel = useCallback(() => {
+    setJsonEditMode(false)
+    setJsonEditValue('')
+    setJsonError('')
+  }, [])
+
+  const handleCustomJsonPrompt = useCallback((customJson: string) => {
+    try {
+      // Validate the custom JSON
+      JSON.parse(customJson)
+      setConfig(prev => ({
+        ...prev,
+        knowledge_base: customJson
+      }))
+      toast.success('Custom JSON prompt applied successfully')
+    } catch (error) {
+      toast.error('Invalid JSON format in custom prompt')
+    }
+  }, [])
 
   const renderKnowledgeBaseField = useCallback((field: any) => {
     let currentValue = ''
@@ -639,46 +890,160 @@ export default function ConfigPage() {
 
               {config.knowledge_base_enabled && (
                 <div className="space-y-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                    {KNOWLEDGE_BASE_FIELDS[selectedTemplate as keyof typeof KNOWLEDGE_BASE_FIELDS]?.map(renderKnowledgeBaseField)}
-                  </div>
-                  
-                  <div className="bg-slate-800 rounded-xl p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-md font-semibold text-white flex items-center">
-                        <Database className="w-4 h-4 mr-2" />
-                        Knowledge Base Preview
-                      </h4>
-                      <span className="text-xs text-slate-400 bg-slate-700 px-2 py-1 rounded">
-                        Auto-generated from form fields
-                      </span>
+                  {selectedTemplate === 'generic' ? (
+                    // Generic template with JSON editor functionality
+                    <div className="space-y-6">
+                      <div className="bg-slate-800 rounded-xl p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="text-md font-semibold text-white flex items-center">
+                            <Database className="w-4 h-4 mr-2" />
+                            Knowledge Base Configuration
+                          </h4>
+                          <div className="flex space-x-2">
+                            {!jsonEditMode ? (
+                              <button
+                                onClick={handleJsonEdit}
+                                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
+                              >
+                                Edit JSON
+                              </button>
+                            ) : (
+                              <div className="flex space-x-2">
+                                <button
+                                  onClick={handleJsonSave}
+                                  className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={handleJsonCancel}
+                                  className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {jsonEditMode ? (
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-slate-200 mb-2">
+                                Edit Knowledge Base JSON
+                              </label>
+                              <textarea
+                                value={jsonEditValue}
+                                onChange={(e) => setJsonEditValue(e.target.value)}
+                                rows={12}
+                                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white font-mono text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                                placeholder="Enter your JSON configuration..."
+                              />
+                              {jsonError && (
+                                <p className="text-red-400 text-sm mt-2">{jsonError}</p>
+                              )}
+                            </div>
+                            
+                            <div className="bg-slate-700/50 rounded-lg p-4">
+                               <h5 className="text-sm font-medium text-slate-200 mb-2">Custom JSON Prompt Example:</h5>
+                               <pre className="text-xs text-slate-400 whitespace-pre-wrap">
+{`{
+  "company_name": "Your Company Name",
+  "services": "Your main services or products",
+  "contact_info": "Phone, email, website",
+  "business_hours": "Operating hours",
+  "special_offers": "Current promotions",
+  "key_benefits": "What makes you unique"
+}`}
+                               </pre>
+                               <div className="mt-3 pt-3 border-t border-slate-600">
+                                 <h6 className="text-xs font-medium text-slate-300 mb-2">Quick Actions:</h6>
+                                 <div className="flex flex-wrap gap-2">
+                                   <button
+                                     onClick={() => handleCustomJsonPrompt('{"company_name": "Sample Company", "services": "Professional services", "contact_info": "contact@company.com", "business_hours": "9 AM - 6 PM", "special_offers": "Free consultation", "key_benefits": "Expert solutions"}')}
+                                     className="px-2 py-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 text-xs rounded border border-blue-600/30 transition-colors"
+                                   >
+                                     Load Sample
+                                   </button>
+                                   <button
+                                     onClick={() => setJsonEditValue('{}')}
+                                     className="px-2 py-1 bg-gray-600/20 hover:bg-gray-600/30 text-gray-300 text-xs rounded border border-gray-600/30 transition-colors"
+                                   >
+                                     Clear All
+                                   </button>
+                                   <button
+                                     onClick={() => setJsonEditValue(JSON.stringify(JSON.parse(jsonEditValue), null, 2))}
+                                     className="px-2 py-1 bg-green-600/20 hover:bg-green-600/30 text-green-300 text-xs rounded border border-green-600/30 transition-colors"
+                                   >
+                                     Format JSON
+                                   </button>
+                                 </div>
+                               </div>
+                             </div>
+                          </div>
+                        ) : (
+                          <div className="bg-slate-700 rounded-lg p-4">
+                            <pre className="text-sm text-slate-300 whitespace-pre-wrap font-mono overflow-x-auto">
+                              {config.knowledge_base ? JSON.stringify(JSON.parse(config.knowledge_base), null, 2) : '{}'}
+                            </pre>
+                          </div>
+                        )}
+                        
+                        <div className="flex items-start space-x-3 text-sm text-slate-400 mt-4">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                          <p>
+                            For the generic template, you can directly edit the JSON configuration. 
+                            This allows you to add custom fields and structure your knowledge base 
+                            exactly as needed for your specific use case.
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    
-                    <div className="space-y-4">
-                      <div className="bg-slate-700 rounded-lg p-4">
-                        <pre className="text-sm text-slate-300 whitespace-pre-wrap font-mono overflow-x-auto">
-                          {config.knowledge_base ? JSON.stringify(JSON.parse(config.knowledge_base), null, 2) : '{}'}
-                        </pre>
+                  ) : (
+                    // Other templates with form fields
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        {KNOWLEDGE_BASE_FIELDS[selectedTemplate as keyof typeof KNOWLEDGE_BASE_FIELDS]?.map(renderKnowledgeBaseField)}
                       </div>
                       
-                      <div className="flex items-start space-x-3 text-sm text-slate-400">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                        <p>
-                          This knowledge base is automatically generated from the form fields above. 
-                          Your AI agent will use this structured information to provide accurate, 
-                          business-specific responses to customers.
-                        </p>
-                      </div>
-                      
-                      <div className="flex items-start space-x-3 text-sm text-slate-400">
-                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                        <p>
-                          Fill out the form fields above to automatically populate this knowledge base 
-                          with your business information. No JSON knowledge required!
-                        </p>
+                      <div className="bg-slate-800 rounded-xl p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="text-md font-semibold text-white flex items-center">
+                            <Database className="w-4 h-4 mr-2" />
+                            Knowledge Base Preview
+                          </h4>
+                          <span className="text-xs text-slate-400 bg-slate-700 px-2 py-1 rounded">
+                            Auto-generated from form fields
+                          </span>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <div className="bg-slate-700 rounded-lg p-4">
+                            <pre className="text-sm text-slate-300 whitespace-pre-wrap font-mono overflow-x-auto">
+                              {config.knowledge_base ? JSON.stringify(JSON.parse(config.knowledge_base), null, 2) : '{}'}
+                            </pre>
+                          </div>
+                          
+                          <div className="flex items-start space-x-3 text-sm text-slate-400">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                            <p>
+                              This knowledge base is automatically generated from the form fields above. 
+                              Your AI agent will use this structured information to provide accurate, 
+                              business-specific responses to customers.
+                            </p>
+                          </div>
+                          
+                          <div className="flex items-start space-x-3 text-sm text-slate-400">
+                            <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                            <p>
+                              Fill out the form fields above to automatically populate this knowledge base 
+                              with your business information. No JSON knowledge required!
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
             </div>
@@ -719,7 +1084,7 @@ export default function ConfigPage() {
                       </div>
                       <div className="text-right">
                          <p className="text-sm font-medium text-green-400">
-                           {config.stt_provider === 'deepgram' ? 'Deepgram STT' : 'Cartesia STT'}
+                           {config.stt_provider === 'cartesia' ? 'Cartesia STT' : 'AssemblyAI STT'}
                          </p>
                         <div className="flex items-center text-xs text-green-400">
                           <div className="w-1.5 h-1.5 bg-green-400 rounded-full mr-1"></div>
@@ -758,17 +1123,17 @@ export default function ConfigPage() {
                       Speech-to-Text Provider
                     </label>
                     <select
-                      value={config.stt_provider || 'cartesia'}
+                      value={config.stt_provider || 'assemblyai'}
                       onChange={(e) => handleSTTProviderChange(e.target.value)}
                       className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                     >
-                      <option value="deepgram">Deepgram STT</option>
+                      <option value="assemblyai">AssemblyAI STT</option>
                       <option value="cartesia">Cartesia STT</option>
                     </select>
                     <p className="text-sm text-slate-500 mt-2">
                       {config.stt_provider === 'cartesia' 
-                        ? 'Cartesia provides accurate real-time speech recognition'
-                        : 'Deepgram offers industry-leading speech recognition accuracy'
+                        ? 'Cartesia provides ultra-low latency speech recognition'
+                        : 'AssemblyAI offers industry-leading speech recognition accuracy'
                       }
                     </p>
                   </div>
@@ -795,7 +1160,7 @@ export default function ConfigPage() {
                       </ul>
                     </div>
                     <div>
-                      <h5 className="font-medium text-slate-300 mb-2">Deepgram STT</h5>
+                      <h5 className="font-medium text-slate-300 mb-2">AssemblyAI STT</h5>
                       <ul className="text-slate-400 space-y-1">
                         <li>• Industry-leading accuracy</li>
                         <li>• Multi-language support</li>
@@ -805,9 +1170,9 @@ export default function ConfigPage() {
                     <div>
                       <h5 className="font-medium text-slate-300 mb-2">Cartesia STT</h5>
                       <ul className="text-slate-400 space-y-1">
-                        <li>• Fast processing</li>
-                        <li>• High accuracy</li>
-                        <li>• Low latency</li>
+                        <li>• Ultra-low latency</li>
+                        <li>• Real-time streaming</li>
+                        <li>• High-quality recognition</li>
                       </ul>
                     </div>
                   </div>
