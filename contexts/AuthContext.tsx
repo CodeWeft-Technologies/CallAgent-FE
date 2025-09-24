@@ -27,6 +27,23 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<boolean>
   logout: () => void
   error: string | null
+  registerOrganization: (registrationData: OrganizationRegistrationData) => Promise<boolean>
+}
+
+// Organization registration interface
+interface OrganizationRegistrationData {
+  organization: {
+    name: string
+    subscription_tier: 'basic' | 'premium' | 'enterprise'
+    max_users: number
+  }
+  admin_user: {
+    username: string
+    email: string
+    password: string
+    first_name: string
+    last_name: string
+  }
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -136,6 +153,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  const registerOrganization = useCallback(async (registrationData: OrganizationRegistrationData): Promise<boolean> => {
+    try {
+      setError(null)
+      
+      const response = await fetch(`${API_URL}/api/auth/register-organization`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(registrationData),
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        setError(errorData.detail || 'Registration failed')
+        return false
+      }
+      
+      const data = await response.json()
+      
+      // Registration successful - don't auto-login, let user login manually
+      return true
+    } catch (error) {
+      console.error('Registration error:', error)
+      setError('An error occurred during registration. Please try again.')
+      return false
+    }
+  }, [])
+
   const value: AuthContextType = {
     isAuthenticated,
     loading,
@@ -143,7 +189,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     token,
     login,
     logout,
-    error
+    error,
+    registerOrganization
   }
 
   return (

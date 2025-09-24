@@ -1,11 +1,10 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import Sidebar from '../components/Sidebar'
-import Navigation from '../components/Navigation'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '../contexts/AuthContext'
 import AuthWrapper from '../components/AuthWrapper'
+import LayoutContent from '../components/LayoutContent'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -24,23 +23,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <AuthWrapper>
-            <div className="flex h-screen bg-slate-950">
-              {/* Desktop Sidebar */}
-              <div className="hidden lg:block">
-                <Sidebar />
-              </div>
-              
-              {/* Mobile Navigation */}
-              <div className="lg:hidden">
-                <Navigation />
-              </div>
-              
-              <main className="flex-1 overflow-auto bg-slate-950">
-                <div className="p-4 sm:p-6 lg:p-8 pt-16 lg:pt-4">
-                  {children}
-                </div>
-              </main>
-            </div>
+            <LayoutContent>
+              {children}
+            </LayoutContent>
           </AuthWrapper>
         </AuthProvider>
         <Toaster 

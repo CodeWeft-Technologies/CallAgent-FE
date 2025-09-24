@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { usePathname } from 'next/navigation'
 import LoginForm from './LoginForm'
 
 interface AuthWrapperProps {
@@ -11,6 +12,7 @@ interface AuthWrapperProps {
 const AuthWrapper = React.memo<AuthWrapperProps>(({ children }) => {
   
   const { isAuthenticated, logout, loading } = useAuth()
+  const pathname = usePathname()
 
   // Show loading spinner while checking authentication status
   if (loading) {
@@ -22,6 +24,11 @@ const AuthWrapper = React.memo<AuthWrapperProps>(({ children }) => {
         </div>
       </div>
     )
+  }
+
+  // Allow access to register page without authentication
+  if (pathname === '/register') {
+    return <>{children}</>
   }
 
   // Show login form if not authenticated

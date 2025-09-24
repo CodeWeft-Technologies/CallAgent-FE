@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { Eye, EyeOff, Lock, User, AlertCircle, Building } from 'lucide-react'
+import Link from 'next/link'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function LoginForm() {
@@ -126,8 +127,14 @@ export default function LoginForm() {
             </button>
             
             {/* Registration Link */}
-            <div className="text-center text-sm text-slate-400">
-              <p>Don't have an account? Contact your administrator.</p>
+            <div className="text-center text-sm">
+              <p className="text-slate-400 mb-2">Don't have an account?</p>
+              <Link 
+                href="/register" 
+                className="text-blue-400 hover:text-blue-300 transition-colors font-medium"
+              >
+                Register your organization
+              </Link>
             </div>
           </form>
         </div>
