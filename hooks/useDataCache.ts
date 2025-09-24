@@ -110,11 +110,17 @@ export function useDataCache<T>(
 }
 
 // Specialized hooks for common use cases
-export function useLeadsCache() {
+export function useLeadsCache(token?: string) {
   return useDataCache(
     'leads',
     async () => {
-      const response = await fetch('/api/leads')
+      if (!token) return []
+      
+      const response = await fetch('/api/leads', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
       const data = await response.json()
       return data.success ? data.data : []
     },

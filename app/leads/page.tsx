@@ -8,6 +8,7 @@ import {
   FileText, User, Mail, Building, PhoneIcon, X
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useAuth } from '../../../contexts/AuthContext'
 
 interface Lead {
   id: string
@@ -37,6 +38,7 @@ const SEQUENTIAL_CALLER_API_BASE = process.env.NEXT_PUBLIC_SEQUENTIAL_CALLER_API
 const CONFIG_API_BASE = process.env.NEXT_PUBLIC_CONFIG_API_URL || 'https://callagent-be-2.onrender.com'
 
 export default function LeadsPage() {
+  const { token } = useAuth()
   
   const [leads, setLeads] = useState<Lead[]>([])
   const [stats, setStats] = useState<LeadStats>({
@@ -111,10 +113,12 @@ export default function LeadsPage() {
   }, [])
 
   useEffect(() => {
-    loadLeads()
-    loadStats()
+    if (token) {
+      loadLeads()
+      loadStats()
+    }
     loadRetryConfig()
-  }, [])
+  }, [token, loadLeads, loadStats])
 
   const loadRetryConfig = useCallback(async () => {
     try {
@@ -133,8 +137,14 @@ export default function LeadsPage() {
   }, [])
 
   const loadLeads = useCallback(async () => {
+    if (!token) return
+    
     try {
-      const response = await fetch(`${API_BASE}/api/leads`)
+      const response = await fetch(`${API_BASE}/api/leads`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
       const data = await response.json()
       
       if (data.success) {
@@ -154,11 +164,17 @@ export default function LeadsPage() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [token])
 
   const loadStats = useCallback(async () => {
+    if (!token) return
+    
     try {
-      const response = await fetch(`${API_BASE}/api/leads/stats`)
+      const response = await fetch(`${API_BASE}/api/leads/stats`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
       const data = await response.json()
       
       if (data.success) {
@@ -167,16 +183,19 @@ export default function LeadsPage() {
     } catch (error) {
       console.error('❌ Error loading stats:', error)
     }
-  }, [])
+  }, [token])
 
   const handleAddLead = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!token) return
     
     try {
       const response = await fetch(`${API_BASE}/api/leads`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(formData),
       })
@@ -200,9 +219,11 @@ export default function LeadsPage() {
       toast.error('Error adding lead')
       console.error('Error adding lead:', error)
     }
-  }, [formData, loadStats])
+  }, [formData, loadStats, token])
 
   const handleUpdateLead = useCallback(async (lead: Lead) => {
+    if (!token) return
+    
     try {
       const leadId = lead._id || lead.id
       if (!leadId) {
@@ -214,6 +235,7 @@ export default function LeadsPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           name: lead.name,
@@ -243,16 +265,21 @@ export default function LeadsPage() {
       toast.error('Error updating lead')
       console.error('Error updating lead:', error)
     }
-  }, [loadStats])
+  }, [loadStats, token])
 
   const handleDeleteLead = useCallback(async (leadId: string) => {
     if (!confirm('Are you sure you want to delete this lead?')) {
       return
     }
 
+    if (!token) return
+
     try {
       const response = await fetch(`${API_BASE}/api/leads/${leadId}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       })
 
       const data = await response.json()
@@ -268,9 +295,11 @@ export default function LeadsPage() {
       toast.error('Error deleting lead')
       console.error('Error deleting lead:', error)
     }
-  }, [loadStats])
+  }, [loadStats, token])
 
   const handleCallLead = useCallback(async (lead: Lead, maxRetries: number = retryConfig.max_retries) => {
+    if (!token) return
+    
     try {
       // Ensure we have a valid lead ID
       const leadId = lead._id || lead.id
@@ -282,7 +311,8 @@ export default function LeadsPage() {
       const response = await fetch(`${API_BASE}/api/leads/${leadId}/call`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           max_retries: maxRetries
@@ -308,10 +338,10 @@ export default function LeadsPage() {
         toast.error(data.error || 'Failed to initiate call')
       }
     } catch (error) {
-      toast.error('Error initiating call')
+      toast.error('Error calling lead')
       console.error('Error calling lead:', error)
     }
-  }, [retryConfig.max_retries, loadStats, loadLeads])
+  }, [retryConfig.max_retries, loadStats, loadLeads, token])
 
   const checkCallCompletion = async (leadId: string, callInitiatedTime: number): Promise<boolean> => {
     try {
