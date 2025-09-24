@@ -1,0 +1,437 @@
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import { useAuth } from '../../contexts/AuthContext'
+import { Settings, Key, Users, Database, Shield, Activity } from 'lucide-react'
+
+// API URL from environment variable
+const API_URL = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'
+
+export default function OrganizationPage() {
+  const { user, token } = useAuth()
+  const [activeTab, setActiveTab] = useState('general')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [orgData, setOrgData] = useState<any>(null)
+  const [credentials, setCredentials] = useState<any[]>([])
+  const [resourceLimits, setResourceLimits] = useState<any[]>([])
+  
+  // Fetch organization data
+  useEffect(() => {
+    const fetchOrgData = async () => {
+      if (!token) return
+      
+      setLoading(true)
+      setError(null)
+      
+      try {
+        // Fetch organization credentials
+        const credsResponse = await fetch(`${API_URL}/api/org-credentials/`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        
+        if (credsResponse.ok) {
+          const credsData = await credsResponse.json()
+          setCredentials(credsData)
+        }
+        
+        // Fetch resource limits
+        const limitsResponse = await fetch(`${API_URL}/api/resource-limits/`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        
+        if (limitsResponse.ok) {
+          const limitsData = await limitsResponse.json()
+          setResourceLimits(limitsData)
+        }
+        
+        setLoading(false)
+      } catch (err) {
+        console.error('Error fetching organization data:', err)
+        setError('Failed to load organization data')
+        setLoading(false)
+      }
+    }
+    
+    fetchOrgData()
+  }, [token])
+  
+  // Check if user has permission to access this page
+  if (user && user.role !== 'admin' && user.role !== 'manager') {
+    return (
+      <div className="p-8">
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-500">
+          <h2 className="text-lg font-medium mb-2">Access Denied</h2>
+          <p>You don't have permission to access organization settings.</p>
+        </div>
+      </div>
+    )
+  }
+  
+  return (
+    <div className="p-8">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-white mb-2">Organization Settings</h1>
+          <p className="text-slate-400">
+            Manage your organization's settings, credentials, and resource limits
+          </p>
+        </div>
+      </div>
+      
+      {/* Tabs */}
+      <div className="border-b border-slate-800 mb-6">
+        <div className="flex space-x-8">
+          <TabButton 
+            active={activeTab === 'general'} 
+            onClick={() => setActiveTab('general')}
+            icon={<Settings className="w-4 h-4 mr-2" />}
+            label="General"
+          />
+          <TabButton 
+            active={activeTab === 'credentials'} 
+            onClick={() => setActiveTab('credentials')}
+            icon={<Key className="w-4 h-4 mr-2" />}
+            label="API Credentials"
+          />
+          <TabButton 
+            active={activeTab === 'users'} 
+            onClick={() => setActiveTab('users')}
+            icon={<Users className="w-4 h-4 mr-2" />}
+            label="Users"
+          />
+          <TabButton 
+            active={activeTab === 'resources'} 
+            onClick={() => setActiveTab('resources')}
+            icon={<Database className="w-4 h-4 mr-2" />}
+            label="Resource Limits"
+          />
+        </div>
+      </div>
+      
+      {/* Content */}
+      <div className="space-y-6">
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        ) : error ? (
+          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-500">
+            <p>{error}</p>
+          </div>
+        ) : (
+          <>
+            {activeTab === 'general' && (
+              <GeneralSettings user={user} />
+            )}
+            
+            {activeTab === 'credentials' && (
+              <CredentialsSettings credentials={credentials} token={token} />
+            )}
+            
+            {activeTab === 'users' && (
+              <UsersSettings token={token} />
+            )}
+            
+            {activeTab === 'resources' && (
+              <ResourcesSettings resourceLimits={resourceLimits} token={token} />
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// Tab Button Component
+function TabButton({ active, onClick, icon, label }: { active: boolean, onClick: () => void, icon: React.ReactNode, label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center px-4 py-3 border-b-2 transition-colors ${
+        active 
+          ? 'border-blue-500 text-blue-500' 
+          : 'border-transparent text-slate-400 hover:text-slate-300'
+      }`}
+    >
+      {icon}
+      {label}
+    </button>
+  )
+}
+
+// General Settings Component
+function GeneralSettings({ user }: { user: any }) {
+  return (
+    <div className="bg-slate-800 rounded-lg p-6">
+      <h2 className="text-xl font-medium text-white mb-4">Organization Information</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-slate-400 mb-2">
+            Organization Name
+          </label>
+          <div className="bg-slate-700 rounded-lg p-3 text-white">
+            {user?.organization_name}
+          </div>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-slate-400 mb-2">
+            Organization ID
+          </label>
+          <div className="bg-slate-700 rounded-lg p-3 text-white">
+            {user?.organization_id}
+          </div>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-slate-400 mb-2">
+            Your Role
+          </label>
+          <div className="bg-slate-700 rounded-lg p-3 text-white flex items-center">
+            <Shield className="w-4 h-4 mr-2 text-blue-500" />
+            {user?.role === 'admin' ? 'Administrator' : 'Manager'}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Credentials Settings Component
+function CredentialsSettings({ credentials, token }: { credentials: any[], token: string | null }) {
+  return (
+    <div className="space-y-6">
+      <div className="bg-slate-800 rounded-lg p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-medium text-white">API Credentials</h2>
+          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            Add New Credential
+          </button>
+        </div>
+        
+        {credentials.length === 0 ? (
+          <div className="bg-slate-700 rounded-lg p-6 text-center">
+            <p className="text-slate-400">No credentials found. Add your first API credential.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {credentials.map((cred) => (
+              <div key={cred.id} className="bg-slate-700 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="font-medium text-white">{cred.credential_type.toUpperCase()}</div>
+                  <div className={`px-2 py-1 rounded-full text-xs ${cred.is_active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                    {cred.is_active ? 'Active' : 'Inactive'}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                  {cred.credential_type === 'piopiy' && (
+                    <>
+                      <div>
+                        <label className="block text-xs text-slate-400 mb-1">App ID</label>
+                        <div className="bg-slate-800 rounded p-2 text-sm text-slate-300">{cred.app_id}</div>
+                      </div>
+                      <div>
+                        <label className="block text-xs text-slate-400 mb-1">Caller ID</label>
+                        <div className="bg-slate-800 rounded p-2 text-sm text-slate-300">{cred.caller_id}</div>
+                      </div>
+                    </>
+                  )}
+                  
+                  {cred.credential_type !== 'piopiy' && (
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">API Key</label>
+                      <div className="bg-slate-800 rounded p-2 text-sm text-slate-300">
+                        {cred.api_key ? '••••••••••••••••' : 'No API key'}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex justify-end mt-3 space-x-2">
+                  <button className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded hover:bg-slate-600 transition-colors">
+                    Edit
+                  </button>
+                  <button className="text-red-400 hover:text-red-300 text-xs px-2 py-1 rounded hover:bg-red-500/10 transition-colors">
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// Users Settings Component
+function UsersSettings({ token }: { token: string | null }) {
+  const [users, setUsers] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  
+  useEffect(() => {
+    const fetchUsers = async () => {
+      if (!token) return
+      
+      try {
+        // This endpoint would need to be implemented in the backend
+        const response = await fetch(`${API_URL}/api/auth/users`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          setUsers(data)
+        }
+        
+        setLoading(false)
+      } catch (err) {
+        console.error('Error fetching users:', err)
+        setLoading(false)
+      }
+    }
+    
+    fetchUsers()
+  }, [token])
+  
+  return (
+    <div className="bg-slate-800 rounded-lg p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-medium text-white">Organization Users</h2>
+        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+          Add User
+        </button>
+      </div>
+      
+      {loading ? (
+        <div className="flex justify-center items-center h-32">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      ) : users.length === 0 ? (
+        <div className="bg-slate-700 rounded-lg p-6 text-center">
+          <p className="text-slate-400">No users found or feature not implemented yet.</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="text-left text-slate-400 border-b border-slate-700">
+                <th className="pb-3 font-medium">Name</th>
+                <th className="pb-3 font-medium">Email</th>
+                <th className="pb-3 font-medium">Role</th>
+                <th className="pb-3 font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id} className="border-b border-slate-700">
+                  <td className="py-3 text-white">{user.first_name} {user.last_name}</td>
+                  <td className="py-3 text-white">{user.email}</td>
+                  <td className="py-3">
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      user.role === 'admin' 
+                        ? 'bg-purple-500/20 text-purple-400' 
+                        : user.role === 'manager'
+                        ? 'bg-blue-500/20 text-blue-400'
+                        : 'bg-green-500/20 text-green-400'
+                    }`}>
+                      {user.role}
+                    </span>
+                  </td>
+                  <td className="py-3">
+                    <div className="flex space-x-2">
+                      <button className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded hover:bg-slate-600 transition-colors">
+                        Edit
+                      </button>
+                      <button className="text-red-400 hover:text-red-300 text-xs px-2 py-1 rounded hover:bg-red-500/10 transition-colors">
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Resources Settings Component
+function ResourcesSettings({ resourceLimits, token }: { resourceLimits: any[], token: string | null }) {
+  return (
+    <div className="bg-slate-800 rounded-lg p-6">
+      <h2 className="text-xl font-medium text-white mb-4">Resource Limits</h2>
+      
+      {resourceLimits.length === 0 ? (
+        <div className="bg-slate-700 rounded-lg p-6 text-center">
+          <p className="text-slate-400">No resource limits found.</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {resourceLimits.map((limit) => (
+            <div key={limit.id} className="bg-slate-700 rounded-lg p-4">
+              <div className="flex justify-between items-center mb-3">
+                <div className="font-medium text-white flex items-center">
+                  <Activity className="w-4 h-4 mr-2 text-blue-500" />
+                  {limit.resource_type.toUpperCase()}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1">Max Concurrent Connections</label>
+                  <div className="bg-slate-800 rounded p-2 text-sm text-slate-300">
+                    {limit.max_concurrent_connections}
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1">Monthly Quota</label>
+                  <div className="bg-slate-800 rounded p-2 text-sm text-slate-300">
+                    {limit.monthly_quota?.toLocaleString() || 'Unlimited'}
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1">Used Quota</label>
+                  <div className="bg-slate-800 rounded p-2 text-sm text-slate-300">
+                    {limit.used_quota?.toLocaleString() || '0'} 
+                    {limit.monthly_quota ? ` / ${limit.monthly_quota?.toLocaleString()}` : ''}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Progress bar */}
+              {limit.monthly_quota && (
+                <div className="mt-3">
+                  <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-blue-500" 
+                      style={{ 
+                        width: `${Math.min(100, (limit.used_quota / limit.monthly_quota) * 100)}%` 
+                      }}
+                    ></div>
+                  </div>
+                  <div className="text-xs text-slate-400 mt-1">
+                    {Math.round((limit.used_quota / limit.monthly_quota) * 100)}% used
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}

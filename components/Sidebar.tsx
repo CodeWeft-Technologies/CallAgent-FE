@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Settings, MessageSquare, Users, Phone, BarChart3, PhoneCall, LogOut } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import OrganizationBadge from './OrganizationBadge'
+import UserProfileDropdown from './UserProfileDropdown'
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: Home },
@@ -17,10 +19,17 @@ const Sidebar = React.memo(() => {
   console.log('🔄 Rendering Sidebar')
   
   const pathname = usePathname()
-  const { logout } = useAuth()
+  const { user } = useAuth()
 
-  const handleSignOut = () => {
-      logout()
+  // Add organization settings to navigation for admins and managers
+  const getNavigation = () => {
+    const nav = [...navigation]
+    
+    if (user && (user.role === 'admin' || user.role === 'manager')) {
+      nav.push({ name: 'Organization', href: '/organization', icon: Settings })
+    }
+    
+    return nav
   }
   
   return (
@@ -32,15 +41,18 @@ const Sidebar = React.memo(() => {
             <Phone className="w-6 h-6 text-white" />
           </div>
           <div>
-            <span className="text-xl font-bold text-white">AI Agent</span>
-            <div className="text-xs text-slate-400">Voice Assistant</div>
+            <span className="text-xl font-bold text-white">CallAgent</span>
+            <div className="text-xs text-slate-400">Multi-Tenant Platform</div>
           </div>
         </div>
       </div>
 
+      {/* Organization Badge */}
+      <OrganizationBadge />
+
       {/* Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-2">
-        {navigation.map((item) => {
+        {getNavigation().map((item) => {
           const isActive = pathname === item.href
           return (
             <Link
@@ -61,7 +73,7 @@ const Sidebar = React.memo(() => {
         })}
       </nav>
 
-      {/* Status & Sign Out */}
+      {/* Status & User Profile */}
       <div className="p-4 border-t border-slate-800 space-y-3">
         <div className="flex items-center space-x-3 p-3 bg-slate-800/50 rounded-xl">
           <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
@@ -71,14 +83,10 @@ const Sidebar = React.memo(() => {
           </div>
         </div>
         
-        {/* Sign Out Button */}
-        <button 
-          onClick={handleSignOut}
-          className="w-full flex items-center px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-all duration-200 group"
-        >
-          <LogOut className="mr-3 h-5 w-5 flex-shrink-0 text-slate-400 group-hover:text-red-400" />
-          Sign Out
-        </button>
+        {/* User Profile Dropdown */}
+        <div className="flex justify-center w-full">
+          <UserProfileDropdown />
+        </div>
       </div>
     </aside>
   )
@@ -86,4 +94,4 @@ const Sidebar = React.memo(() => {
 
 Sidebar.displayName = 'Sidebar'
 
-export default Sidebar 
+export default Sidebar

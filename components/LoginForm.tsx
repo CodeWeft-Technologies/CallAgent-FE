@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Eye, EyeOff, Lock, User, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, Lock, User, AlertCircle, Building } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function LoginForm() {
@@ -10,23 +10,25 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { login } = useAuth()
+  const { login, error: authError } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
 
-    // Simulate a brief loading state for better UX
-    await new Promise(resolve => setTimeout(resolve, 500))
-
-    const success = login(username, password)
-    
-    if (!success) {
-      setError('Invalid username or password. Please try again.')
+    try {
+      const success = await login(username, password)
+      
+      if (!success) {
+        setError(authError || 'Invalid username or password. Please try again.')
+      }
+    } catch (err) {
+      setError('An error occurred during login. Please try again.')
+      console.error('Login error:', err)
+    } finally {
+      setLoading(false)
     }
-    
-    setLoading(false)
   }
 
   return (
@@ -35,10 +37,10 @@ export default function LoginForm() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-            <Lock className="w-8 h-8 text-white" />
+            <Building className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">AI Agent Dashboard</h1>
-          <p className="text-slate-400">Please sign in to access the dashboard</p>
+          <h1 className="text-3xl font-bold text-white mb-2">CallAgent Dashboard</h1>
+          <p className="text-slate-400">Sign in to your organization account</p>
         </div>
 
         {/* Login Form */}
@@ -122,7 +124,18 @@ export default function LoginForm() {
                 <span>Sign In</span>
               )}
             </button>
+            
+            {/* Registration Link */}
+            <div className="text-center text-sm text-slate-400">
+              <p>Don't have an account? Contact your administrator.</p>
+            </div>
           </form>
+        </div>
+        
+        {/* Footer */}
+        <div className="mt-6 text-center text-xs text-slate-500">
+          <p>CallAgent Multi-Tenant Platform</p>
+          <p className="mt-1">© {new Date().getFullYear()} All rights reserved</p>
         </div>
       </div>
     </div>
