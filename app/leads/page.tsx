@@ -33,9 +33,9 @@ interface LeadStats {
   converted: number
   total_calls: number
 }
-const API_BASE = process.env.NEXT_PUBLIC_LEAD_API_URL 
-const SEQUENTIAL_CALLER_API_BASE = process.env.NEXT_PUBLIC_SEQUENTIAL_CALLER_API_URL 
-const CONFIG_API_BASE = process.env.NEXT_PUBLIC_CONFIG_API_URL
+const API_BASE = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'
+const SEQUENTIAL_CALLER_API_BASE = process.env.NEXT_PUBLIC_SEQUENTIAL_CALLER_API_URL || 'http://localhost:8000'
+const CONFIG_API_BASE = process.env.NEXT_PUBLIC_CONFIG_API_URL || 'http://localhost:8000'
 
 export default function LeadsPage() {
   const { token } = useAuth()
@@ -655,6 +655,11 @@ export default function LeadsPage() {
     const file = event.target.files?.[0]
     if (!file) return
 
+    if (!token) {
+      toast.error('Authentication required. Please login again.')
+      return
+    }
+
     setUploading(true)
     const formData = new FormData()
     formData.append('file', file)
@@ -662,6 +667,9 @@ export default function LeadsPage() {
     try {
       const response = await fetch(`${API_BASE}/api/leads/upload`, {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
         body: formData,
       })
 
@@ -687,7 +695,7 @@ export default function LeadsPage() {
         fileInputRef.current.value = ''
       }
     }
-  }, [loadLeads, loadStats])
+  }, [loadLeads, loadStats, token])
 
   const getStatusBadge = useCallback((status: string) => {
     const styles = {
