@@ -129,14 +129,29 @@ export default function LeadsPage() {
   }, [])
 
   const loadLeads = useCallback(async () => {
-    if (!token) return
+    if (!token) {
+      console.log('❌ No token available for loadLeads')
+      return
+    }
     
     try {
+      console.log('🔑 Making request with token:', token ? 'Token present' : 'No token')
       const response = await fetch(`${API_BASE}/api/leads`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       })
+      
+      console.log('📡 Response status:', response.status)
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()))
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('❌ API Error Response:', errorText)
+        toast.error(`API Error: ${response.status} - ${response.statusText}`)
+        return
+      }
+      
       const data = await response.json()
       
       if (data.success) {
