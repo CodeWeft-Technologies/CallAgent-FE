@@ -8,7 +8,7 @@ import {
   FileText, User, Mail, Building, PhoneIcon, X
 } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { useAuth } from '../../../contexts/AuthContext'
+import { useAuth } from '../../contexts/AuthContext'
 
 interface Lead {
   id: string
@@ -112,14 +112,6 @@ export default function LeadsPage() {
     fileInputRef.current?.click()
   }, [])
 
-  useEffect(() => {
-    if (token) {
-      loadLeads()
-      loadStats()
-    }
-    loadRetryConfig()
-  }, [token, loadLeads, loadStats])
-
   const loadRetryConfig = useCallback(async () => {
     try {
       const response = await fetch(`${CONFIG_API_BASE}/api/config`)
@@ -184,6 +176,14 @@ export default function LeadsPage() {
       console.error('❌ Error loading stats:', error)
     }
   }, [token])
+
+  useEffect(() => {
+    if (token) {
+      loadLeads()
+      loadStats()
+    }
+    loadRetryConfig()
+  }, [token, loadLeads, loadStats])
 
   const handleAddLead = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
