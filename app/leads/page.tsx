@@ -33,9 +33,9 @@ interface LeadStats {
   converted: number
   total_calls: number
 }
-const API_BASE = process.env.NEXT_PUBLIC_LEAD_API_URL || 'https://callagent-be-2.onrender.com'
-const SEQUENTIAL_CALLER_API_BASE = process.env.NEXT_PUBLIC_SEQUENTIAL_CALLER_API_URL || 'https://callagent-be-2.onrender.com'
-const CONFIG_API_BASE = process.env.NEXT_PUBLIC_CONFIG_API_URL || 'https://callagent-be-2.onrender.com'
+const API_BASE = process.env.NEXT_PUBLIC_LEAD_API_URL 
+const SEQUENTIAL_CALLER_API_BASE = process.env.NEXT_PUBLIC_SEQUENTIAL_CALLER_API_URL 
+const CONFIG_API_BASE = process.env.NEXT_PUBLIC_CONFIG_API_URL
 
 export default function LeadsPage() {
   const { token } = useAuth()
