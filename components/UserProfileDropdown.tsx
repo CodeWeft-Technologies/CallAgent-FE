@@ -44,6 +44,8 @@ export default function UserProfileDropdown() {
     if (!user) return ''
     
     switch (user.role) {
+      case 'super_admin':
+        return 'Super Administrator'
       case 'admin':
         return 'Administrator'
       case 'manager':

@@ -11,7 +11,8 @@ import {
   Building,
   LogOut,
   Home,
-  PhoneCall
+  PhoneCall,
+  Shield
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import OrganizationBadge from './OrganizationBadge'
@@ -29,12 +30,18 @@ const Sidebar = React.memo(() => {
   const pathname = usePathname()
   const { user, logout } = useAuth()
 
-  // Add organization settings to navigation for admins and managers
+  // Add navigation items based on user role
   const getNavigation = () => {
     const nav = [...navigation]
     
+    // Add organization settings for regular admins and managers (not super admin)
     if (user && (user.role === 'admin' || user.role === 'manager')) {
       nav.push({ name: 'Organization', href: '/organization', icon: Settings })
+    }
+    
+    // Add admin panel for super admin only
+    if (user && user.role === 'super_admin' && user.is_super_admin) {
+      nav.push({ name: 'Admin Panel', href: '/admin', icon: Shield })
     }
     
     return nav

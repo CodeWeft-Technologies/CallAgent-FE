@@ -13,6 +13,7 @@ interface User {
   first_name?: string
   last_name?: string
   role: string
+  is_super_admin?: boolean
   organization_id: number
   organization_name: string
   created_at: string

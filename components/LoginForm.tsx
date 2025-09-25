@@ -127,14 +127,26 @@ export default function LoginForm() {
             </button>
             
             {/* Registration Link */}
-            <div className="text-center text-sm">
-              <p className="text-slate-400 mb-2">Don't have an account?</p>
-              <Link 
-                href="/register" 
-                className="text-blue-400 hover:text-blue-300 transition-colors font-medium"
-              >
-                Register your organization
-              </Link>
+            <div className="text-center text-sm space-y-3">
+              <div>
+                <p className="text-slate-400 mb-2">Don't have an account?</p>
+                <Link 
+                  href="/register" 
+                  className="text-blue-400 hover:text-blue-300 transition-colors font-medium"
+                >
+                  Register your organization
+                </Link>
+              </div>
+              
+              <div className="border-t border-slate-700 pt-3">
+                <p className="text-slate-400 mb-2">System Administrator?</p>
+                <Link 
+                  href="/admin-login" 
+                  className="text-red-400 hover:text-red-300 transition-colors font-medium text-xs"
+                >
+                  Super Admin Login
+                </Link>
+              </div>
             </div>
           </form>
         </div>

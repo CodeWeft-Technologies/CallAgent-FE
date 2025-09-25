@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
-import { Settings, Key, Users, Database, Shield, Activity } from 'lucide-react'
+import { Settings, Key, Users, Database, Shield, Activity, FileText } from 'lucide-react'
+import APIKeyRequestForm from '../../components/APIKeyRequestForm'
+import APIKeyRequestStatus from '../../components/APIKeyRequestStatus'
 
 // API URL from environment variable
 const API_URL = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'
@@ -15,7 +17,7 @@ export default function OrganizationPage() {
   const [orgData, setOrgData] = useState<any>(null)
   const [credentials, setCredentials] = useState<any[]>([])
   const [resourceLimits, setResourceLimits] = useState<any[]>([])
-  
+  const [requestRefreshTrigger, setRequestRefreshTrigger] = useState(0)
   // Fetch organization data
   useEffect(() => {
     const fetchOrgData = async () => {
@@ -110,6 +112,12 @@ export default function OrganizationPage() {
             icon={<Database className="w-4 h-4 mr-2" />}
             label="Resource Limits"
           />
+          <TabButton 
+            active={activeTab === 'api-requests'} 
+            onClick={() => setActiveTab('api-requests')}
+            icon={<FileText className="w-4 h-4 mr-2" />}
+            label="API Key Requests"
+          />
         </div>
       </div>
       
@@ -139,6 +147,14 @@ export default function OrganizationPage() {
             
             {activeTab === 'resources' && (
               <ResourcesSettings resourceLimits={resourceLimits} token={token} />
+            )}
+            
+            {activeTab === 'api-requests' && (
+              <APIKeyRequestsSettings 
+                token={token} 
+                refreshTrigger={requestRefreshTrigger}
+                onRequestSubmitted={() => setRequestRefreshTrigger(prev => prev + 1)}
+              />
             )}
           </>
         )}
@@ -635,68 +651,142 @@ function UsersSettings({ token }: { token: string | null }) {
 
 // Resources Settings Component
 function ResourcesSettings({ resourceLimits, token }: { resourceLimits: any[], token: string | null }) {
+  const [limits, setLimits] = useState(resourceLimits)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+
+  const handleUpdateLimit = async (limitId: number, newValue: number) => {
+    if (!token) return
+
+    setLoading(true)
+    setError(null)
+    setSuccess(null)
+
+    try {
+      const response = await fetch(`${API_URL}/api/resource-limits/${limitId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ limit_value: newValue })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update resource limit')
+      }
+
+      const updatedLimit = await response.json()
+      setLimits(prev => prev.map(limit => 
+        limit.id === limitId ? updatedLimit : limit
+      ))
+      setSuccess('Resource limit updated successfully')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
-    <div className="bg-slate-800 rounded-lg p-6">
-      <h2 className="text-xl font-medium text-white mb-4">Resource Limits</h2>
+    <div className="bg-slate-900 rounded-lg p-6">
+      <h2 className="text-xl font-semibold text-white mb-6">Resource Limits</h2>
       
-      {resourceLimits.length === 0 ? (
-        <div className="bg-slate-700 rounded-lg p-6 text-center">
-          <p className="text-slate-400">No resource limits found.</p>
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-500 mb-4">
+          {error}
         </div>
-      ) : (
-        <div className="space-y-6">
-          {resourceLimits.map((limit) => (
-            <div key={limit.id} className="bg-slate-700 rounded-lg p-4">
-              <div className="flex justify-between items-center mb-3">
-                <div className="font-medium text-white flex items-center">
-                  <Activity className="w-4 h-4 mr-2 text-blue-500" />
-                  {limit.resource_type.toUpperCase()}
-                </div>
+      )}
+      
+      {success && (
+        <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 text-green-500 mb-4">
+          {success}
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {limits.map((limit) => (
+          <div key={limit.id} className="bg-slate-800 rounded-lg p-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-white font-medium">{limit.resource_type}</h3>
+                <p className="text-slate-400 text-sm">{limit.description}</p>
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Max Concurrent Connections</label>
-                  <div className="bg-slate-800 rounded p-2 text-sm text-slate-300">
-                    {limit.max_concurrent_connections}
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Monthly Quota</label>
-                  <div className="bg-slate-800 rounded p-2 text-sm text-slate-300">
-                    {limit.monthly_quota?.toLocaleString() || 'Unlimited'}
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Used Quota</label>
-                  <div className="bg-slate-800 rounded p-2 text-sm text-slate-300">
-                    {limit.used_quota?.toLocaleString() || '0'} 
-                    {limit.monthly_quota ? ` / ${limit.monthly_quota?.toLocaleString()}` : ''}
-                  </div>
-                </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="number"
+                  value={limit.limit_value}
+                  onChange={(e) => {
+                    const newValue = parseInt(e.target.value)
+                    setLimits(prev => prev.map(l => 
+                      l.id === limit.id ? { ...l, limit_value: newValue } : l
+                    ))
+                  }}
+                  className="bg-slate-700 text-white px-3 py-1 rounded border border-slate-600 w-20"
+                />
+                <button
+                  onClick={() => handleUpdateLimit(limit.id, limit.limit_value)}
+                  disabled={loading}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
+                >
+                  Update
+                </button>
               </div>
-              
-              {/* Progress bar */}
-              {limit.monthly_quota && (
-                <div className="mt-3">
-                  <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-blue-500" 
-                      style={{ 
-                        width: `${Math.min(100, (limit.used_quota / limit.monthly_quota) * 100)}%` 
-                      }}
-                    ></div>
-                  </div>
-                  <div className="text-xs text-slate-400 mt-1">
-                    {Math.round((limit.used_quota / limit.monthly_quota) * 100)}% used
-                  </div>
-                </div>
-              )}
             </div>
-          ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function APIKeyRequestsSettings({ 
+  token, 
+  refreshTrigger, 
+  onRequestSubmitted 
+}: { 
+  token: string | null, 
+  refreshTrigger: number,
+  onRequestSubmitted: () => void 
+}) {
+  const [activeSubTab, setActiveSubTab] = useState('request')
+
+  return (
+    <div className="space-y-6">
+      {/* Sub-tabs */}
+      <div className="border-b border-slate-700">
+        <div className="flex space-x-6">
+          <button
+            onClick={() => setActiveSubTab('request')}
+            className={`pb-2 px-1 border-b-2 font-medium text-sm ${
+              activeSubTab === 'request'
+                ? 'border-blue-500 text-blue-400'
+                : 'border-transparent text-slate-400 hover:text-slate-300'
+            }`}
+          >
+            Submit Request
+          </button>
+          <button
+            onClick={() => setActiveSubTab('status')}
+            className={`pb-2 px-1 border-b-2 font-medium text-sm ${
+              activeSubTab === 'status'
+                ? 'border-blue-500 text-blue-400'
+                : 'border-transparent text-slate-400 hover:text-slate-300'
+            }`}
+          >
+            Request Status
+          </button>
         </div>
+      </div>
+
+      {/* Content */}
+      {activeSubTab === 'request' && (
+        <APIKeyRequestForm onRequestSubmitted={onRequestSubmitted} />
+      )}
+      
+      {activeSubTab === 'status' && (
+        <APIKeyRequestStatus refreshTrigger={refreshTrigger} />
       )}
     </div>
   )
