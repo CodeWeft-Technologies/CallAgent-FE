@@ -205,12 +205,135 @@ function GeneralSettings({ user }: { user: any }) {
 
 // Credentials Settings Component
 function CredentialsSettings({ credentials, token }: { credentials: any[], token: string | null }) {
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingCredential, setEditingCredential] = useState<any>(null)
+  const [formData, setFormData] = useState({
+    credential_type: 'piopiy',
+    app_id: '',
+    app_secret: '',
+    caller_id: '',
+    api_key: '',
+    is_active: true
+  })
+  const [saving, setSaving] = useState(false)
+  const [testResult, setTestResult] = useState<any>(null)
+
+  const handleAddCredential = async () => {
+    if (!token) return
+    
+    setSaving(true)
+    setTestResult(null)
+    
+    try {
+      const endpoint = formData.credential_type === 'piopiy' 
+        ? `${API_URL}/api/org-credentials/piopiy`
+        : `${API_URL}/api/org-credentials/api-key`
+      
+      const payload = formData.credential_type === 'piopiy' 
+        ? {
+            credential_type: 'piopiy',
+            app_id: formData.app_id,
+            app_secret: formData.app_secret,
+            caller_id: formData.caller_id,
+            is_active: formData.is_active
+          }
+        : {
+            credential_type: formData.credential_type,
+            api_key: formData.api_key,
+            is_active: formData.is_active
+          }
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      })
+      
+      if (response.ok) {
+        // Refresh credentials list
+        window.location.reload()
+      } else {
+        const error = await response.json()
+        alert(`Error: ${error.detail}`)
+      }
+    } catch (error) {
+      alert(`Error: ${error}`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleTestCredential = async () => {
+    if (!token || formData.credential_type !== 'piopiy') return
+    
+    setSaving(true)
+    setTestResult(null)
+    
+    try {
+      const response = await fetch(`${API_URL}/api/org-credentials/test/piopiy`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          credential_type: 'piopiy',
+          app_id: formData.app_id,
+          app_secret: formData.app_secret,
+          caller_id: formData.caller_id,
+          is_active: true
+        })
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        setTestResult(result)
+      } else {
+        const error = await response.json()
+        setTestResult({ success: false, message: error.detail })
+      }
+    } catch (error) {
+      setTestResult({ success: false, message: `Error: ${error}` })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDeleteCredential = async (credentialId: number) => {
+    if (!token || !confirm('Are you sure you want to delete this credential?')) return
+    
+    try {
+      const response = await fetch(`${API_URL}/api/org-credentials/${credentialId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      if (response.ok) {
+        window.location.reload()
+      } else {
+        const error = await response.json()
+        alert(`Error: ${error.detail}`)
+      }
+    } catch (error) {
+      alert(`Error: ${error}`)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="bg-slate-800 rounded-lg p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-medium text-white">API Credentials</h2>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+          <button 
+            onClick={() => setShowAddModal(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
             Add New Credential
           </button>
         </div>
@@ -255,10 +378,27 @@ function CredentialsSettings({ credentials, token }: { credentials: any[], token
                 </div>
                 
                 <div className="flex justify-end mt-3 space-x-2">
-                  <button className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded hover:bg-slate-600 transition-colors">
+                  <button 
+                    onClick={() => {
+                      setEditingCredential(cred)
+                      setFormData({
+                        credential_type: cred.credential_type,
+                        app_id: cred.app_id || '',
+                        app_secret: '',
+                        caller_id: cred.caller_id || '',
+                        api_key: cred.api_key || '',
+                        is_active: cred.is_active
+                      })
+                      setShowEditModal(true)
+                    }}
+                    className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded hover:bg-slate-600 transition-colors"
+                  >
                     Edit
                   </button>
-                  <button className="text-red-400 hover:text-red-300 text-xs px-2 py-1 rounded hover:bg-red-500/10 transition-colors">
+                  <button 
+                    onClick={() => handleDeleteCredential(cred.id)}
+                    className="text-red-400 hover:text-red-300 text-xs px-2 py-1 rounded hover:bg-red-500/10 transition-colors"
+                  >
                     Delete
                   </button>
                 </div>
@@ -267,6 +407,132 @@ function CredentialsSettings({ credentials, token }: { credentials: any[], token
           </div>
         )}
       </div>
+
+      {/* Add Credential Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-slate-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-medium text-white mb-4">Add New Credential</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-slate-300 mb-2">Credential Type</label>
+                <select
+                  value={formData.credential_type}
+                  onChange={(e) => setFormData({ ...formData, credential_type: e.target.value })}
+                  className="w-full bg-slate-700 text-white rounded-lg px-3 py-2 border border-slate-600 focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="piopiy">Piopiy (Voice Calling)</option>
+                  <option value="groq">Groq (LLM)</option>
+                  <option value="deepgram">Deepgram (STT)</option>
+                  <option value="google">Google (TTS)</option>
+                  <option value="cartesia">Cartesia (TTS)</option>
+                </select>
+              </div>
+
+              {formData.credential_type === 'piopiy' ? (
+                <>
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-2">App ID</label>
+                    <input
+                      type="text"
+                      value={formData.app_id}
+                      onChange={(e) => setFormData({ ...formData, app_id: e.target.value })}
+                      className="w-full bg-slate-700 text-white rounded-lg px-3 py-2 border border-slate-600 focus:border-blue-500 focus:outline-none"
+                      placeholder="Enter Piopiy App ID"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-2">App Secret</label>
+                    <input
+                      type="password"
+                      value={formData.app_secret}
+                      onChange={(e) => setFormData({ ...formData, app_secret: e.target.value })}
+                      className="w-full bg-slate-700 text-white rounded-lg px-3 py-2 border border-slate-600 focus:border-blue-500 focus:outline-none"
+                      placeholder="Enter Piopiy App Secret"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-2">Caller ID</label>
+                    <input
+                      type="text"
+                      value={formData.caller_id}
+                      onChange={(e) => setFormData({ ...formData, caller_id: e.target.value })}
+                      className="w-full bg-slate-700 text-white rounded-lg px-3 py-2 border border-slate-600 focus:border-blue-500 focus:outline-none"
+                      placeholder="Enter Caller ID (e.g., +1234567890)"
+                    />
+                  </div>
+                </>
+              ) : (
+                <div>
+                  <label className="block text-sm text-slate-300 mb-2">API Key</label>
+                  <input
+                    type="password"
+                    value={formData.api_key}
+                    onChange={(e) => setFormData({ ...formData, api_key: e.target.value })}
+                    className="w-full bg-slate-700 text-white rounded-lg px-3 py-2 border border-slate-600 focus:border-blue-500 focus:outline-none"
+                    placeholder="Enter API Key"
+                  />
+                </div>
+              )}
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="is_active"
+                  checked={formData.is_active}
+                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                  className="mr-2"
+                />
+                <label htmlFor="is_active" className="text-sm text-slate-300">Active</label>
+              </div>
+
+              {/* Test Result */}
+              {testResult && (
+                <div className={`p-3 rounded-lg ${testResult.success ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                  <p className="text-sm">{testResult.message}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              {formData.credential_type === 'piopiy' && (
+                <button
+                  onClick={handleTestCredential}
+                  disabled={saving || !formData.app_id || !formData.app_secret}
+                  className="bg-yellow-600 hover:bg-yellow-700 disabled:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
+                  {saving ? 'Testing...' : 'Test'}
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  setShowAddModal(false)
+                  setFormData({
+                    credential_type: 'piopiy',
+                    app_id: '',
+                    app_secret: '',
+                    caller_id: '',
+                    api_key: '',
+                    is_active: true
+                  })
+                  setTestResult(null)
+                }}
+                className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddCredential}
+                disabled={saving || (formData.credential_type === 'piopiy' ? !formData.app_id || !formData.app_secret || !formData.caller_id : !formData.api_key)}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                {saving ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

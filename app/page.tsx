@@ -6,8 +6,13 @@ import {
   Settings, ArrowRight, RefreshCw
 } from 'lucide-react'
 import Link from 'next/link'
+import { useAuth } from '../contexts/AuthContext'
+
+// API URL from environment variable
+const API_URL = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'
 
 export default function DashboardPage() {  
+  const { user, token } = useAuth()
   const [stats, setStats] = useState({
     leads: {
       total: 0,
@@ -30,16 +35,38 @@ export default function DashboardPage() {
     }
   })
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const loadDashboardStats = useCallback(async () => {
+    if (!token) {
+      setLoading(false)
+      return
+    }
+
     try {
       setLoading(true)
+      setError(null)
       
-      const leadsResponse = await fetch(`${process.env.NEXT_PUBLIC_LEAD_API_URL || 'https://callagent-be-2.onrender.com'}/api/leads/stats`)
+      // Fetch leads stats with authentication
+      const leadsResponse = await fetch(`${API_URL}/api/leads/stats`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      // Fetch calls stats with authentication
+      const callsResponse = await fetch(`${API_URL}/api/calls/stats`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
       const leadsData = await leadsResponse.json()
-      
-      const callsResponse = await fetch(`${process.env.NEXT_PUBLIC_CALL_API_URL || 'https://callagent-be-2.onrender.com'}/api/calls/stats`)
       const callsData = await callsResponse.json()
+      
+      if (!leadsResponse.ok || !callsResponse.ok) {
+        throw new Error('Failed to fetch stats')
+      }
       
       setStats(prevStats => ({
         leads: leadsData.success ? leadsData.data : prevStats.leads,
@@ -47,17 +74,61 @@ export default function DashboardPage() {
       }))
     } catch (error) {
       console.error('❌ Error loading dashboard stats:', error)
+      setError('Failed to load dashboard statistics')
     } finally {
       setLoading(false)
     }
-  }, []) // Removed stats dependency to prevent infinite loop
+  }, [token])
 
   useEffect(() => {
     loadDashboardStats()
   }, [loadDashboardStats])
 
+  // Show authentication required message if not logged in
+  if (!user || !token) {
+    return (
+      <div className="space-y-8">
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-red-600/10 via-orange-600/10 to-yellow-600/10 rounded-3xl blur-xl"></div>
+          <div className="relative bg-slate-900/80 backdrop-blur-sm rounded-3xl border border-slate-800/50 p-8">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg mx-auto">
+                <AlertCircle className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold text-white">Authentication Required</h1>
+              <p className="text-slate-400 max-w-md mx-auto">Please log in to view your organization's dashboard statistics.</p>
+              <Link href="/login" className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                <span>Go to Login</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-8">
+      {/* Error Alert */}
+      {error && (
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-red-600/10 via-orange-600/10 to-yellow-600/10 rounded-2xl blur-xl"></div>
+          <div className="relative bg-red-900/20 backdrop-blur-sm rounded-2xl border border-red-500/30 p-4">
+            <div className="flex items-center space-x-3">
+              <AlertCircle className="w-5 h-5 text-red-400" />
+              <p className="text-red-300">{error}</p>
+              <button
+                onClick={() => setError(null)}
+                className="ml-auto text-red-400 hover:text-red-300 transition-colors"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-emerald-600/10 rounded-3xl blur-xl"></div>
@@ -76,6 +147,12 @@ export default function DashboardPage() {
                 </div>
               </div>
               <p className="text-slate-300 max-w-2xl">Monitor your leads, track call performance, and analyze conversions with real-time insights powered by AI</p>
+              {user && (
+                <div className="flex items-center space-x-2 mt-2">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                  <span className="text-sm text-slate-400">Organization: <span className="text-emerald-400 font-medium">{user.organization_name || 'Default'}</span></span>
+                </div>
+              )}
             </div>
             <div className="flex items-center space-x-4">
               <button
@@ -420,6 +497,118 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Organization Activity Summary */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-emerald-500 rounded-full"></div>
+            <h2 className="text-2xl font-bold text-white">Organization Activity</h2>
+          </div>
+          {user && (
+            <div className="flex items-center space-x-2 px-4 py-2 bg-slate-800/50 rounded-xl border border-slate-700/50">
+              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+              <span className="text-sm text-slate-300">Active Organization: <span className="text-emerald-400 font-medium">{user.organization_name}</span></span>
+            </div>
+          )}
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* This Week Activity */}
+          <div className="relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-blue-800/10 rounded-2xl blur-xl"></div>
+            <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6 hover:border-blue-500/30 transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-white">{stats.calls.calls_this_week}</p>
+                  <p className="text-xs text-blue-400 font-medium">This Week</p>
+                </div>
+              </div>
+              <p className="text-sm text-slate-400">Calls made this week</p>
+              <div className="mt-2 flex items-center space-x-2">
+                <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full" style={{width: `${Math.min((stats.calls.calls_this_week / Math.max(stats.calls.total_calls, 1)) * 100, 100)}%`}}></div>
+                </div>
+                <span className="text-xs text-slate-400">{stats.calls.total_calls > 0 ? Math.round((stats.calls.calls_this_week / stats.calls.total_calls) * 100) : 0}%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Today's Activity */}
+          <div className="relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 to-emerald-800/10 rounded-2xl blur-xl"></div>
+            <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6 hover:border-emerald-500/30 transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                  <Phone className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-white">{stats.calls.calls_today}</p>
+                  <p className="text-xs text-emerald-400 font-medium">Today</p>
+                </div>
+              </div>
+              <p className="text-sm text-slate-400">Calls made today</p>
+              <div className="mt-2 flex items-center space-x-2">
+                <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full" style={{width: `${Math.min((stats.calls.calls_today / Math.max(stats.calls.calls_this_week, 1)) * 100, 100)}%`}}></div>
+                </div>
+                <span className="text-xs text-slate-400">{stats.calls.calls_this_week > 0 ? Math.round((stats.calls.calls_today / stats.calls.calls_this_week) * 100) : 0}%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Success Rate */}
+          <div className="relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-purple-800/10 rounded-2xl blur-xl"></div>
+            <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6 hover:border-purple-500/30 transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-white">
+                    {stats.calls.total_calls > 0 ? Math.round((stats.calls.completed_calls / stats.calls.total_calls) * 100) : 0}%
+                  </p>
+                  <p className="text-xs text-purple-400 font-medium">Success Rate</p>
+                </div>
+              </div>
+              <p className="text-sm text-slate-400">Successful call completion</p>
+              <div className="mt-2 flex items-center space-x-2">
+                <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-purple-400 to-purple-500 rounded-full" style={{width: `${stats.calls.total_calls > 0 ? (stats.calls.completed_calls / stats.calls.total_calls) * 100 : 0}%`}}></div>
+                </div>
+                <span className="text-xs text-slate-400">{stats.calls.completed_calls}/{stats.calls.total_calls}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Lead Conversion */}
+          <div className="relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-600/10 to-orange-800/10 rounded-2xl blur-xl"></div>
+            <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6 hover:border-orange-500/30 transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-white">{stats.leads.converted}</p>
+                  <p className="text-xs text-orange-400 font-medium">Conversions</p>
+                </div>
+              </div>
+              <p className="text-sm text-slate-400">Total lead conversions</p>
+              <div className="mt-2 flex items-center space-x-2">
+                <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full" style={{width: `${stats.leads.total > 0 ? (stats.leads.converted / stats.leads.total) * 100 : 0}%`}}></div>
+                </div>
+                <span className="text-xs text-slate-400">{stats.leads.total > 0 ? ((stats.leads.converted / stats.leads.total) * 100).toFixed(1) : 0}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
