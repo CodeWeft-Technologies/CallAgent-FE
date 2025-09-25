@@ -35,19 +35,28 @@ export default function AdminLoginPage() {
       if (response.ok) {
         const data = await response.json()
         
-        // Store the token and user data
-        localStorage.setItem('token', data.access_token)
-        localStorage.setItem('user', JSON.stringify({
-          id: data.user_id,
-          username: data.username,
-          role: data.role,
-          is_super_admin: data.is_super_admin,
-          organization_id: data.organization_id,
-          organization_name: data.organization_name
-        }))
+        // Store the authentication data in the same format as AuthContext expects
+        const authData = {
+          token: data.access_token,
+          user: {
+            id: data.user.id,
+            username: data.user.username,
+            email: data.user.email || '',
+            first_name: data.user.first_name || '',
+            last_name: data.user.last_name || '',
+            role: data.user.role,
+            is_super_admin: data.user.is_super_admin,
+            organization_id: data.user.organization_id,
+            organization_name: data.user.organization_name,
+            created_at: data.user.created_at || new Date().toISOString()
+          },
+          timestamp: Date.now()
+        }
         
-        // Redirect to admin dashboard
-        router.push('/admin')
+        localStorage.setItem('ai_agent_auth', JSON.stringify(authData))
+        
+        // Force a page reload to trigger AuthContext to recognize the authentication
+        window.location.href = '/admin'
       } else {
         const errorData = await response.json()
         setError(errorData.detail || 'Invalid super admin credentials')

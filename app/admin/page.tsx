@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { 
   Building2, Key, Settings, Users, Plus, Edit, Trash2, 
   Eye, EyeOff, Save, X, Check, AlertCircle, Search,
-  Shield, Database, Mic, MessageSquare, Volume2
+  Shield, Database, Mic, MessageSquare, Volume2, LogOut
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import APIKeyManager from '../../components/APIKeyManager'
@@ -39,7 +39,7 @@ interface APIKeyConfig {
 const API_BASE = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'
 
 export default function AdminDashboard() {
-  const { user, token } = useAuth()
+  const { user, token, logout } = useAuth()
   const [organizations, setOrganizations] = useState<Organization[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -48,9 +48,13 @@ export default function AdminDashboard() {
   const [editingKeys, setEditingKeys] = useState<{[key: number]: boolean}>({})
   const [apiKeyConfigs, setApiKeyConfigs] = useState<{[key: number]: APIKeyConfig}>({})
 
+  // Handle logout
+  const handleLogout = () => {
+    logout()
+  }
   // Check if user is super admin
   useEffect(() => {
-    if (user && (user.role !== 'super_admin' || !user.is_super_admin)) {
+    if (user && (user.role !== 'super_admin' && !user.is_super_admin)) {
       toast.error('Access denied. Super admin privileges required.')
       window.location.href = '/'
     }
@@ -81,7 +85,7 @@ export default function AdminDashboard() {
   }
 
   useEffect(() => {
-    if (token && user?.role === 'admin') {
+    if (token && (user?.role === 'super_admin' || user?.is_super_admin)) {
       fetchOrganizations()
     }
   }, [token, user])
@@ -158,7 +162,7 @@ export default function AdminDashboard() {
     org.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  if (!user || user.role !== 'super_admin' || !user.is_super_admin) {
+  if (!user || (user.role !== 'super_admin' && !user.is_super_admin)) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-center">
@@ -175,9 +179,18 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <Shield className="w-8 h-8 text-blue-400" />
-            <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <Shield className="w-8 h-8 text-blue-400" />
+              <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Logout</span>
+            </button>
           </div>
           <p className="text-slate-400">Manage organizations and their API key configurations</p>
         </div>
