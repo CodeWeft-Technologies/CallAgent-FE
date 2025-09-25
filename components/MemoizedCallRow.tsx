@@ -16,12 +16,12 @@ interface Call {
   duration: number
   transcription: Array<{
     type: 'user' | 'bot' | 'greeting' | 'exit'
-    content: string
+    content: string | { transcript?: string; text?: string; [key: string]: any }
     timestamp: string
   }>
   ai_responses: Array<{
     type: 'bot' | 'greeting' | 'exit'
-    content: string
+    content: string | { transcript?: string; text?: string; [key: string]: any }
     timestamp: string
   }>
   call_summary: string

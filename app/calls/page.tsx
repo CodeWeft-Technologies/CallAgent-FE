@@ -32,12 +32,12 @@ interface Call {
   duration: number
   transcription: Array<{
     type: 'user' | 'bot' | 'greeting' | 'exit'
-    content: string
+    content: string | { transcript?: string; text?: string; [key: string]: any }
     timestamp: string
   }>
   ai_responses: Array<{
     type: 'bot' | 'greeting' | 'exit'
-    content: string
+    content: string | { transcript?: string; text?: string; [key: string]: any }
     timestamp: string
   }>
   call_summary: string
@@ -80,9 +80,9 @@ export default function CallsPage() {
   const { token } = useAuth()
   
   // Use optimized data fetching with caching
-  const { data: callsData, loading: callsLoading, refresh: refreshCalls } = useCallsCache(token)
+  const { data: callsData, loading: callsLoading, refresh: refreshCalls } = useCallsCache(token || undefined)
   const calls = callsData || []
-  const { data: statsData, loading: statsLoading } = useStatsCache(token)
+  const { data: statsData, loading: statsLoading } = useStatsCache(token || undefined)
   const stats = statsData || {
     total_calls: 0,
     calls_today: 0,
