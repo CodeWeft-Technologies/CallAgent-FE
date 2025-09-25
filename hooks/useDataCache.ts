@@ -128,12 +128,16 @@ export function useLeadsCache(token?: string) {
   )
 }
 
-export function useCallsCache() {
+export function useCallsCache(token?: string) {
   const API_BASE = process.env.NEXT_PUBLIC_CALL_API_URL || 'https://callagent-be-2.onrender.com'
   return useDataCache(
     'calls',
     async () => {
-      const response = await fetch(`${API_BASE}/api/calls`)
+      const headers: HeadersInit = {}
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+      const response = await fetch(`${API_BASE}/api/calls`, { headers })
       const data = await response.json()
       return data.success ? data.data : []
     },
@@ -141,12 +145,16 @@ export function useCallsCache() {
   )
 }
 
-export function useStatsCache() {
+export function useStatsCache(token?: string) {
   const API_BASE = process.env.NEXT_PUBLIC_CALL_API_URL || 'https://callagent-be-2.onrender.com'
   return useDataCache(
     'stats',
     async () => {
-      const response = await fetch(`${API_BASE}/api/calls/stats`)
+      const headers: HeadersInit = {}
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+      const response = await fetch(`${API_BASE}/api/calls/stats`, { headers })
       const data = await response.json()
       return data.success ? data.data : null
     },

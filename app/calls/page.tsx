@@ -7,6 +7,7 @@ import { usePagination } from '../../hooks/usePagination'
 import { useCallsCache, useStatsCache } from '../../hooks/useDataCache'
 import { useDebouncedSearch } from '../../hooks/useDebounce'
 import { useIST } from '../../hooks/useIST'
+import { useAuth } from '../../contexts/AuthContext'
 import { 
   Phone, PhoneCall, Clock, User, MessageSquare, 
   Calendar, Search, Filter, Download, Eye,
@@ -76,11 +77,12 @@ interface CallStats {
 const API_BASE = process.env.NEXT_PUBLIC_CALL_API_URL || 'https://callagent-be-2.onrender.com'
 
 export default function CallsPage() {
+  const { token } = useAuth()
   
   // Use optimized data fetching with caching
-  const { data: callsData, loading: callsLoading, refresh: refreshCalls } = useCallsCache()
+  const { data: callsData, loading: callsLoading, refresh: refreshCalls } = useCallsCache(token)
   const calls = callsData || []
-  const { data: statsData, loading: statsLoading } = useStatsCache()
+  const { data: statsData, loading: statsLoading } = useStatsCache(token)
   const stats = statsData || {
     total_calls: 0,
     calls_today: 0,
@@ -636,7 +638,12 @@ export default function CallsPage() {
                           {formatTimeOnly(message.timestamp)}
                         </span>
                       </div>
-                      <div className="text-white text-sm">{message.content}</div>
+                      <div className="text-white text-sm">
+                        {typeof message.content === 'string' 
+                          ? message.content 
+                          : message.content?.transcript || message.content?.text || JSON.stringify(message.content)
+                        }
+                      </div>
                     </div>
                   ))}
               </div>
