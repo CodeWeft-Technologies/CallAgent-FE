@@ -393,7 +393,6 @@ function CredentialsSettings({ credentials, token }: { credentials: any[], token
                         app_id: cred.app_id || '',
                         app_secret: '',
                         caller_id: cred.caller_id || '',
-                        api_key: cred.api_key || '',
                         is_active: cred.is_active
                       })
                       setShowEditModal(true)
