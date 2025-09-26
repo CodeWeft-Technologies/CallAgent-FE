@@ -83,6 +83,11 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({
               <X className="w-6 h-6" />
             </button>
           </div>
+          <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <p className="text-sm text-blue-800">
+              <strong>Note:</strong> Piopiy credentials (voice calling) are managed directly by organizations through their organization settings page and are not available through this super admin interface.
+            </p>
+          </div>
         </div>
 
         <div className="p-6 space-y-6">

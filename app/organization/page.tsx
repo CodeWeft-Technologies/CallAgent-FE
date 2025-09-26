@@ -229,7 +229,6 @@ function CredentialsSettings({ credentials, token }: { credentials: any[], token
     app_id: '',
     app_secret: '',
     caller_id: '',
-    api_key: '',
     is_active: true
   })
   const [saving, setSaving] = useState(false)
@@ -242,23 +241,15 @@ function CredentialsSettings({ credentials, token }: { credentials: any[], token
     setTestResult(null)
     
     try {
-      const endpoint = formData.credential_type === 'piopiy' 
-        ? `${API_URL}/api/org-credentials/piopiy`
-        : `${API_URL}/api/org-credentials/api-key`
+      const endpoint = `${API_URL}/api/org-credentials/piopiy`
       
-      const payload = formData.credential_type === 'piopiy' 
-        ? {
-            credential_type: 'piopiy',
-            app_id: formData.app_id,
-            app_secret: formData.app_secret,
-            caller_id: formData.caller_id,
-            is_active: formData.is_active
-          }
-        : {
-            credential_type: formData.credential_type,
-            api_key: formData.api_key,
-            is_active: formData.is_active
-          }
+      const payload = {
+        credential_type: 'piopiy',
+        app_id: formData.app_id,
+        app_secret: formData.app_secret,
+        caller_id: formData.caller_id,
+        is_active: formData.is_active
+      }
       
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -433,64 +424,41 @@ function CredentialsSettings({ credentials, token }: { credentials: any[], token
             <div className="space-y-4">
               <div>
                 <label className="block text-sm text-slate-300 mb-2">Credential Type</label>
-                <select
-                  value={formData.credential_type}
-                  onChange={(e) => setFormData({ ...formData, credential_type: e.target.value })}
-                  className="w-full bg-slate-700 text-white rounded-lg px-3 py-2 border border-slate-600 focus:border-blue-500 focus:outline-none"
-                >
-                  <option value="piopiy">Piopiy (Voice Calling)</option>
-                  <option value="groq">Groq (LLM)</option>
-                  <option value="deepgram">Deepgram (STT)</option>
-                  <option value="google">Google (TTS)</option>
-                  <option value="cartesia">Cartesia (TTS)</option>
-                </select>
+                <div className="w-full bg-slate-700 text-white rounded-lg px-3 py-2 border border-slate-600">
+                  Piopiy (Voice Calling)
+                </div>
               </div>
 
-              {formData.credential_type === 'piopiy' ? (
-                <>
-                  <div>
-                    <label className="block text-sm text-slate-300 mb-2">App ID</label>
-                    <input
-                      type="text"
-                      value={formData.app_id}
-                      onChange={(e) => setFormData({ ...formData, app_id: e.target.value })}
-                      className="w-full bg-slate-700 text-white rounded-lg px-3 py-2 border border-slate-600 focus:border-blue-500 focus:outline-none"
-                      placeholder="Enter Piopiy App ID"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-slate-300 mb-2">App Secret</label>
-                    <input
-                      type="password"
-                      value={formData.app_secret}
-                      onChange={(e) => setFormData({ ...formData, app_secret: e.target.value })}
-                      className="w-full bg-slate-700 text-white rounded-lg px-3 py-2 border border-slate-600 focus:border-blue-500 focus:outline-none"
-                      placeholder="Enter Piopiy App Secret"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-slate-300 mb-2">Caller ID</label>
-                    <input
-                      type="text"
-                      value={formData.caller_id}
-                      onChange={(e) => setFormData({ ...formData, caller_id: e.target.value })}
-                      className="w-full bg-slate-700 text-white rounded-lg px-3 py-2 border border-slate-600 focus:border-blue-500 focus:outline-none"
-                      placeholder="Enter Caller ID (e.g., +1234567890)"
-                    />
-                  </div>
-                </>
-              ) : (
-                <div>
-                  <label className="block text-sm text-slate-300 mb-2">API Key</label>
-                  <input
-                    type="password"
-                    value={formData.api_key}
-                    onChange={(e) => setFormData({ ...formData, api_key: e.target.value })}
-                    className="w-full bg-slate-700 text-white rounded-lg px-3 py-2 border border-slate-600 focus:border-blue-500 focus:outline-none"
-                    placeholder="Enter API Key"
-                  />
-                </div>
-              )}
+              <div>
+                <label className="block text-sm text-slate-300 mb-2">App ID</label>
+                <input
+                  type="text"
+                  value={formData.app_id}
+                  onChange={(e) => setFormData({ ...formData, app_id: e.target.value })}
+                  className="w-full bg-slate-700 text-white rounded-lg px-3 py-2 border border-slate-600 focus:border-blue-500 focus:outline-none"
+                  placeholder="Enter Piopiy App ID"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-slate-300 mb-2">App Secret</label>
+                <input
+                  type="password"
+                  value={formData.app_secret}
+                  onChange={(e) => setFormData({ ...formData, app_secret: e.target.value })}
+                  className="w-full bg-slate-700 text-white rounded-lg px-3 py-2 border border-slate-600 focus:border-blue-500 focus:outline-none"
+                  placeholder="Enter Piopiy App Secret"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-slate-300 mb-2">Caller ID</label>
+                <input
+                  type="text"
+                  value={formData.caller_id}
+                  onChange={(e) => setFormData({ ...formData, caller_id: e.target.value })}
+                  className="w-full bg-slate-700 text-white rounded-lg px-3 py-2 border border-slate-600 focus:border-blue-500 focus:outline-none"
+                  placeholder="Enter Caller ID (e.g., +1234567890)"
+                />
+              </div>
 
               <div className="flex items-center">
                 <input
@@ -512,15 +480,13 @@ function CredentialsSettings({ credentials, token }: { credentials: any[], token
             </div>
 
             <div className="flex justify-end space-x-3 mt-6">
-              {formData.credential_type === 'piopiy' && (
-                <button
-                  onClick={handleTestCredential}
-                  disabled={saving || !formData.app_id || !formData.app_secret}
-                  className="bg-yellow-600 hover:bg-yellow-700 disabled:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                >
-                  {saving ? 'Testing...' : 'Test'}
-                </button>
-              )}
+              <button
+                onClick={handleTestCredential}
+                disabled={saving || !formData.app_id || !formData.app_secret}
+                className="bg-yellow-600 hover:bg-yellow-700 disabled:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                {saving ? 'Testing...' : 'Test'}
+              </button>
               <button
                 onClick={() => {
                   setShowAddModal(false)
@@ -529,7 +495,6 @@ function CredentialsSettings({ credentials, token }: { credentials: any[], token
                     app_id: '',
                     app_secret: '',
                     caller_id: '',
-                    api_key: '',
                     is_active: true
                   })
                   setTestResult(null)
@@ -540,7 +505,7 @@ function CredentialsSettings({ credentials, token }: { credentials: any[], token
               </button>
               <button
                 onClick={handleAddCredential}
-                disabled={saving || (formData.credential_type === 'piopiy' ? !formData.app_id || !formData.app_secret || !formData.caller_id : !formData.api_key)}
+                disabled={saving || !formData.app_id || !formData.app_secret || !formData.caller_id}
                 className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
               >
                 {saving ? 'Saving...' : 'Save'}

@@ -116,6 +116,12 @@ export default function APIKeyRequestForm({ onRequestSubmitted }: APIKeyRequestF
         <h3 className="text-lg font-semibold text-gray-900">Request API Keys</h3>
       </div>
 
+      <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+        <p className="text-sm text-blue-800">
+          <strong>Note:</strong> Piopiy credentials (voice calling) are managed directly by your organization and are not available through this request system. Please contact your organization administrator to configure Piopiy credentials.
+        </p>
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* STT Provider */}
         <div>
