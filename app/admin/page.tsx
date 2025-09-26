@@ -276,7 +276,12 @@ export default function AdminDashboard() {
                     
                     <div className="flex items-center space-x-2">
                       <button
-                        onClick={() => toggleAPIKeyVisibility(org.id)}
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          toggleAPIKeyVisibility(org.id)
+                        }}
                         className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
                         title="Toggle API Keys"
                       >
@@ -285,7 +290,12 @@ export default function AdminDashboard() {
                       
                       {!editingKeys[org.id] ? (
                         <button
-                          onClick={() => startEditingKeys(org)}
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            startEditingKeys(org)
+                          }}
                           className="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-700 rounded-lg transition-colors"
                           title="Edit API Keys"
                         >
@@ -294,14 +304,24 @@ export default function AdminDashboard() {
                       ) : (
                         <div className="flex space-x-1">
                           <button
-                            onClick={() => saveAPIKeys(org.id)}
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              saveAPIKeys(org.id)
+                            }}
                             className="p-2 text-green-400 hover:bg-slate-700 rounded-lg transition-colors"
                             title="Save Changes"
                           >
                             <Check className="w-5 h-5" />
                           </button>
                           <button
-                            onClick={() => cancelEditing(org.id)}
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              cancelEditing(org.id)
+                            }}
                             className="p-2 text-red-400 hover:bg-slate-700 rounded-lg transition-colors"
                             title="Cancel"
                           >
@@ -428,6 +448,7 @@ export default function AdminDashboard() {
                                 <option value="elevenlabs">ElevenLabs</option>
                                 <option value="openai">OpenAI TTS</option>
                                 <option value="cartesia">Cartesia</option>
+                                <option value="google">Google TTS</option>
                                 <option value="azure">Azure Speech</option>
                               </select>
                             ) : (
