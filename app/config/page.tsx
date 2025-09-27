@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Settings, RotateCcw, Save, MessageSquare, ArrowRight, FileText, Database, RefreshCw, Languages, Mic } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface AgentConfig {
   greeting_message: string
@@ -373,6 +374,7 @@ const VOICE_CONVERSATION_BEST_PRACTICES = {
 const API_BASE = process.env.NEXT_PUBLIC_CONFIG_API_URL || 'https://callagent-be-2.onrender.com'
 
 export default function ConfigPage() {
+  const { user, token } = useAuth()
   
   const [config, setConfig] = useState<AgentConfig>({
     greeting_message: '',
@@ -397,8 +399,25 @@ export default function ConfigPage() {
   }, [])
 
   const loadConfig = useCallback(async () => {
+    if (!user?.organization_id) {
+      console.error('No organization ID available')
+      toast.error('Organization not found')
+      return
+    }
+
+    if (!token) {
+      console.error('No authentication token available')
+      toast.error('Authentication required')
+      return
+    }
+
     try {
-      const response = await fetch(`${API_BASE}/api/config`)
+      const response = await fetch(`${API_BASE}/api/org-config/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
       if (response.ok) {
         const data = await response.json()
         setConfig({
@@ -420,30 +439,63 @@ export default function ConfigPage() {
         }
         
         console.log('✅ Config loaded:', { tts: data.tts_provider, stt: data.stt_provider, template: data.active_template })
+      } else {
+        console.error('Failed to load config:', response.status)
+        toast.error('Failed to load configuration')
       }
     } catch (error) {
       console.error('❌ Error loading config:', error)
       toast.error('Failed to load configuration')
     }
-  }, [])
+  }, [user?.organization_id, token])
 
   const saveConfig = useCallback(async () => {
+    if (!user?.organization_id) {
+      console.error('No organization ID available')
+      toast.error('Organization not found')
+      return
+    }
+
+    if (!token) {
+      console.error('No authentication token available')
+      toast.error('Authentication required')
+      return
+    }
+
     setLoading(true)
     try {
+      // Parse knowledge_base string to object for backend
+      let knowledgeBaseObj = {}
+      if (config.knowledge_base) {
+        try {
+          knowledgeBaseObj = typeof config.knowledge_base === 'string' 
+            ? JSON.parse(config.knowledge_base) 
+            : config.knowledge_base
+        } catch (error) {
+          console.error('Error parsing knowledge_base:', error)
+          knowledgeBaseObj = {}
+        }
+      }
+
       const configToSave = {
         ...config,
+        knowledge_base: knowledgeBaseObj,
         active_template: selectedTemplate
       }
       
-      const response = await fetch(`${API_BASE}/api/config`, {
+      const response = await fetch(`${API_BASE}/api/org-config/`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(configToSave)
       })
       
       if (response.ok) {
         toast.success('Configuration saved successfully!')
       } else {
+        console.error('Failed to save config:', response.status)
         toast.error('Failed to save configuration')
       }
     } catch (error) {
@@ -452,7 +504,7 @@ export default function ConfigPage() {
     } finally {
       setLoading(false)
     }
-  }, [config, selectedTemplate])
+  }, [config, selectedTemplate, user?.organization_id, token])
 
   const resetConfig = useCallback(() => {
     setConfig({
@@ -527,10 +579,13 @@ export default function ConfigPage() {
         
         // Fallback to API call if WebSocket fails
         try {
-          const response = await fetch(`${API_BASE}/api/config/tts-provider`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ provider })
+          const response = await fetch(`${API_BASE}/api/org-config/`, {
+            method: 'PUT',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ ...config, tts_provider: provider })
           })
           
           if (response.ok) {
@@ -597,10 +652,13 @@ export default function ConfigPage() {
         
         // Fallback to API call if WebSocket fails
         try {
-          const response = await fetch(`${API_BASE}/api/config/stt-provider`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ provider })
+          const response = await fetch(`${API_BASE}/api/org-config/`, {
+            method: 'PUT',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ ...config, stt_provider: provider })
           })
           
           if (response.ok) {
@@ -628,16 +686,30 @@ export default function ConfigPage() {
   }, [])
 
   const handleKnowledgeBaseFieldChange = useCallback((field: string, value: string) => {
-    const currentKB = config.knowledge_base ? JSON.parse(config.knowledge_base) : {};
     try {
+      let currentKB = {};
+      
+      if (config.knowledge_base) {
+        if (typeof config.knowledge_base === 'object') {
+          currentKB = config.knowledge_base;
+        } else if (typeof config.knowledge_base === 'string') {
+          currentKB = JSON.parse(config.knowledge_base);
+        }
+      }
+      
       const updatedKB = { ...currentKB, [field]: value }
       setConfig(prev => ({
         ...prev,
         knowledge_base: JSON.stringify(updatedKB, null, 2)
       }))
     } catch (error) {
-      // If parsing fails, it might be because the knowledge_base is not a valid JSON string yet.
+      // If parsing fails, start with a fresh object
       console.error('Error updating knowledge base:', error)
+      const updatedKB = { [field]: value }
+      setConfig(prev => ({
+        ...prev,
+        knowledge_base: JSON.stringify(updatedKB, null, 2)
+      }))
     }
   }, [config.knowledge_base])
 
@@ -686,7 +758,14 @@ export default function ConfigPage() {
   const renderKnowledgeBaseField = useCallback((field: any) => {
     let currentValue = ''
     try {
-      const kb = config.knowledge_base ? JSON.parse(config.knowledge_base as string) : {}
+      let kb = {};
+      if (config.knowledge_base) {
+        if (typeof config.knowledge_base === 'object') {
+          kb = config.knowledge_base;
+        } else if (typeof config.knowledge_base === 'string') {
+          kb = JSON.parse(config.knowledge_base);
+        }
+      }
       currentValue = kb[field.key] || ''
     } catch (error) {
       currentValue = ''
@@ -993,7 +1072,20 @@ export default function ConfigPage() {
                         ) : (
                           <div className="bg-slate-700 rounded-lg p-4">
                             <pre className="text-sm text-slate-300 whitespace-pre-wrap font-mono overflow-x-auto">
-                              {config.knowledge_base ? JSON.stringify(JSON.parse(config.knowledge_base), null, 2) : '{}'}
+                              {(() => {
+                                try {
+                                  if (!config.knowledge_base) return '{}';
+                                  // If it's already an object, stringify it directly
+                                  if (typeof config.knowledge_base === 'object') {
+                                    return JSON.stringify(config.knowledge_base, null, 2);
+                                  }
+                                  // If it's a string, try to parse and re-stringify
+                                  return JSON.stringify(JSON.parse(config.knowledge_base), null, 2);
+                                } catch (error) {
+                                  // If parsing fails, return the raw string or empty object
+                                  return typeof config.knowledge_base === 'string' ? config.knowledge_base : '{}';
+                                }
+                              })()}
                             </pre>
                           </div>
                         )}
@@ -1029,7 +1121,20 @@ export default function ConfigPage() {
                         <div className="space-y-4">
                           <div className="bg-slate-700 rounded-lg p-4">
                             <pre className="text-sm text-slate-300 whitespace-pre-wrap font-mono overflow-x-auto">
-                              {config.knowledge_base ? JSON.stringify(JSON.parse(config.knowledge_base), null, 2) : '{}'}
+                              {(() => {
+                                try {
+                                  if (!config.knowledge_base) return '{}';
+                                  // If it's already an object, stringify it directly
+                                  if (typeof config.knowledge_base === 'object') {
+                                    return JSON.stringify(config.knowledge_base, null, 2);
+                                  }
+                                  // If it's a string, try to parse and re-stringify
+                                  return JSON.stringify(JSON.parse(config.knowledge_base), null, 2);
+                                } catch (error) {
+                                  // If parsing fails, return the raw string or empty object
+                                  return typeof config.knowledge_base === 'string' ? config.knowledge_base : '{}';
+                                }
+                              })()}
                             </pre>
                           </div>
                           
