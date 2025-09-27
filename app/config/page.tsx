@@ -755,10 +755,10 @@ export default function ConfigPage() {
     }
   }, [])
 
-  const renderKnowledgeBaseField = useCallback((field: any) => {
+  const renderKnowledgeBaseField = useCallback((field: { key: string; label: string; placeholder: string }) => {
     let currentValue = ''
     try {
-      let kb = {};
+      let kb: Record<string, any> = {};
       if (config.knowledge_base) {
         if (typeof config.knowledge_base === 'object') {
           kb = config.knowledge_base;
