@@ -705,6 +705,11 @@ export default function LeadsPage() {
       converted: 'bg-orange-600/20 text-orange-400 border border-orange-500/30'
     }
     
+    // Safety check for undefined/null status
+    if (!status || typeof status !== 'string') {
+      status = 'new' // Default to 'new' if status is invalid
+    }
+    
     return (
       <span className={`px-3 py-1 rounded-full text-xs font-medium ${styles[status as keyof typeof styles]}`}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -714,10 +719,10 @@ export default function LeadsPage() {
 
   const filteredLeads = useMemo(() => {
     return leads.filter(lead => {
-      const matchesSearch = lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           lead.phone.includes(searchTerm) ||
-                           lead.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           lead.company.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesSearch = (lead.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           (lead.phone || '').includes(searchTerm) ||
+                           (lead.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           (lead.company || '').toLowerCase().includes(searchTerm.toLowerCase())
       
       const matchesStatus = statusFilter === 'all' || lead.status === statusFilter
       
