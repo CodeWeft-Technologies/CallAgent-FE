@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { Shield } from 'lucide-react'
-import APIKeyRequestForm from '../../components/APIKeyRequestForm'
+
 
 const API_URL = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'
 
@@ -103,15 +103,7 @@ export default function OrganizationPage() {
                     >
                         Resource Limits
                     </button>
-                    <button
-                        onClick={() => setActiveTab('api-requests')}
-                        className={`px-3 py-2 sm:py-3 rounded-lg sm:rounded-none sm:border-b-2 transition-colors text-xs sm:text-base font-medium col-span-2 sm:col-span-1 ${activeTab === 'api-requests'
-                            ? 'bg-blue-600 text-white sm:bg-transparent sm:border-blue-500 sm:text-blue-500'
-                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600 sm:bg-transparent sm:border-transparent sm:text-slate-400 sm:hover:text-slate-300'
-                            }`}
-                    >
-                        API Key Requests
-                    </button>
+
                 </div>
             </div>
 
@@ -183,21 +175,7 @@ export default function OrganizationPage() {
                             </div>
                         )}
 
-                        {activeTab === 'api-requests' && (
-                            <div className="space-y-6">
-                                <div className="border-b border-slate-700">
-                                    <div className="flex space-x-6">
-                                        <button className="pb-2 px-1 border-b-2 border-blue-500 text-blue-400 font-medium text-sm">
-                                            Submit Request
-                                        </button>
-                                        <button className="pb-2 px-1 border-b-2 border-transparent text-slate-400 hover:text-slate-300 font-medium text-sm">
-                                            Request Status
-                                        </button>
-                                    </div>
-                                </div>
-                                <APIKeyRequestForm onRequestSubmitted={() => { }} />
-                            </div>
-                        )}
+
                     </>
                 )}
             </div>
