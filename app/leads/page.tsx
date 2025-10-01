@@ -512,11 +512,14 @@ export default function LeadsPage() {
             'Authorization': `Bearer ${token}`
           }
         })
-        const data = await response.json()
+        const result = await response.json()
         
-        if (data.active) {
+        if (result.success && result.data) {
+          const data = result.data
           const progress = data.progress || {}
           const stats = data.stats || {}
+          
+          if (data.active || data.is_running) {
           
           // Update progress based on session data
           setCallAllProgress(prev => ({
@@ -533,38 +536,42 @@ export default function LeadsPage() {
             totalCalls: stats.total_calls ?? prev.totalCalls
           }))
           
-          // Update pause state if provided by API
-          if (data.paused !== undefined) {
-            setIsPaused(data.paused)
-          }
-          
-          
-          // Continue polling if still active
-          setTimeout(poll, pollInterval)
-        } else {
-          // Session completed or stopped 
-          const totalCompleted = callAllProgress.completedCalls
-          const totalFailed = callAllProgress.failedCalls
-          
-          toast.success(`Sequential calling completed! ${totalCompleted} successful, ${totalFailed} failed`)
-          
-          // Refresh leads and stats
-          await loadLeads()
-          await loadStats()
-          
-          setIsCallingAll(false)
-          
-          // Keep modal open for a moment to show final results
-          setTimeout(() => {
-            setShowCallModal(false)
-                              setCallAllProgress({
-                  currentIndex: 0,
-                  currentLead: null,
-                  totalCalls: 0,
-                  completedCalls: 0,
-                  failedCalls: 0
-                })
+            // Update pause state if provided by API
+            if (data.paused !== undefined || data.is_paused !== undefined) {
+              setIsPaused(data.paused || data.is_paused)
+            }
+            
+            // Continue polling if still active
+            setTimeout(poll, pollInterval)
+          } else {
+            // Session completed or stopped 
+            const totalCompleted = callAllProgress.completedCalls
+            const totalFailed = callAllProgress.failedCalls
+            
+            toast.success(`Sequential calling completed! ${totalCompleted} successful, ${totalFailed} failed`)
+            
+            // Refresh leads and stats
+            await loadLeads()
+            await loadStats()
+            
+            setIsCallingAll(false)
+            
+            // Keep modal open for a moment to show final results
+            setTimeout(() => {
+              setShowCallModal(false)
+              setCallAllProgress({
+                currentIndex: 0,
+                currentLead: null,
+                totalCalls: 0,
+                completedCalls: 0,
+                failedCalls: 0
+              })
             }, 3000)
+          }
+        } else {
+          // API error or no data
+          console.error('❌ Failed to get sequential caller status:', result)
+          setIsCallingAll(false)
         }
         
       } catch (error) {
