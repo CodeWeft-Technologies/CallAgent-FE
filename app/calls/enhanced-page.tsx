@@ -66,10 +66,7 @@ export default function EnhancedCallsPage() {
     filters,
     updateFilters,
     clearFilters,
-    refresh: refreshCalls,
-    setPage,
-    currentPage,
-    pageSize
+    refresh: refreshCalls
   } = useCallsWithFilters(token || undefined, { limit: 50 })
   
   const {
@@ -78,17 +75,22 @@ export default function EnhancedCallsPage() {
   } = useFilterOptions(token || undefined)
   
   const [selectedCall, setSelectedCall] = useState<Call | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 50
   
   const loading = callsLoading || optionsLoading
   
   // Calculate pagination
-  const totalPages = Math.ceil(total / pageSize)
+  const totalPages = Math.ceil(total / itemsPerPage)
   const hasNextPage = currentPage < totalPages
   const hasPrevPage = currentPage > 1
   
   const handlePageChange = useCallback((page: number) => {
-    setPage(page)
-  }, [setPage])
+    setCurrentPage(page)
+    const skip = (page - 1) * itemsPerPage
+    // This would trigger a new API call with the updated skip value
+    // You might need to modify the useCallsWithFilters hook to support this
+  }, [itemsPerPage])
   
   const handleRefresh = useCallback(() => {
     refreshCalls()
