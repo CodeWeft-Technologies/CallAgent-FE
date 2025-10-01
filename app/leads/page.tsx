@@ -490,7 +490,7 @@ export default function LeadsPage() {
     } finally {
       // Note: Don't set isCallingAll to false here, let pollCallAllProgress handle it
     }
-  }, [filteredLeads.length, isCallingAll, statusFilter, searchTerm, token])
+  }, [leads.length, isCallingAll, statusFilter, searchTerm, token])
 
   const pollCallAllProgress = useCallback(async () => {
     if (!token) return
