@@ -6,8 +6,8 @@ import CallFilters from '../../components/CallFilters'
 import { useCallsWithFilters, useFilterOptions } from '../../hooks/useCallsWithFilters'
 import { useIST } from '../../hooks/useIST'
 import { useAuth } from '../../contexts/AuthContext'
-import { 
-  Phone, PhoneCall, Clock, User, MessageSquare, 
+import {
+  Phone, PhoneCall, Clock, User, MessageSquare,
   Calendar, Search, Filter, Download, Eye,
   Play, Pause, Volume2, FileText, Users,
   TrendingUp, Activity, CheckCircle, XCircle,
@@ -30,12 +30,12 @@ interface Call {
   duration: number
   transcription: Array<{
     type: 'user' | 'bot' | 'greeting' | 'exit'
-    content: string | { transcript?: string; text?: string; [key: string]: any }
+    content: string | { transcript?: string; text?: string;[key: string]: any }
     timestamp: string
   }>
   ai_responses: Array<{
     type: 'bot' | 'greeting' | 'exit'
-    content: string | { transcript?: string; text?: string; [key: string]: any }
+    content: string | { transcript?: string; text?: string;[key: string]: any }
     timestamp: string
   }>
   call_summary: string
@@ -56,7 +56,7 @@ interface Call {
 
 export default function EnhancedCallsPage() {
   const { token } = useAuth()
-  
+
   // Use the new filtering hooks
   const {
     data: calls,
@@ -68,35 +68,35 @@ export default function EnhancedCallsPage() {
     clearFilters,
     refresh: refreshCalls
   } = useCallsWithFilters(token || undefined, { limit: 50 })
-  
+
   const {
     options: filterOptions,
     loading: optionsLoading
   } = useFilterOptions(token || undefined)
-  
+
   const [selectedCall, setSelectedCall] = useState<Call | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 50
-  
+
   const loading = callsLoading || optionsLoading
-  
+
   // Calculate pagination
   const totalPages = Math.ceil(total / itemsPerPage)
   const hasNextPage = currentPage < totalPages
   const hasPrevPage = currentPage > 1
-  
+
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page)
     const skip = (page - 1) * itemsPerPage
     // This would trigger a new API call with the updated skip value
     // You might need to modify the useCallsWithFilters hook to support this
   }, [itemsPerPage])
-  
+
   const handleRefresh = useCallback(() => {
     refreshCalls()
     toast.success('Calls refreshed')
   }, [refreshCalls])
-  
+
   const getStatusBadge = useCallback((status: string) => {
     const styles = {
       completed: 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30',
@@ -104,7 +104,7 @@ export default function EnhancedCallsPage() {
       missed: 'bg-yellow-600/20 text-yellow-400 border border-yellow-500/30',
       initiated: 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
     }
-    
+
     return (
       <span className={`px-3 py-1 rounded-full text-xs font-medium ${styles[status as keyof typeof styles]}`}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -115,22 +115,21 @@ export default function EnhancedCallsPage() {
   const getDirectionBadge = useCallback((call: Call) => {
     const direction = call.direction || 'outbound'
     const isInbound = direction === 'inbound'
-    
+
     let displayNumber = ''
-    
+
     if (isInbound) {
       displayNumber = String(call.phone_number || call.webhook_data?.from || '')
     } else {
       displayNumber = String(call.phone_number || call.webhook_data?.to || '')
     }
-    
+
     return (
       <div className="flex items-center space-x-2">
-        <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${
-          isInbound 
-            ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' 
+        <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${isInbound
+            ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
             : 'bg-purple-600/20 text-purple-400 border border-purple-500/30'
-        }`}>
+          }`}>
           {isInbound ? (
             <PhoneIncoming className="w-3 h-3" />
           ) : (
@@ -162,13 +161,13 @@ export default function EnhancedCallsPage() {
       not_interested: 'bg-red-600/20 text-red-400 border border-red-500/30',
       neutral: 'bg-yellow-600/20 text-yellow-400 border border-yellow-500/30'
     }
-    
+
     const labels = {
       interested: 'Interested',
       not_interested: 'Not Interested',
       neutral: 'Neutral'
     }
-    
+
     return (
       <div className="flex items-center space-x-2">
         <span className={`px-3 py-1 rounded-full text-xs font-medium ${styles[interest_status]}`}>
@@ -277,7 +276,7 @@ export default function EnhancedCallsPage() {
             </div>
           </div>
         )}
-        
+
         {!loading && calls.length > 0 && (
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -311,20 +310,20 @@ export default function EnhancedCallsPage() {
             </table>
           </div>
         )}
-        
+
         {!loading && calls.length === 0 && (
           <div className="text-center py-16">
             <Phone className="w-16 h-16 text-slate-600 mx-auto mb-4" />
             <p className="text-slate-400 text-lg">No calls found</p>
             <p className="text-sm text-slate-500">
-              {Object.keys(filters).length > 0 
+              {Object.keys(filters).length > 0
                 ? 'Try adjusting your filters or search terms'
                 : 'Calls will appear here after they are completed'
               }
             </p>
           </div>
         )}
-        
+
         {/* Pagination Controls */}
         {totalPages > 1 && !loading && (
           <div className="px-4 py-4 bg-slate-800/50 border-t border-slate-700">
@@ -340,11 +339,11 @@ export default function EnhancedCallsPage() {
                 >
                   Previous
                 </button>
-                
+
                 <span className="px-3 py-2 text-sm text-slate-400">
                   Page {currentPage} of {totalPages}
                 </span>
-                
+
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={!hasNextPage}
@@ -371,7 +370,7 @@ export default function EnhancedCallsPage() {
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
-            
+
             {/* Call Info */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
               <div className="bg-slate-800 rounded-xl p-4">
@@ -470,11 +469,10 @@ export default function EnhancedCallsPage() {
                 {[...selectedCall.transcription, ...selectedCall.ai_responses]
                   .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
                   .map((message, index) => (
-                    <div key={index} className={`p-3 rounded-lg ${
-                      message.type === 'user' 
-                        ? 'bg-blue-600/20 border border-blue-500/30' 
+                    <div key={index} className={`p-3 rounded-lg ${message.type === 'user'
+                        ? 'bg-blue-600/20 border border-blue-500/30'
                         : 'bg-slate-700/50 border border-slate-600/30'
-                    }`}>
+                      }`}>
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center space-x-2">
                           {message.type === 'user' ? (
@@ -482,9 +480,8 @@ export default function EnhancedCallsPage() {
                           ) : (
                             <MessageSquare className="w-4 h-4 text-emerald-400" />
                           )}
-                          <span className={`text-xs font-medium ${
-                            message.type === 'user' ? 'text-blue-400' : 'text-emerald-400'
-                          }`}>
+                          <span className={`text-xs font-medium ${message.type === 'user' ? 'text-blue-400' : 'text-emerald-400'
+                            }`}>
                             {message.type === 'user' ? 'User' : 'AI'}
                           </span>
                         </div>
@@ -493,8 +490,8 @@ export default function EnhancedCallsPage() {
                         </span>
                       </div>
                       <div className="text-white text-sm">
-                        {typeof message.content === 'string' 
-                          ? message.content 
+                        {typeof message.content === 'string'
+                          ? message.content
                           : message.content?.transcript || message.content?.text || JSON.stringify(message.content)
                         }
                       </div>
