@@ -3,10 +3,11 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Settings, PhoneCall, Users, Phone, Menu, X, LogOut } from 'lucide-react'
+import { Home, Settings, PhoneCall, Users, Phone, Menu, X, LogOut, Building, Shield } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import OrganizationBadge from './OrganizationBadge'
 
-const navigation = [
+const baseNavigation = [
   { name: 'Dashboard', href: '/', icon: Home },
   { name: 'Configuration', href: '/config', icon: Settings },
   { name: 'Calls', href: '/calls', icon: PhoneCall },
@@ -16,7 +17,28 @@ const navigation = [
 const Navigation = React.memo(() => {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
+
+  // Add navigation items based on user role (same logic as Sidebar)
+  const getNavigation = () => {
+    const nav = [...baseNavigation]
+    
+    console.log('🔍 Mobile Navigation - User:', user?.role, user?.is_super_admin)
+    
+    // Add organization settings for regular admins and managers (not super admin)
+    if (user && (user.role === 'admin' || user.role === 'manager')) {
+      console.log('✅ Adding Organization tab for mobile')
+      nav.push({ name: 'Organization', href: '/organization', icon: Building })
+    }
+    
+    // Add admin panel for super admin only
+    if (user && user.role === 'super_admin' && user.is_super_admin) {
+      console.log('✅ Adding Admin Panel tab for mobile')
+      nav.push({ name: 'Admin Panel', href: '/admin', icon: Shield })
+    }
+    
+    return nav
+  }
 
   const handleSignOut = () => {
     logout()
@@ -67,8 +89,13 @@ const Navigation = React.memo(() => {
           
           {/* Menu Panel */}
           <div className="fixed top-16 left-0 right-0 bg-slate-900 border-b border-slate-800 shadow-xl">
+            {/* Organization Badge for Mobile */}
+            <div className="px-4 pt-4">
+              <OrganizationBadge />
+            </div>
+            
             <nav className="px-4 py-6 space-y-2">
-              {navigation.map((item) => {
+              {getNavigation().map((item) => {
                 const isActive = pathname === item.href
                 return (
                   <Link
