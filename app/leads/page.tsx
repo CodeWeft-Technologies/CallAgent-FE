@@ -426,8 +426,11 @@ export default function LeadsPage() {
   }
 
   const handleCallAll = useCallback(async () => {
-    if (filteredLeads.length === 0) {
-      toast.error('No leads to call')
+    // Filter for new leads only (not called, contacted, or converted)
+    const newLeads = filteredLeads.filter(lead => lead.status === 'new')
+    
+    if (newLeads.length === 0) {
+      toast.error('No new leads to call. All leads have already been contacted.')
       return
     }
 
@@ -442,17 +445,18 @@ export default function LeadsPage() {
     setCallAllProgress({
       currentIndex: 0,
       currentLead: null,
-      totalCalls: filteredLeads.length,
+      totalCalls: newLeads.length,
       completedCalls: 0,
       failedCalls: 0
     })
 
     try {
-      // Build filters based on current search and status filters
-      const filters: any = {}
-      if (statusFilter !== 'all') {
-        filters.status = statusFilter
+      // Build filters to only call new leads
+      const filters: any = {
+        status: 'new'  // Only call new leads
       }
+      
+      // Add search filter if provided
       if (searchTerm.trim()) {
         filters.search = searchTerm.trim()
       }
@@ -752,6 +756,10 @@ export default function LeadsPage() {
     })
   }, [leads, searchTerm, statusFilter])
 
+  const newLeadsCount = useMemo(() => {
+    return filteredLeads.filter(lead => lead.status === 'new').length
+  }, [filteredLeads])
+
   if (loading) {
     return (
       <div className="space-y-8">
@@ -795,7 +803,7 @@ export default function LeadsPage() {
           </button>
           <button
             onClick={handleCallAll}
-            disabled={isCallingAll || filteredLeads.length === 0}
+            disabled={isCallingAll || newLeadsCount === 0}
             className="flex items-center space-x-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white rounded-xl transition-all"
           >
             {isCallingAll ? (
@@ -803,7 +811,7 @@ export default function LeadsPage() {
             ) : (
               <PhoneCall className="w-4 h-4" />
             )}
-            <span>{isCallingAll ? 'Calling...' : `Call All (${filteredLeads.length})`}</span>
+            <span>{isCallingAll ? 'Calling...' : `Call New (${newLeadsCount})`}</span>
           </button>
           <button
             onClick={handleShowAddForm}
@@ -1324,8 +1332,8 @@ export default function LeadsPage() {
 
       {/* Call All Progress Modal */}
       {showCallModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-slate-900 rounded-2xl border border-slate-800 p-8 w-full max-w-md shadow-xl">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 sm:p-8 w-full max-w-md shadow-xl overflow-hidden">
             <div className="text-center">
               <div className="w-16 h-16 bg-orange-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 {isCallingAll ? (
@@ -1359,21 +1367,21 @@ export default function LeadsPage() {
               )}
               
               {/* Progress Bar */}
-              <div className="mb-6">
+              <div className="mb-6 px-1">
                 <div className="flex justify-between text-sm text-slate-400 mb-2">
                   <span>Progress</span>
-                  <span>{callAllProgress.currentIndex + 1} of {callAllProgress.totalCalls}</span>
+                  <span className="text-xs">{callAllProgress.currentIndex + 1} of {callAllProgress.totalCalls}</span>
                 </div>
-                <div className="w-full bg-slate-800 rounded-full h-2">
+                <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
                   <div 
-                    className="bg-orange-600 h-2 rounded-full transition-all duration-500"
+                    className="bg-orange-600 h-2 rounded-full transition-all duration-500 max-w-full"
                     style={{ 
-                      width: `${((callAllProgress.currentIndex + 1) / callAllProgress.totalCalls) * 100}%` 
+                      width: `${Math.min(100, Math.max(0, ((callAllProgress.currentIndex + 1) / callAllProgress.totalCalls) * 100))}%` 
                     }}
                   ></div>
                 </div>
                 {isCallingAll && (
-                  <p className="text-slate-500 text-xs mt-2 text-center">
+                  <p className="text-slate-500 text-xs mt-2 text-center break-words">
                     📞 Sequential calling - each call completes before the next begins
                   </p>
                 )}
