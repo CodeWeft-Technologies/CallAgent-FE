@@ -69,46 +69,46 @@ export default function OrganizationPage() {
                 <div className="grid grid-cols-2 sm:flex sm:space-x-8 gap-2 sm:gap-0 sm:border-b sm:border-slate-800 sm:pb-2">
                     <button
                         onClick={() => setActiveTab('general')}
-                        className={`px-3 py-2 sm:py-3 rounded-lg sm:rounded-none sm:border-b-2 transition-colors text-xs sm:text-base font-medium ${activeTab === 'general' 
-                            ? 'bg-blue-600 text-white sm:bg-transparent sm:border-blue-500 sm:text-blue-500' 
+                        className={`px-3 py-2 sm:py-3 rounded-lg sm:rounded-none sm:border-b-2 transition-colors text-xs sm:text-base font-medium ${activeTab === 'general'
+                            ? 'bg-blue-600 text-white sm:bg-transparent sm:border-blue-500 sm:text-blue-500'
                             : 'bg-slate-700 text-slate-300 hover:bg-slate-600 sm:bg-transparent sm:border-transparent sm:text-slate-400 sm:hover:text-slate-300'
-                        }`}
+                            }`}
                     >
                         General
                     </button>
                     <button
                         onClick={() => setActiveTab('credentials')}
-                        className={`px-3 py-2 sm:py-3 rounded-lg sm:rounded-none sm:border-b-2 transition-colors text-xs sm:text-base font-medium ${activeTab === 'credentials' 
-                            ? 'bg-blue-600 text-white sm:bg-transparent sm:border-blue-500 sm:text-blue-500' 
+                        className={`px-3 py-2 sm:py-3 rounded-lg sm:rounded-none sm:border-b-2 transition-colors text-xs sm:text-base font-medium ${activeTab === 'credentials'
+                            ? 'bg-blue-600 text-white sm:bg-transparent sm:border-blue-500 sm:text-blue-500'
                             : 'bg-slate-700 text-slate-300 hover:bg-slate-600 sm:bg-transparent sm:border-transparent sm:text-slate-400 sm:hover:text-slate-300'
-                        }`}
+                            }`}
                     >
                         API Credentials
                     </button>
                     <button
                         onClick={() => setActiveTab('users')}
-                        className={`px-3 py-2 sm:py-3 rounded-lg sm:rounded-none sm:border-b-2 transition-colors text-xs sm:text-base font-medium ${activeTab === 'users' 
-                            ? 'bg-blue-600 text-white sm:bg-transparent sm:border-blue-500 sm:text-blue-500' 
+                        className={`px-3 py-2 sm:py-3 rounded-lg sm:rounded-none sm:border-b-2 transition-colors text-xs sm:text-base font-medium ${activeTab === 'users'
+                            ? 'bg-blue-600 text-white sm:bg-transparent sm:border-blue-500 sm:text-blue-500'
                             : 'bg-slate-700 text-slate-300 hover:bg-slate-600 sm:bg-transparent sm:border-transparent sm:text-slate-400 sm:hover:text-slate-300'
-                        }`}
+                            }`}
                     >
                         Users
                     </button>
                     <button
                         onClick={() => setActiveTab('resources')}
-                        className={`px-3 py-2 sm:py-3 rounded-lg sm:rounded-none sm:border-b-2 transition-colors text-xs sm:text-base font-medium ${activeTab === 'resources' 
-                            ? 'bg-blue-600 text-white sm:bg-transparent sm:border-blue-500 sm:text-blue-500' 
+                        className={`px-3 py-2 sm:py-3 rounded-lg sm:rounded-none sm:border-b-2 transition-colors text-xs sm:text-base font-medium ${activeTab === 'resources'
+                            ? 'bg-blue-600 text-white sm:bg-transparent sm:border-blue-500 sm:text-blue-500'
                             : 'bg-slate-700 text-slate-300 hover:bg-slate-600 sm:bg-transparent sm:border-transparent sm:text-slate-400 sm:hover:text-slate-300'
-                        }`}
+                            }`}
                     >
                         Resource Limits
                     </button>
                     <button
                         onClick={() => setActiveTab('api-requests')}
-                        className={`px-3 py-2 sm:py-3 rounded-lg sm:rounded-none sm:border-b-2 transition-colors text-xs sm:text-base font-medium col-span-2 sm:col-span-1 ${activeTab === 'api-requests' 
-                            ? 'bg-blue-600 text-white sm:bg-transparent sm:border-blue-500 sm:text-blue-500' 
+                        className={`px-3 py-2 sm:py-3 rounded-lg sm:rounded-none sm:border-b-2 transition-colors text-xs sm:text-base font-medium col-span-2 sm:col-span-1 ${activeTab === 'api-requests'
+                            ? 'bg-blue-600 text-white sm:bg-transparent sm:border-blue-500 sm:text-blue-500'
                             : 'bg-slate-700 text-slate-300 hover:bg-slate-600 sm:bg-transparent sm:border-transparent sm:text-slate-400 sm:hover:text-slate-300'
-                        }`}
+                            }`}
                     >
                         API Key Requests
                     </button>

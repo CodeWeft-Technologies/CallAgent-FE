@@ -462,7 +462,8 @@ export default function LeadsPage() {
       const response = await fetch(`${SEQUENTIAL_CALLER_API_BASE}/api/sequential-caller/start`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           filters: filters
@@ -489,9 +490,10 @@ export default function LeadsPage() {
     } finally {
       // Note: Don't set isCallingAll to false here, let pollCallAllProgress handle it
     }
-  }, [leads.length, isCallingAll, statusFilter, searchTerm])
+  }, [filteredLeads.length, isCallingAll, statusFilter, searchTerm, token])
 
   const pollCallAllProgress = useCallback(async () => {
+    if (!token) return
     const pollInterval = 2000 // Poll every 2 seconds
     const maxPollTime = 600000 // 10 minutes max
     const startTime = Date.now()
@@ -505,7 +507,11 @@ export default function LeadsPage() {
           return
         }
 
-        const response = await fetch(`${SEQUENTIAL_CALLER_API_BASE}/api/sequential-caller/status`)
+        const response = await fetch(`${SEQUENTIAL_CALLER_API_BASE}/api/sequential-caller/status`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
         const data = await response.json()
         
         if (data.active) {
@@ -570,14 +576,17 @@ export default function LeadsPage() {
 
     // Start polling
     poll()
-  }, [loadLeads, loadStats])
+  }, [loadLeads, loadStats, token])
 
   const handlePauseCallAll = useCallback(async () => {
+    if (!token) return
+    
     try {
       const response = await fetch(`${SEQUENTIAL_CALLER_API_BASE}/api/sequential-caller/pause`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         }
       })
       
@@ -593,14 +602,17 @@ export default function LeadsPage() {
       console.error('Error pausing sequential calling:', error)
       toast.error('Error pausing sequential calling')
     }
-  }, [])
+  }, [token])
 
   const handleResumeCallAll = useCallback(async () => {
+    if (!token) return
+    
     try {
       const response = await fetch(`${SEQUENTIAL_CALLER_API_BASE}/api/sequential-caller/resume`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         }
       })
       
@@ -616,14 +628,17 @@ export default function LeadsPage() {
       console.error('Error resuming sequential calling:', error)
       toast.error('Error resuming sequential calling')
     }
-  }, [])
+  }, [token])
 
   const handleStopCallAll = useCallback(async () => {
+    if (!token) return
+    
     try {
       const response = await fetch(`${SEQUENTIAL_CALLER_API_BASE}/api/sequential-caller/stop`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         }
       })
       
@@ -649,7 +664,7 @@ export default function LeadsPage() {
       completedCalls: 0,
       failedCalls: 0
     })
-  }, [])
+  }, [token])
 
   const handleCSVUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
