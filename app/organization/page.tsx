@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { Shield } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 
 const API_URL = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'
@@ -13,6 +14,17 @@ export default function OrganizationPage() {
     const [loading, setLoading] = useState(true)
     const [credentials, setCredentials] = useState<any[]>([])
     const [resourceLimits, setResourceLimits] = useState<any[]>([])
+    const [calendarSettings, setCalendarSettings] = useState<any>({
+        ai_booking_enabled: true,
+        ai_confidence_threshold: 0.70,
+        timezone: 'UTC',
+        default_duration_minutes: 30,
+        max_advance_days: 30,
+        min_advance_hours: 2,
+        buffer_minutes: 15
+    })
+    const [availabilitySlots, setAvailabilitySlots] = useState<any[]>([])
+    const [savingCalendar, setSavingCalendar] = useState(false)
 
     useEffect(() => {
         const fetchData = async () => {
@@ -33,6 +45,28 @@ export default function OrganizationPage() {
                 if (limitsResponse.ok) {
                     setResourceLimits(await limitsResponse.json())
                 }
+
+                // Load calendar settings
+                const calendarResponse = await fetch(`${API_URL}/api/appointments/calendar/settings`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                if (calendarResponse.ok) {
+                    const calendarData = await calendarResponse.json()
+                    if (calendarData.success) {
+                        setCalendarSettings(calendarData.data)
+                    }
+                }
+
+                // Load availability slots
+                const availabilityResponse = await fetch(`${API_URL}/api/appointments/calendar/availability-rules`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                if (availabilityResponse.ok) {
+                    const availabilityData = await availabilityResponse.json()
+                    if (availabilityData.success) {
+                        setAvailabilitySlots(availabilityData.data)
+                    }
+                }
             } catch (err) {
                 console.error('Error:', err)
             } finally {
@@ -42,6 +76,44 @@ export default function OrganizationPage() {
 
         fetchData()
     }, [token])
+
+    const saveCalendarSettings = async () => {
+        if (!token) return
+        setSavingCalendar(true)
+
+        try {
+            // Save calendar settings
+            const settingsResponse = await fetch(`${API_URL}/api/appointments/calendar/settings`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(calendarSettings)
+            })
+
+            // Save availability slots
+            const slotsResponse = await fetch(`${API_URL}/api/appointments/calendar/availability-rules`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(availabilitySlots)
+            })
+
+            if (settingsResponse.ok && slotsResponse.ok) {
+                toast.success('Calendar settings saved successfully!')
+            } else {
+                toast.error('Failed to save calendar settings')
+            }
+        } catch (error) {
+            console.error('Error saving calendar settings:', error)
+            toast.error('Error saving calendar settings')
+        } finally {
+            setSavingCalendar(false)
+        }
+    }
 
     if (user && user.role !== 'admin' && user.role !== 'manager') {
         return (
@@ -196,19 +268,34 @@ export default function OrganizationPage() {
                                                     <p className="text-white text-sm">Enable AI Booking</p>
                                                     <p className="text-slate-400 text-xs">Allow AI to book appointments during calls</p>
                                                 </div>
-                                                <div className="w-12 h-6 bg-blue-600 rounded-full relative">
-                                                    <div className="w-5 h-5 bg-white rounded-full absolute top-0.5 right-0.5"></div>
-                                                </div>
+                                                <button
+                                                    onClick={() => setCalendarSettings({
+                                                        ...calendarSettings,
+                                                        ai_booking_enabled: !calendarSettings.ai_booking_enabled
+                                                    })}
+                                                    className={`w-12 h-6 rounded-full relative transition-colors ${
+                                                        calendarSettings.ai_booking_enabled ? 'bg-blue-600' : 'bg-slate-600'
+                                                    }`}
+                                                >
+                                                    <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${
+                                                        calendarSettings.ai_booking_enabled ? 'translate-x-6' : 'translate-x-0.5'
+                                                    }`}></div>
+                                                </button>
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-slate-400 mb-2">
-                                                    AI Confidence Threshold (70%)
+                                                    AI Confidence Threshold ({Math.round(calendarSettings.ai_confidence_threshold * 100)}%)
                                                 </label>
                                                 <input
                                                     type="range"
-                                                    min="50"
-                                                    max="95"
-                                                    defaultValue="70"
+                                                    min="0.5"
+                                                    max="0.95"
+                                                    step="0.05"
+                                                    value={calendarSettings.ai_confidence_threshold}
+                                                    onChange={(e) => setCalendarSettings({
+                                                        ...calendarSettings,
+                                                        ai_confidence_threshold: parseFloat(e.target.value)
+                                                    })}
                                                     className="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer"
                                                 />
                                                 <div className="flex justify-between text-xs text-slate-500 mt-1">
@@ -224,56 +311,171 @@ export default function OrganizationPage() {
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-slate-400 mb-2">Timezone</label>
-                                                <select className="w-full bg-slate-600 text-white rounded-lg px-3 py-2 border border-slate-500">
-                                                    <option>UTC</option>
-                                                    <option>America/New_York</option>
-                                                    <option>America/Los_Angeles</option>
-                                                    <option>Europe/London</option>
-                                                    <option>Asia/Kolkata</option>
+                                                <select 
+                                                    value={calendarSettings.timezone}
+                                                    onChange={(e) => setCalendarSettings({
+                                                        ...calendarSettings,
+                                                        timezone: e.target.value
+                                                    })}
+                                                    className="w-full bg-slate-600 text-white rounded-lg px-3 py-2 border border-slate-500"
+                                                >
+                                                    <option value="UTC">UTC</option>
+                                                    <option value="America/New_York">America/New_York</option>
+                                                    <option value="America/Los_Angeles">America/Los_Angeles</option>
+                                                    <option value="Europe/London">Europe/London</option>
+                                                    <option value="Asia/Kolkata">Asia/Kolkata</option>
                                                 </select>
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-slate-400 mb-2">Default Duration</label>
-                                                <select className="w-full bg-slate-600 text-white rounded-lg px-3 py-2 border border-slate-500">
-                                                    <option>15 minutes</option>
-                                                    <option>30 minutes</option>
-                                                    <option>45 minutes</option>
-                                                    <option>60 minutes</option>
+                                                <select 
+                                                    value={calendarSettings.default_duration_minutes}
+                                                    onChange={(e) => setCalendarSettings({
+                                                        ...calendarSettings,
+                                                        default_duration_minutes: parseInt(e.target.value)
+                                                    })}
+                                                    className="w-full bg-slate-600 text-white rounded-lg px-3 py-2 border border-slate-500"
+                                                >
+                                                    <option value={15}>15 minutes</option>
+                                                    <option value={30}>30 minutes</option>
+                                                    <option value={45}>45 minutes</option>
+                                                    <option value={60}>60 minutes</option>
                                                 </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-400 mb-2">Buffer Time (min)</label>
+                                                <input
+                                                    type="number"
+                                                    value={calendarSettings.buffer_minutes}
+                                                    onChange={(e) => setCalendarSettings({
+                                                        ...calendarSettings,
+                                                        buffer_minutes: parseInt(e.target.value)
+                                                    })}
+                                                    className="w-full bg-slate-600 text-white rounded-lg px-3 py-2 border border-slate-500"
+                                                    min="0"
+                                                    max="60"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-400 mb-2">Max Advance Days</label>
+                                                <input
+                                                    type="number"
+                                                    value={calendarSettings.max_advance_days}
+                                                    onChange={(e) => setCalendarSettings({
+                                                        ...calendarSettings,
+                                                        max_advance_days: parseInt(e.target.value)
+                                                    })}
+                                                    className="w-full bg-slate-600 text-white rounded-lg px-3 py-2 border border-slate-500"
+                                                    min="1"
+                                                    max="365"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-400 mb-2">Min Advance Hours</label>
+                                                <input
+                                                    type="number"
+                                                    value={calendarSettings.min_advance_hours}
+                                                    onChange={(e) => setCalendarSettings({
+                                                        ...calendarSettings,
+                                                        min_advance_hours: parseInt(e.target.value)
+                                                    })}
+                                                    className="w-full bg-slate-600 text-white rounded-lg px-3 py-2 border border-slate-500"
+                                                    min="0"
+                                                    max="72"
+                                                />
                                             </div>
                                         </div>
                                         
                                         <div className="mt-4">
                                             <p className="text-slate-400 text-sm mb-3">Available Days & Hours</p>
                                             <div className="space-y-2">
-                                                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(day => (
-                                                    <div key={day} className="flex items-center justify-between bg-slate-600 rounded-lg p-3">
-                                                        <div className="flex items-center space-x-3">
-                                                            <input type="checkbox" defaultChecked className="rounded" />
-                                                            <span className="text-white text-sm">{day}</span>
+                                                {[
+                                                    { name: 'Monday', value: 1 },
+                                                    { name: 'Tuesday', value: 2 },
+                                                    { name: 'Wednesday', value: 3 },
+                                                    { name: 'Thursday', value: 4 },
+                                                    { name: 'Friday', value: 5 }
+                                                ].map(day => {
+                                                    const existingSlot = availabilitySlots.find(slot => slot.day_of_week === day.value)
+                                                    const isEnabled = !!existingSlot
+                                                    const startTime = existingSlot?.start_time || '09:00:00'
+                                                    const endTime = existingSlot?.end_time || '17:00:00'
+                                                    
+                                                    return (
+                                                        <div key={day.name} className="flex items-center justify-between bg-slate-600 rounded-lg p-3">
+                                                            <div className="flex items-center space-x-3">
+                                                                <input 
+                                                                    type="checkbox" 
+                                                                    checked={isEnabled}
+                                                                    onChange={(e) => {
+                                                                        if (e.target.checked) {
+                                                                            setAvailabilitySlots([
+                                                                                ...availabilitySlots.filter(slot => slot.day_of_week !== day.value),
+                                                                                {
+                                                                                    day_of_week: day.value,
+                                                                                    start_time: '09:00:00',
+                                                                                    end_time: '17:00:00'
+                                                                                }
+                                                                            ])
+                                                                        } else {
+                                                                            setAvailabilitySlots(availabilitySlots.filter(slot => slot.day_of_week !== day.value))
+                                                                        }
+                                                                    }}
+                                                                    className="rounded" 
+                                                                />
+                                                                <span className="text-white text-sm">{day.name}</span>
+                                                            </div>
+                                                            {isEnabled && (
+                                                                <div className="flex items-center space-x-2 text-sm">
+                                                                    <input 
+                                                                        type="time" 
+                                                                        value={startTime.slice(0, 5)}
+                                                                        onChange={(e) => {
+                                                                            const updatedSlots = availabilitySlots.map(slot => 
+                                                                                slot.day_of_week === day.value 
+                                                                                    ? { ...slot, start_time: e.target.value + ':00' }
+                                                                                    : slot
+                                                                            )
+                                                                            setAvailabilitySlots(updatedSlots)
+                                                                        }}
+                                                                        className="bg-slate-700 text-white rounded px-2 py-1 text-xs"
+                                                                    />
+                                                                    <span className="text-slate-400">to</span>
+                                                                    <input 
+                                                                        type="time" 
+                                                                        value={endTime.slice(0, 5)}
+                                                                        onChange={(e) => {
+                                                                            const updatedSlots = availabilitySlots.map(slot => 
+                                                                                slot.day_of_week === day.value 
+                                                                                    ? { ...slot, end_time: e.target.value + ':00' }
+                                                                                    : slot
+                                                                            )
+                                                                            setAvailabilitySlots(updatedSlots)
+                                                                        }}
+                                                                        className="bg-slate-700 text-white rounded px-2 py-1 text-xs"
+                                                                    />
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                        <div className="flex items-center space-x-2 text-sm">
-                                                            <input 
-                                                                type="time" 
-                                                                defaultValue="09:00"
-                                                                className="bg-slate-700 text-white rounded px-2 py-1 text-xs"
-                                                            />
-                                                            <span className="text-slate-400">to</span>
-                                                            <input 
-                                                                type="time" 
-                                                                defaultValue="17:00"
-                                                                className="bg-slate-700 text-white rounded px-2 py-1 text-xs"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                                    )
+                                                })}
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="flex justify-end">
-                                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-                                            Save Calendar Settings
+                                        <button 
+                                            onClick={saveCalendarSettings}
+                                            disabled={savingCalendar}
+                                            className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                                        >
+                                            {savingCalendar && (
+                                                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                                            )}
+                                            <span>{savingCalendar ? 'Saving...' : 'Save Calendar Settings'}</span>
                                         </button>
                                     </div>
                                 </div>
