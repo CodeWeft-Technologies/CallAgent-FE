@@ -103,6 +103,15 @@ export default function OrganizationPage() {
                     >
                         Resource Limits
                     </button>
+                    <button
+                        onClick={() => setActiveTab('calendar')}
+                        className={`px-3 py-2 sm:py-3 rounded-lg sm:rounded-none sm:border-b-2 transition-colors text-xs sm:text-base font-medium ${activeTab === 'calendar'
+                            ? 'bg-blue-600 text-white sm:bg-transparent sm:border-blue-500 sm:text-blue-500'
+                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600 sm:bg-transparent sm:border-transparent sm:text-slate-400 sm:hover:text-slate-300'
+                            }`}
+                    >
+                        Calendar
+                    </button>
 
                 </div>
             </div>
@@ -175,6 +184,101 @@ export default function OrganizationPage() {
                             </div>
                         )}
 
+                        {activeTab === 'calendar' && (
+                            <div className="bg-slate-800 rounded-lg p-4 sm:p-6">
+                                <h2 className="text-lg sm:text-xl font-medium text-white mb-4">Calendar Settings</h2>
+                                <div className="space-y-6">
+                                    <div className="bg-slate-700 rounded-lg p-4">
+                                        <h3 className="text-white font-medium mb-3">AI Appointment Booking</h3>
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <p className="text-white text-sm">Enable AI Booking</p>
+                                                    <p className="text-slate-400 text-xs">Allow AI to book appointments during calls</p>
+                                                </div>
+                                                <div className="w-12 h-6 bg-blue-600 rounded-full relative">
+                                                    <div className="w-5 h-5 bg-white rounded-full absolute top-0.5 right-0.5"></div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-400 mb-2">
+                                                    AI Confidence Threshold (70%)
+                                                </label>
+                                                <input
+                                                    type="range"
+                                                    min="50"
+                                                    max="95"
+                                                    defaultValue="70"
+                                                    className="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer"
+                                                />
+                                                <div className="flex justify-between text-xs text-slate-500 mt-1">
+                                                    <span>Conservative (50%)</span>
+                                                    <span>Aggressive (95%)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-slate-700 rounded-lg p-4">
+                                        <h3 className="text-white font-medium mb-3">Business Hours</h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-400 mb-2">Timezone</label>
+                                                <select className="w-full bg-slate-600 text-white rounded-lg px-3 py-2 border border-slate-500">
+                                                    <option>UTC</option>
+                                                    <option>America/New_York</option>
+                                                    <option>America/Los_Angeles</option>
+                                                    <option>Europe/London</option>
+                                                    <option>Asia/Kolkata</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-400 mb-2">Default Duration</label>
+                                                <select className="w-full bg-slate-600 text-white rounded-lg px-3 py-2 border border-slate-500">
+                                                    <option>15 minutes</option>
+                                                    <option>30 minutes</option>
+                                                    <option>45 minutes</option>
+                                                    <option>60 minutes</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="mt-4">
+                                            <p className="text-slate-400 text-sm mb-3">Available Days & Hours</p>
+                                            <div className="space-y-2">
+                                                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(day => (
+                                                    <div key={day} className="flex items-center justify-between bg-slate-600 rounded-lg p-3">
+                                                        <div className="flex items-center space-x-3">
+                                                            <input type="checkbox" defaultChecked className="rounded" />
+                                                            <span className="text-white text-sm">{day}</span>
+                                                        </div>
+                                                        <div className="flex items-center space-x-2 text-sm">
+                                                            <input 
+                                                                type="time" 
+                                                                defaultValue="09:00"
+                                                                className="bg-slate-700 text-white rounded px-2 py-1 text-xs"
+                                                            />
+                                                            <span className="text-slate-400">to</span>
+                                                            <input 
+                                                                type="time" 
+                                                                defaultValue="17:00"
+                                                                className="bg-slate-700 text-white rounded px-2 py-1 text-xs"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-end">
+                                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                                            Save Calendar Settings
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                     </>
                 )}

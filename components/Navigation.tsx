@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Settings, PhoneCall, Users, Phone, Menu, X, LogOut, Building, Shield } from 'lucide-react'
+import { Home, Settings, PhoneCall, Users, Phone, Menu, X, LogOut, Building, Shield, Calendar } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import OrganizationBadge from './OrganizationBadge'
 
@@ -12,6 +12,7 @@ const baseNavigation = [
   { name: 'Configuration', href: '/config', icon: Settings },
   { name: 'Calls', href: '/calls', icon: PhoneCall },
   { name: 'Leads', href: '/leads', icon: Users },
+  { name: 'Appointments', href: '/appointments', icon: Calendar },
 ]
 
 const Navigation = React.memo(() => {

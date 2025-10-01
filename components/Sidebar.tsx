@@ -12,7 +12,8 @@ import {
   LogOut,
   Home,
   PhoneCall,
-  Shield
+  Shield,
+  Calendar
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import OrganizationBadge from './OrganizationBadge'
@@ -22,6 +23,7 @@ const navigation = [
   { name: 'Configuration', href: '/config', icon: Settings },
   { name: 'Calls', href: '/calls', icon: PhoneCall },
   { name: 'Leads', href: '/leads', icon: Users },
+  { name: 'Appointments', href: '/appointments', icon: Calendar },
 ]
 
 const Sidebar = React.memo(() => {
