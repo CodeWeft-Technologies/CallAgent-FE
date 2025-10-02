@@ -5,7 +5,8 @@ import { useAuth } from '../../contexts/AuthContext'
 import {
     Calendar, Clock, User, Phone, Mail,
     CheckCircle, XCircle, AlertCircle,
-    Plus, Edit, Trash, Settings
+    Plus, Edit, Trash, Settings, Bot, 
+    Brain, Zap, Globe, MessageSquare
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -26,6 +27,13 @@ interface Appointment {
     lead_name?: string
     appointment_type_name?: string
     appointment_type_color?: string
+    // Smart auto-booking fields
+    auto_booked?: boolean
+    llm_confidence?: number
+    llm_reasoning?: string
+    booking_message?: string
+    detected_language?: string
+    time_preferences?: any
 }
 
 interface AppointmentStats {
@@ -130,6 +138,72 @@ export default function AppointmentsPage() {
             <span className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${styles[status as keyof typeof styles] || styles.scheduled}`}>
                 {icons[status as keyof typeof icons]}
                 <span>{status.replace('_', ' ').toUpperCase()}</span>
+            </span>
+        )
+    }
+
+    const getSmartBookingBadge = (appointment: Appointment) => {
+        if (appointment.auto_booked) {
+            return (
+                <span className="inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-cyan-600/20 to-blue-600/20 text-cyan-400 border border-cyan-500/30">
+                    <Zap className="w-3 h-3" />
+                    <span>AUTO-BOOKED</span>
+                </span>
+            )
+        } else if (appointment.booking_source === 'ai_call') {
+            return (
+                <span className="inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium bg-cyan-600/20 text-cyan-400 border border-cyan-500/30">
+                    <Bot className="w-3 h-3" />
+                    <span>AI DETECTED</span>
+                </span>
+            )
+        }
+        return null
+    }
+
+    const getConfidenceBadge = (appointment: Appointment) => {
+        const confidence = appointment.llm_confidence || appointment.ai_confidence || 0
+        if (confidence === 0) return null
+
+        const getConfidenceColor = (conf: number) => {
+            if (conf >= 0.8) return 'bg-emerald-600/20 text-emerald-400 border-emerald-500/30'
+            if (conf >= 0.6) return 'bg-yellow-600/20 text-yellow-400 border-yellow-500/30'
+            return 'bg-orange-600/20 text-orange-400 border-orange-500/30'
+        }
+
+        const getConfidenceLabel = (conf: number) => {
+            if (conf >= 0.8) return 'HIGH'
+            if (conf >= 0.6) return 'MEDIUM'
+            return 'LOW'
+        }
+
+        return (
+            <span className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium border ${getConfidenceColor(confidence)}`}>
+                <Brain className="w-3 h-3" />
+                <span>{getConfidenceLabel(confidence)} ({(confidence * 100).toFixed(0)}%)</span>
+            </span>
+        )
+    }
+
+    const getLanguageBadge = (language?: string) => {
+        if (!language || language === 'english') return null
+
+        const languageNames: { [key: string]: string } = {
+            'hindi': 'हिन्दी',
+            'tamil': 'தமிழ்',
+            'telugu': 'తెలుగు',
+            'bengali': 'বাংলা',
+            'marathi': 'मराठी',
+            'gujarati': 'ગુજરાતી',
+            'kannada': 'ಕನ್ನಡ',
+            'malayalam': 'മലയാളം',
+            'punjabi': 'ਪੰਜਾਬੀ'
+        }
+
+        return (
+            <span className="inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium bg-purple-600/20 text-purple-400 border border-purple-500/30">
+                <Globe className="w-3 h-3" />
+                <span>{languageNames[language] || language.toUpperCase()}</span>
             </span>
         )
     }
@@ -286,6 +360,49 @@ export default function AppointmentsPage() {
                 </div>
             </div>
 
+            {/* Smart Booking Insights */}
+            {stats && stats.ai_booked > 0 && (
+                <div className="bg-gradient-to-r from-cyan-900/20 to-blue-900/20 rounded-2xl border border-cyan-500/30 p-4 sm:p-6">
+                    <div className="flex items-center space-x-3 mb-4">
+                        <div className="p-2 bg-cyan-600/20 rounded-lg">
+                            <Zap className="w-6 h-6 text-cyan-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold text-white">Smart Auto-Booking Active</h3>
+                            <p className="text-sm text-slate-400">AI is automatically booking appointments from conversations</p>
+                        </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="text-center">
+                            <div className="text-2xl font-bold text-cyan-400">{stats.ai_booked}</div>
+                            <div className="text-xs text-slate-400">Auto-Booked This Month</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-2xl font-bold text-emerald-400">
+                                {stats.avg_ai_confidence ? `${(stats.avg_ai_confidence * 100).toFixed(0)}%` : '0%'}
+                            </div>
+                            <div className="text-xs text-slate-400">Average Confidence</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-2xl font-bold text-purple-400">
+                                {stats.ai_booked > 0 ? Math.round((stats.ai_booked / stats.total_appointments) * 100) : 0}%
+                            </div>
+                            <div className="text-xs text-slate-400">Automation Rate</div>
+                        </div>
+                    </div>
+                    
+                    <div className="mt-4 p-3 bg-slate-800/50 rounded-lg">
+                        <div className="flex items-center space-x-2 text-sm text-slate-300">
+                            <Bot className="w-4 h-4 text-cyan-400" />
+                            <span>
+                                AI detects booking intent in <strong>11 Indian languages</strong> and automatically schedules appointments when confidence is high.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Stats Cards */}
             {stats && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
@@ -327,14 +444,28 @@ export default function AppointmentsPage() {
                     </div>
                     <div className="bg-slate-900 rounded-2xl border border-slate-800 p-4 hover:border-slate-700 transition-all">
                         <div className="text-center">
-                            <div className="text-2xl font-bold text-cyan-400">{stats.ai_booked}</div>
-                            <div className="text-xs text-slate-400">AI Booked</div>
+                            <div className="flex items-center justify-center space-x-1 mb-1">
+                                <Zap className="w-4 h-4 text-cyan-400" />
+                                <div className="text-2xl font-bold text-cyan-400">{stats.ai_booked}</div>
+                            </div>
+                            <div className="text-xs text-slate-400">Smart Auto-Booked</div>
                         </div>
                     </div>
                     <div className="bg-slate-900 rounded-2xl border border-slate-800 p-4 hover:border-slate-700 transition-all">
                         <div className="text-center">
                             <div className="text-2xl font-bold text-yellow-400">{stats.upcoming_appointments}</div>
                             <div className="text-xs text-slate-400">Upcoming</div>
+                        </div>
+                    </div>
+                    <div className="bg-slate-900 rounded-2xl border border-slate-800 p-4 hover:border-slate-700 transition-all">
+                        <div className="text-center">
+                            <div className="flex items-center justify-center space-x-1 mb-1">
+                                <Brain className="w-4 h-4 text-indigo-400" />
+                                <div className="text-2xl font-bold text-indigo-400">
+                                    {stats.avg_ai_confidence ? `${(stats.avg_ai_confidence * 100).toFixed(0)}%` : '0%'}
+                                </div>
+                            </div>
+                            <div className="text-xs text-slate-400">Avg AI Confidence</div>
                         </div>
                     </div>
                 </div>
@@ -367,6 +498,19 @@ export default function AppointmentsPage() {
                             <option value="no_show">No Show</option>
                         </select>
                     </div>
+                    <div className="flex-1">
+                        <label className="block text-sm font-medium text-slate-400 mb-2">Booking Source</label>
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="w-full bg-slate-800 text-white rounded-lg px-3 py-2 border border-slate-700 focus:border-blue-500 focus:outline-none"
+                        >
+                            <option value="all">All Sources</option>
+                            <option value="ai_auto_booked">🤖 Smart Auto-Booked</option>
+                            <option value="ai_detected">🔍 AI Detected</option>
+                            <option value="manual">👤 Manual</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -395,9 +539,9 @@ export default function AppointmentsPage() {
                                             <div className="flex items-center space-x-3 mb-2">
                                                 <h3 className="text-lg font-medium text-white">{appointment.title}</h3>
                                                 {getStatusBadge(appointment.status)}
-                                                {appointment.booking_source === 'ai_call' && (
-                                                    <span className="px-2 py-1 bg-cyan-600/20 text-cyan-400 text-xs rounded-full border border-cyan-500/30">
-                                                        AI Booked
+                                                {getSmartBookingBadge(appointment)}
+                                                {getConfidenceBadge(appointment)}
+                                                {getLanguageBadge(appointment.detected_language)}
                                                     </span>
                                                 )}
                                             </div>
@@ -423,6 +567,58 @@ export default function AppointmentsPage() {
 
                                             {appointment.description && (
                                                 <p className="text-sm text-slate-500 mt-2">{appointment.description}</p>
+                                            )}
+
+                                            {/* Smart Booking Details */}
+                                            {(appointment.auto_booked || appointment.llm_reasoning || appointment.booking_message) && (
+                                                <div className="mt-3 p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                                                    <div className="flex items-center space-x-2 mb-2">
+                                                        <Brain className="w-4 h-4 text-cyan-400" />
+                                                        <span className="text-sm font-medium text-cyan-400">Smart Booking Details</span>
+                                                    </div>
+                                                    
+                                                    {appointment.booking_message && (
+                                                        <div className="flex items-start space-x-2 mb-2">
+                                                            <MessageSquare className="w-3 h-3 text-slate-400 mt-0.5" />
+                                                            <p className="text-xs text-slate-300">{appointment.booking_message}</p>
+                                                        </div>
+                                                    )}
+                                                    
+                                                    {appointment.llm_reasoning && (
+                                                        <div className="flex items-start space-x-2 mb-2">
+                                                            <Bot className="w-3 h-3 text-slate-400 mt-0.5" />
+                                                            <p className="text-xs text-slate-400">
+                                                                <span className="font-medium">AI Reasoning:</span> {appointment.llm_reasoning}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                    
+                                                    {appointment.time_preferences && (
+                                                        <div className="flex items-start space-x-2">
+                                                            <Clock className="w-3 h-3 text-slate-400 mt-0.5" />
+                                                            <div className="text-xs text-slate-400">
+                                                                <span className="font-medium">Detected Preferences:</span>
+                                                                <div className="mt-1 flex flex-wrap gap-1">
+                                                                    {appointment.time_preferences.preferred_days?.map((day: string) => (
+                                                                        <span key={day} className="px-1.5 py-0.5 bg-blue-600/20 text-blue-400 rounded text-xs">
+                                                                            {day}
+                                                                        </span>
+                                                                    ))}
+                                                                    {appointment.time_preferences.preferred_times?.map((time: string) => (
+                                                                        <span key={time} className="px-1.5 py-0.5 bg-green-600/20 text-green-400 rounded text-xs">
+                                                                            {time}
+                                                                        </span>
+                                                                    ))}
+                                                                    {appointment.time_preferences.specific_times?.map((time: string) => (
+                                                                        <span key={time} className="px-1.5 py-0.5 bg-purple-600/20 text-purple-400 rounded text-xs">
+                                                                            {time}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             )}
                                         </div>
 
