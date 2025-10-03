@@ -106,7 +106,7 @@ export const useCalendar = () => {
         headers: getHeaders(),
         body: JSON.stringify({
           organization_id: organizationId,
-          redirect_uri: `${window.location.origin}/calendar/callback`
+          redirect_uri: `${API_BASE}/auth/google/callback`
         })
       });
 
