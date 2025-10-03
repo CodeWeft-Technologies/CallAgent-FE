@@ -53,7 +53,20 @@ export const useCalendar = () => {
   // Get auth token from localStorage or context
   const getAuthToken = () => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('auth_token');
+      // Try both token storage methods
+      const directToken = localStorage.getItem('auth_token');
+      if (directToken) return directToken;
+      
+      // Check AuthContext storage
+      const authData = localStorage.getItem('ai_agent_auth');
+      if (authData) {
+        try {
+          const { token } = JSON.parse(authData);
+          return token;
+        } catch (error) {
+          console.error('Error parsing auth data:', error);
+        }
+      }
     }
     return null;
   };
