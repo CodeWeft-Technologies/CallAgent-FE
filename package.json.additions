@@ -1,0 +1,10 @@
+# Add these dependencies to your package.json
+
+# FullCalendar for calendar display
+npm install @fullcalendar/react @fullcalendar/core @fullcalendar/daygrid @fullcalendar/timegrid @fullcalendar/interaction
+
+# React Hot Toast for notifications
+npm install react-hot-toast
+
+# Heroicons for icons (if not already installed)
+npm install @heroicons/react
