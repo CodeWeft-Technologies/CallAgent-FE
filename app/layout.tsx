@@ -9,8 +9,8 @@ import LayoutContent from '../components/LayoutContent'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'AI Agent Dashboard',
-  description: 'Modern AI Voice Agent Management System',
+  title: 'Audixa AI Dashboard',
+  description: 'Advanced AI Voice Agent Management Platform',
 }
 
 export default function RootLayout({
