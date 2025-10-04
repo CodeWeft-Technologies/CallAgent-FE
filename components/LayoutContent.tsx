@@ -22,18 +22,16 @@ export default function LayoutContent({ children }: LayoutContentProps) {
 
   return (
     <div className="flex h-screen bg-slate-950">
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
-        <Sidebar />
-      </div>
+      {/* Responsive Sidebar - Always rendered but positioned differently */}
+      <Sidebar />
       
-      {/* Mobile Navigation */}
-      <div className="lg:hidden">
+      {/* Mobile Navigation Fallback (if needed) */}
+      <div className="hidden">
         <Navigation />
       </div>
       
       <main className="flex-1 overflow-auto bg-slate-950">
-        <div className="p-4 sm:p-6 lg:p-8 pt-16 lg:pt-4">
+        <div className="p-4 sm:p-6 lg:p-8 pt-4 transition-all duration-300">
           {children}
         </div>
       </main>
