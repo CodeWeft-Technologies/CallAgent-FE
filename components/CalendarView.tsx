@@ -16,10 +16,12 @@ import {
   UserIcon,
   PhoneIcon,
   EnvelopeIcon,
-  CheckCircle,
-  AlertCircle,
-  RefreshCw
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
+import {
+  CheckCircleIcon,
+  ExclamationTriangleIcon
+} from '@heroicons/react/24/solid';
 
 interface CalendarViewProps {
   organizationId: number;
@@ -134,7 +136,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ organizationId }) =>
       <div className="bg-slate-900 border border-slate-800 rounded-xl shadow-lg">
         <div className="px-6 py-8 text-center">
           <div className="flex items-center justify-center w-16 h-16 bg-amber-600/20 rounded-xl mx-auto mb-4">
-            <AlertCircle className="h-8 w-8 text-amber-400" />
+            <ExclamationTriangleIcon className="h-8 w-8 text-amber-400" />
           </div>
           <h3 className="text-xl font-semibold text-white mb-2">
             Google Calendar Not Connected
@@ -164,7 +166,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ organizationId }) =>
             <div>
               <h3 className="text-lg font-semibold text-white">Calendar</h3>
               <p className="text-sm text-slate-400 flex items-center">
-                <CheckCircle className="h-4 w-4 text-emerald-400 mr-1" />
+                <CheckCircleIcon className="h-4 w-4 text-emerald-400 mr-1" />
                 {calendarStatus.calendar_name} • {calendarStatus.timezone}
               </p>
             </div>
@@ -172,7 +174,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ organizationId }) =>
           <div className="flex items-center space-x-3">
             {loading && (
               <div className="flex items-center text-sm text-slate-400">
-                <RefreshCw className="animate-spin h-4 w-4 mr-2" />
+                <ArrowPathIcon className="animate-spin h-4 w-4 mr-2" />
                 Syncing...
               </div>
             )}
@@ -181,7 +183,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ organizationId }) =>
               disabled={loading}
               className="flex items-center space-x-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors disabled:opacity-50 border border-slate-700"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               <span>Refresh</span>
             </button>
           </div>
