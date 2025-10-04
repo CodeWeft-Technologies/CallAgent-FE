@@ -7,15 +7,21 @@ import { CheckCircleIcon } from '@heroicons/react/24/outline';
 export default function CalendarConnectedPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  
+
   const orgId = searchParams.get('org');
   const calendarName = searchParams.get('calendar');
 
+  // Debug logging
+  console.log('Calendar Connected Page Loaded');
+  console.log('Org ID:', orgId);
+  console.log('Calendar Name:', calendarName);
+  console.log('Search Params:', searchParams.toString());
+
   useEffect(() => {
-    // Redirect to appointments page after 5 seconds
+    // Redirect to appointments page after 10 seconds (increased for debugging)
     const timer = setTimeout(() => {
       router.push('/appointments?tab=settings');
-    }, 5000);
+    }, 10000);
 
     return () => clearTimeout(timer);
   }, [router]);
@@ -31,7 +37,7 @@ export default function CalendarConnectedPage() {
           <p className="mt-2 text-sm text-gray-600">
             Your Google Calendar has been successfully connected to CallAgent.
           </p>
-          
+
           {calendarName && (
             <div className="mt-6 bg-green-50 border border-green-200 rounded-md p-4">
               <div className="text-sm text-green-800">
@@ -61,7 +67,7 @@ export default function CalendarConnectedPage() {
           </div>
 
           <p className="mt-4 text-xs text-gray-500">
-            You will be automatically redirected in a few seconds...
+            You will be automatically redirected in 10 seconds...
           </p>
         </div>
       </div>
