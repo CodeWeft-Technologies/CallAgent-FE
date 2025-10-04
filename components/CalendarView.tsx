@@ -15,7 +15,10 @@ import {
   ClockIcon,
   UserIcon,
   PhoneIcon,
-  EnvelopeIcon
+  EnvelopeIcon,
+  CheckCircle,
+  AlertCircle,
+  RefreshCw
 } from '@heroicons/react/24/outline';
 
 interface CalendarViewProps {
@@ -128,18 +131,20 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ organizationId }) =>
 
   if (!calendarStatus.connected) {
     return (
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl shadow-lg">
         <div className="px-6 py-8 text-center">
-          <CalendarIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-4 text-lg font-medium text-gray-900">
+          <div className="flex items-center justify-center w-16 h-16 bg-amber-600/20 rounded-xl mx-auto mb-4">
+            <AlertCircle className="h-8 w-8 text-amber-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">
             Google Calendar Not Connected
           </h3>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="text-slate-400 mb-6">
             Connect your Google Calendar to view and manage appointments
           </p>
-          <div className="mt-6">
-            <p className="text-xs text-gray-400">
-              Go to Organization Settings to connect your calendar
+          <div className="bg-slate-800 rounded-lg p-4">
+            <p className="text-sm text-slate-300">
+              Go to <span className="text-blue-400 font-medium">Organization Settings</span> to connect your calendar
             </p>
           </div>
         </div>
@@ -148,32 +153,36 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ organizationId }) =>
   }
 
   return (
-    <div className="bg-white shadow-sm rounded-lg border border-gray-200">
+    <div className="bg-slate-900 border border-slate-800 rounded-xl shadow-lg">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-200">
+      <div className="px-6 py-4 border-b border-slate-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <CalendarIcon className="h-6 w-6 text-blue-600 mr-3" />
+            <div className="flex items-center justify-center w-10 h-10 bg-blue-600/20 rounded-lg mr-3">
+              <CalendarIcon className="h-5 w-5 text-blue-400" />
+            </div>
             <div>
-              <h3 className="text-lg font-medium text-gray-900">Calendar</h3>
-              <p className="text-sm text-gray-500">
+              <h3 className="text-lg font-semibold text-white">Calendar</h3>
+              <p className="text-sm text-slate-400 flex items-center">
+                <CheckCircle className="h-4 w-4 text-emerald-400 mr-1" />
                 {calendarStatus.calendar_name} • {calendarStatus.timezone}
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             {loading && (
-              <div className="flex items-center text-sm text-gray-500">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+              <div className="flex items-center text-sm text-slate-400">
+                <RefreshCw className="animate-spin h-4 w-4 mr-2" />
                 Syncing...
               </div>
             )}
             <button
               onClick={() => fetchEvents()}
               disabled={loading}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              className="flex items-center space-x-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors disabled:opacity-50 border border-slate-700"
             >
-              Refresh
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
             </button>
           </div>
         </div>
@@ -181,54 +190,180 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ organizationId }) =>
 
       {/* Calendar */}
       <div className="p-6">
-        <FullCalendar
-          ref={calendarRef}
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          headerToolbar={{
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
-          }}
-          events={events}
-          eventClick={handleEventClick}
-          dateClick={handleDateClick}
-          height="auto"
-          eventDisplay="block"
-          dayMaxEvents={3}
-          moreLinkClick="popover"
-          eventTimeFormat={{
-            hour: 'numeric',
-            minute: '2-digit',
-            meridiem: 'short'
-          }}
-          slotMinTime="08:00:00"
-          slotMaxTime="20:00:00"
-          businessHours={{
-            daysOfWeek: [1, 2, 3, 4, 5], // Monday - Friday
-            startTime: '09:00',
-            endTime: '17:00'
-          }}
-          weekends={true}
-          nowIndicator={true}
-          selectable={true}
-          selectMirror={true}
-          eventClassNames="cursor-pointer hover:opacity-80"
-        />
+        <div className="calendar-dark-theme">
+          <FullCalendar
+            ref={calendarRef}
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            headerToolbar={{
+              left: 'prev,next today',
+              center: 'title',
+              right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            }}
+            events={events}
+            eventClick={handleEventClick}
+            dateClick={handleDateClick}
+            height="auto"
+            eventDisplay="block"
+            dayMaxEvents={3}
+            moreLinkClick="popover"
+            eventTimeFormat={{
+              hour: 'numeric',
+              minute: '2-digit',
+              meridiem: 'short'
+            }}
+            slotMinTime="08:00:00"
+            slotMaxTime="20:00:00"
+            businessHours={{
+              daysOfWeek: [1, 2, 3, 4, 5], // Monday - Friday
+              startTime: '09:00',
+              endTime: '17:00'
+            }}
+            weekends={true}
+            nowIndicator={true}
+            selectable={true}
+            selectMirror={true}
+            eventClassNames="cursor-pointer hover:opacity-90 transition-opacity"
+            eventBackgroundColor="#3B82F6"
+            eventBorderColor="#2563EB"
+            eventTextColor="#FFFFFF"
+          />
+        </div>
       </div>
+
+      {/* Custom CSS for dark theme */}
+      <style jsx>{`
+        .calendar-dark-theme :global(.fc) {
+          background-color: transparent;
+          color: #F1F5F9;
+        }
+        
+        .calendar-dark-theme :global(.fc-theme-standard .fc-scrollgrid) {
+          border-color: #334155;
+        }
+        
+        .calendar-dark-theme :global(.fc-theme-standard td, .fc-theme-standard th) {
+          border-color: #334155;
+        }
+        
+        .calendar-dark-theme :global(.fc-col-header-cell) {
+          background-color: #1E293B;
+          color: #94A3B8;
+          font-weight: 600;
+        }
+        
+        .calendar-dark-theme :global(.fc-daygrid-day) {
+          background-color: transparent;
+        }
+        
+        .calendar-dark-theme :global(.fc-daygrid-day:hover) {
+          background-color: #1E293B;
+        }
+        
+        .calendar-dark-theme :global(.fc-day-today) {
+          background-color: #1E293B !important;
+        }
+        
+        .calendar-dark-theme :global(.fc-day-today .fc-daygrid-day-number) {
+          color: #3B82F6;
+          font-weight: bold;
+        }
+        
+        .calendar-dark-theme :global(.fc-daygrid-day-number) {
+          color: #F1F5F9;
+          font-weight: 500;
+        }
+        
+        .calendar-dark-theme :global(.fc-button) {
+          background-color: #374151;
+          border-color: #4B5563;
+          color: #F9FAFB;
+        }
+        
+        .calendar-dark-theme :global(.fc-button:hover) {
+          background-color: #4B5563;
+          border-color: #6B7280;
+        }
+        
+        .calendar-dark-theme :global(.fc-button:disabled) {
+          background-color: #1F2937;
+          border-color: #374151;
+          color: #6B7280;
+        }
+        
+        .calendar-dark-theme :global(.fc-toolbar-title) {
+          color: #F1F5F9;
+          font-weight: 600;
+        }
+        
+        .calendar-dark-theme :global(.fc-event) {
+          background-color: #3B82F6;
+          border-color: #2563EB;
+          color: #FFFFFF;
+          border-radius: 6px;
+          font-weight: 500;
+        }
+        
+        .calendar-dark-theme :global(.fc-event:hover) {
+          background-color: #2563EB;
+          border-color: #1D4ED8;
+        }
+        
+        .calendar-dark-theme :global(.fc-event-title) {
+          color: #FFFFFF;
+        }
+        
+        .calendar-dark-theme :global(.fc-event-time) {
+          color: #E2E8F0;
+        }
+        
+        .calendar-dark-theme :global(.fc-more-link) {
+          color: #60A5FA;
+        }
+        
+        .calendar-dark-theme :global(.fc-more-link:hover) {
+          color: #3B82F6;
+        }
+        
+        .calendar-dark-theme :global(.fc-popover) {
+          background-color: #1E293B;
+          border-color: #334155;
+        }
+        
+        .calendar-dark-theme :global(.fc-popover-header) {
+          background-color: #0F172A;
+          color: #F1F5F9;
+        }
+        
+        .calendar-dark-theme :global(.fc-timegrid-slot) {
+          border-color: #334155;
+        }
+        
+        .calendar-dark-theme :global(.fc-timegrid-slot-label) {
+          color: #94A3B8;
+        }
+        
+        .calendar-dark-theme :global(.fc-now-indicator-line) {
+          border-color: #EF4444;
+        }
+        
+        .calendar-dark-theme :global(.fc-now-indicator-arrow) {
+          border-top-color: #EF4444;
+        }
+      `}</style>
 
       {/* Event Details Modal */}
       {showEventModal && selectedEvent && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+        <div className="fixed inset-0 bg-black bg-opacity-75 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-6 border border-slate-700 w-full max-w-md shadow-2xl rounded-xl bg-slate-900">
             <div className="mt-3">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl leading-6 font-semibold text-white">
                   Appointment Details
                 </h3>
                 <button
                   onClick={() => setShowEventModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-slate-400 hover:text-white transition-colors"
                 >
                   <span className="sr-only">Close</span>
                   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -237,22 +372,24 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ organizationId }) =>
                 </button>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {/* Title */}
-                <div>
-                  <h4 className="text-base font-medium text-gray-900">
+                <div className="bg-slate-800 rounded-lg p-4">
+                  <h4 className="text-lg font-semibold text-white">
                     {selectedEvent.title}
                   </h4>
                 </div>
 
                 {/* Time */}
-                <div className="flex items-start">
-                  <ClockIcon className="h-5 w-5 text-gray-400 mr-2 mt-0.5" />
+                <div className="flex items-start bg-slate-800 rounded-lg p-4">
+                  <div className="flex items-center justify-center w-8 h-8 bg-blue-600/20 rounded-lg mr-3">
+                    <ClockIcon className="h-4 w-4 text-blue-400" />
+                  </div>
                   <div>
-                    <p className="text-sm text-gray-900">
+                    <p className="text-sm text-white font-medium">
                       {formatDateTime(selectedEvent.start)}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-slate-400 mt-1">
                       Duration: {getEventDuration(selectedEvent.start, selectedEvent.end)}
                     </p>
                   </div>
@@ -262,21 +399,28 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ organizationId }) =>
                 {selectedEvent.description && (() => {
                   const customerInfo = extractCustomerInfo(selectedEvent.description);
                   return customerInfo ? (
-                    <div className="space-y-2">
+                    <div className="bg-slate-800 rounded-lg p-4 space-y-3">
+                      <h5 className="text-sm font-medium text-slate-300 mb-3">Customer Information</h5>
                       <div className="flex items-center">
-                        <UserIcon className="h-5 w-5 text-gray-400 mr-2" />
-                        <span className="text-sm text-gray-900">{customerInfo.name}</span>
+                        <div className="flex items-center justify-center w-8 h-8 bg-emerald-600/20 rounded-lg mr-3">
+                          <UserIcon className="h-4 w-4 text-emerald-400" />
+                        </div>
+                        <span className="text-sm text-white">{customerInfo.name}</span>
                       </div>
                       {customerInfo.phone !== 'N/A' && (
                         <div className="flex items-center">
-                          <PhoneIcon className="h-5 w-5 text-gray-400 mr-2" />
-                          <span className="text-sm text-gray-900">{customerInfo.phone}</span>
+                          <div className="flex items-center justify-center w-8 h-8 bg-purple-600/20 rounded-lg mr-3">
+                            <PhoneIcon className="h-4 w-4 text-purple-400" />
+                          </div>
+                          <span className="text-sm text-white">{customerInfo.phone}</span>
                         </div>
                       )}
                       {customerInfo.email !== 'N/A' && (
                         <div className="flex items-center">
-                          <EnvelopeIcon className="h-5 w-5 text-gray-400 mr-2" />
-                          <span className="text-sm text-gray-900">{customerInfo.email}</span>
+                          <div className="flex items-center justify-center w-8 h-8 bg-amber-600/20 rounded-lg mr-3">
+                            <EnvelopeIcon className="h-4 w-4 text-amber-400" />
+                          </div>
+                          <span className="text-sm text-white">{customerInfo.email}</span>
                         </div>
                       )}
                     </div>
@@ -285,23 +429,23 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ organizationId }) =>
 
                 {/* Description */}
                 {selectedEvent.description && (
-                  <div>
-                    <h5 className="text-sm font-medium text-gray-900 mb-1">Notes</h5>
-                    <p className="text-sm text-gray-600 whitespace-pre-wrap">
+                  <div className="bg-slate-800 rounded-lg p-4">
+                    <h5 className="text-sm font-medium text-slate-300 mb-2">Notes</h5>
+                    <p className="text-sm text-white whitespace-pre-wrap">
                       {selectedEvent.description}
                     </p>
                   </div>
                 )}
 
                 {/* Actions */}
-                <div className="flex justify-between pt-4 border-t border-gray-200">
+                <div className="flex justify-between pt-6 border-t border-slate-700">
                   <div>
                     {selectedEvent.htmlLink && (
                       <a
                         href={selectedEvent.htmlLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        className="inline-flex items-center px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors border border-slate-700"
                       >
                         <EyeIcon className="h-4 w-4 mr-2" />
                         View in Google
@@ -311,7 +455,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ organizationId }) =>
                   <button
                     onClick={() => handleDeleteEvent(selectedEvent.id)}
                     disabled={loading}
-                    className="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                    className="inline-flex items-center px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg transition-colors border border-red-500/30 disabled:opacity-50"
                   >
                     <TrashIcon className="h-4 w-4 mr-2" />
                     {loading ? 'Cancelling...' : 'Cancel Appointment'}
@@ -325,16 +469,16 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ organizationId }) =>
 
       {/* Create Event Modal Placeholder */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+        <div className="fixed inset-0 bg-black bg-opacity-75 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-6 border border-slate-700 w-full max-w-md shadow-2xl rounded-xl bg-slate-900">
             <div className="mt-3">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl leading-6 font-semibold text-white">
                   Create Appointment
                 </h3>
                 <button
                   onClick={() => setShowCreateModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-slate-400 hover:text-white transition-colors"
                 >
                   <span className="sr-only">Close</span>
                   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -344,23 +488,27 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ organizationId }) =>
               </div>
 
               <div className="text-center py-8">
-                <CalendarIcon className="mx-auto h-12 w-12 text-gray-400" />
-                <h4 className="mt-4 text-base font-medium text-gray-900">
+                <div className="flex items-center justify-center w-16 h-16 bg-blue-600/20 rounded-xl mx-auto mb-4">
+                  <CalendarIcon className="h-8 w-8 text-blue-400" />
+                </div>
+                <h4 className="text-lg font-semibold text-white mb-3">
                   Manual Booking Coming Soon
                 </h4>
-                <p className="mt-2 text-sm text-gray-500">
+                <p className="text-sm text-slate-400 mb-4">
                   Currently, appointments are created automatically through AI phone conversations.
                   Manual booking interface will be available soon.
                 </p>
-                <p className="mt-4 text-xs text-gray-400">
-                  Selected date: {selectedDate}
-                </p>
+                <div className="bg-slate-800 rounded-lg p-3">
+                  <p className="text-xs text-slate-300">
+                    Selected date: <span className="text-blue-400 font-medium">{selectedDate}</span>
+                  </p>
+                </div>
               </div>
 
-              <div className="flex justify-center pt-4">
+              <div className="flex justify-center pt-6">
                 <button
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors border border-slate-700"
                 >
                   Close
                 </button>

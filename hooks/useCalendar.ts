@@ -173,17 +173,53 @@ export const useCalendar = () => {
         const data = await response.json();
         if (data.success) {
           // Transform Google Calendar events to FullCalendar format
-          const transformedEvents = data.data.events.map((event: any) => ({
-            id: event.id,
-            title: event.summary || 'Untitled Event',
-            start: event.start?.dateTime || event.start?.date,
-            end: event.end?.dateTime || event.end?.date,
-            description: event.description,
-            attendees: event.attendees,
-            htmlLink: event.htmlLink,
-            backgroundColor: event.colorId ? `#${event.colorId}` : '#3B82F6',
-            borderColor: event.colorId ? `#${event.colorId}` : '#3B82F6'
-          }));
+          const transformedEvents = data.data.events.map((event: any) => {
+            // Determine booking source and colors
+            let backgroundColor = '#3B82F6';
+            let borderColor = '#2563EB';
+            let className = '';
+            
+            if (event.source === 'local_db' || event.booking_source) {
+              // This is a realtime booking from our database
+              switch (event.booking_source) {
+                case 'realtime_ai':
+                  backgroundColor = '#10B981';
+                  borderColor = '#059669';
+                  className = 'realtime-booking';
+                  break;
+                case 'manual':
+                  backgroundColor = '#8B5CF6';
+                  borderColor = '#7C3AED';
+                  className = 'manual-booking';
+                  break;
+                case 'api':
+                  backgroundColor = '#F59E0B';
+                  borderColor = '#D97706';
+                  className = 'api-booking';
+                  break;
+                default:
+                  backgroundColor = '#3B82F6';
+                  borderColor = '#2563EB';
+              }
+            }
+            
+            return {
+              id: event.id,
+              title: event.summary || 'Untitled Event',
+              start: event.start?.dateTime || event.start?.date,
+              end: event.end?.dateTime || event.end?.date,
+              description: event.description,
+              attendees: event.attendees,
+              htmlLink: event.htmlLink,
+              backgroundColor,
+              borderColor,
+              className,
+              extendedProps: {
+                bookingSource: event.booking_source || 'google',
+                source: event.source || 'google'
+              }
+            };
+          });
           
           setEvents(transformedEvents);
         }
