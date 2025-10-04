@@ -22,7 +22,7 @@ import {
 export default function AppointmentsPage() {
   const [activeTab, setActiveTab] = useState<'calendar' | 'booking' | 'settings' | 'analytics'>('calendar');
   const [organizationId, setOrganizationId] = useState<number>(1); // This should come from auth context
-  const { calendarStatus, events, loading, checkCalendarStatus } = useCalendar();
+  const { calendarStatus, events, loading, checkCalendarStatus, fetchEvents } = useCalendar();
 
   // Get organization info from auth context or API
   useEffect(() => {
@@ -44,7 +44,28 @@ export default function AppointmentsPage() {
 
   const handleRefresh = () => {
     checkCalendarStatus();
+    // Also refresh events to catch realtime bookings
+    if (calendarStatus.connected) {
+      fetchEvents();
+    }
   };
+
+  // Auto-refresh when calendar is updated via realtime booking
+  useEffect(() => {
+    const handleCalendarRefresh = () => {
+      console.log('📅 Auto-refreshing calendar due to realtime booking');
+      if (calendarStatus.connected) {
+        fetchEvents();
+      }
+    };
+
+    // Listen for custom calendar refresh events
+    window.addEventListener('calendar-refresh', handleCalendarRefresh);
+    
+    return () => {
+      window.removeEventListener('calendar-refresh', handleCalendarRefresh);
+    };
+  }, [calendarStatus.connected, fetchEvents]);
 
   // Calculate analytics
   const thisMonthEvents = events.filter(event => {

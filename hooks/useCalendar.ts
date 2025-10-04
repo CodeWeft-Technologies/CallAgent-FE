@@ -343,6 +343,30 @@ export const useCalendar = () => {
     }
   }, [calendarStatus.connected, fetchEvents]);
 
+  // Auto-refresh events every 30 seconds when calendar is connected (for realtime bookings)
+  useEffect(() => {
+    if (!calendarStatus.connected) return;
+
+    const refreshInterval = setInterval(() => {
+      console.log('🔄 Auto-refreshing calendar events for realtime bookings...');
+      fetchEvents();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(refreshInterval);
+  }, [calendarStatus.connected, fetchEvents]);
+
+  // Trigger immediate calendar refresh (for realtime bookings)
+  const triggerRefresh = useCallback(() => {
+    if (calendarStatus.connected) {
+      console.log('📅 Triggering immediate calendar refresh for realtime booking');
+      fetchEvents();
+      // Dispatch custom event for other components
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('calendar-refresh'));
+      }
+    }
+  }, [calendarStatus.connected, fetchEvents]);
+
   return {
     // State
     events,
@@ -358,6 +382,7 @@ export const useCalendar = () => {
     checkAvailability,
     bookAppointment,
     cancelAppointment,
-    testConnection
+    testConnection,
+    triggerRefresh
   };
 };
