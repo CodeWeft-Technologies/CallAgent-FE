@@ -5,50 +5,22 @@ import {
   CheckCircle, AlertCircle, User, Calendar,
   Settings, ArrowRight, RefreshCw, Bot,
   Zap, Shield, Globe, Star, Play,
-  MessageSquare, BarChart3, Headphones,
-  Mail, Lock, Eye, EyeOff
+  MessageSquare, BarChart3, Headphones
 } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '../contexts/AuthContext'
-import { useRouter } from 'next/navigation'
 
 export default function LandingPage() {  
-  const { user, token, login } = useAuth()
-  const router = useRouter()
-  const [showLogin, setShowLogin] = useState(false)
+  const { user, token } = useAuth()
   const [showDemo, setShowDemo] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [loginForm, setLoginForm] = useState({
-    email: '',
-    password: ''
-  })
   const [demoForm, setDemoForm] = useState({
     name: '',
     mobile: ''
   })
-  const [loginLoading, setLoginLoading] = useState(false)
-  const [loginError, setLoginError] = useState('')
 
   // No authentication required for landing page - it's accessible to everyone
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoginLoading(true)
-    setLoginError('')
 
-    try {
-      const success = await login(loginForm.email, loginForm.password)
-      if (success) {
-        router.push('/dashboard')
-      } else {
-        setLoginError('Invalid email or password')
-      }
-    } catch (error) {
-      setLoginError('Login failed. Please try again.')
-    } finally {
-      setLoginLoading(false)
-    }
-  }
 
   const handleDemoSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -90,13 +62,13 @@ export default function LandingPage() {
                   <span>Dashboard</span>
                 </Link>
               ) : (
-                <button
-                  onClick={() => setShowLogin(true)}
+                <Link
+                  href="/login"
                   className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                   <User className="w-4 h-4" />
                   <span>Login</span>
-                </button>
+                </Link>
               )}
             </div>
           </div>
@@ -134,13 +106,13 @@ export default function LandingPage() {
                   <span className="text-lg font-semibold">Go to Dashboard</span>
                 </Link>
               ) : (
-                <button
-                  onClick={() => setShowLogin(true)}
+                <Link
+                  href="/login"
                   className="group flex items-center space-x-3 px-8 py-4 bg-slate-800/50 border border-slate-700 text-white rounded-xl hover:bg-slate-700/50 hover:border-slate-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                   <User className="w-5 h-5 group-hover:scale-110 transition-transform" />
                   <span className="text-lg font-semibold">Access Platform</span>
-                </button>
+                </Link>
               )}
             </div>
 
@@ -328,80 +300,7 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      {/* Login Modal */}
-      {showLogin && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="relative bg-slate-900 rounded-2xl border border-slate-800 p-8 w-full max-w-md">
-            <button
-              onClick={() => setShowLogin(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
-            >
-              ×
-            </button>
-            
-            <div className="text-center space-y-4 mb-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg mx-auto">
-                <User className="w-8 h-8 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-white">Welcome Back</h2>
-              <p className="text-slate-400">Sign in to access your dashboard</p>
-            </div>
 
-            <form onSubmit={handleLogin} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300">Email</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input
-                    type="email"
-                    value={loginForm.email}
-                    onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
-                    className="w-full pl-12 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none transition-colors"
-                    placeholder="Enter your email"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300">Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={loginForm.password}
-                    onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
-                    className="w-full pl-12 pr-12 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none transition-colors"
-                    placeholder="Enter your password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
-
-              {loginError && (
-                <div className="p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
-                  <p className="text-red-300 text-sm">{loginError}</p>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={loginLoading}
-                className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
-              >
-                {loginLoading ? 'Signing in...' : 'Sign In'}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Demo Modal */}
       {showDemo && (

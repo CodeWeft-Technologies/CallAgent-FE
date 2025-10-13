@@ -26,8 +26,8 @@ const AuthWrapper = React.memo<AuthWrapperProps>(({ children }) => {
     )
   }
 
-  // Allow access to landing page, register page and admin-login page without authentication
-  if (pathname === '/' || pathname === '/register' || pathname === '/admin-login') {
+  // Allow access to landing page, login page, register page and admin-login page without authentication
+  if (pathname === '/' || pathname === '/login' || pathname === '/register' || pathname === '/admin-login') {
     return <>{children}</>
   }
 
