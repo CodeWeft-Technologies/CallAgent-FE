@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -117,6 +118,18 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-2xl">
+        {/* Back Button */}
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="inline-flex items-center space-x-2 text-slate-400 hover:text-white transition-colors text-sm"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back</span>
+          </button>
+        </div>
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">

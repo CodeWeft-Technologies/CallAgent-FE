@@ -8,7 +8,7 @@ import { useAuth } from '../contexts/AuthContext'
 import OrganizationBadge from './OrganizationBadge'
 
 const baseNavigation = [
-  { name: 'Dashboard', href: '/', icon: Home },
+  { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Configuration', href: '/config', icon: Settings },
   { name: 'Calls', href: '/calls', icon: PhoneCall },
   { name: 'Leads', href: '/leads', icon: Users },

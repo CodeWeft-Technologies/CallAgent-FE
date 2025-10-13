@@ -19,7 +19,7 @@ import {
 import { useAuth } from '../contexts/AuthContext'
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Configuration', href: '/config', icon: Settings },
   { name: 'Calls', href: '/calls', icon: PhoneCall },
   { name: 'Leads', href: '/leads', icon: Users },

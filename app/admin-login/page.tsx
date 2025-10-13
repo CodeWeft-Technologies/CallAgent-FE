@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { Shield, User, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
 
@@ -71,6 +72,18 @@ export default function AdminLoginPage() {
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        {/* Back Button */}
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="inline-flex items-center space-x-2 text-slate-400 hover:text-white transition-colors text-sm"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back</span>
+          </button>
+        </div>
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-br from-red-600 to-orange-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
