@@ -119,15 +119,73 @@ export default function LandingPage() {
             <div className="flex items-center justify-center space-x-8 pt-8">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span className="text-sm text-slate-400">99.9% Uptime</span>
+                <span className="text-sm text-slate-400">Piopiy Integration</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Shield className="w-4 h-4 text-blue-400" />
-                <span className="text-sm text-slate-400">Enterprise Security</span>
+                <span className="text-sm text-slate-400">Real-time WebSocket</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Globe className="w-4 h-4 text-purple-400" />
-                <span className="text-sm text-slate-400">Multi-Language</span>
+                <span className="text-sm text-slate-400">Multi-Language AI</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Technical Stack Section */}
+      <section className="py-20 relative">
+        <div className="container mx-auto px-4">
+          <div className="text-center space-y-4 mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-white">
+              Powered by Leading AI Technologies
+            </h2>
+            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+              Built with enterprise-grade AI services for reliable, high-quality voice interactions
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+            {/* Groq LLM */}
+            <div className="group relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-600/10 to-orange-800/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+              <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-8 hover:border-orange-500/30 transition-all duration-300 hover:transform hover:scale-105">
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-orange-500/25 transition-all duration-300">
+                  <MessageSquare className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-4">Groq LLM</h3>
+                <p className="text-slate-400 leading-relaxed">
+                  Lightning-fast language processing with Llama 3.1 70B model for intelligent, context-aware conversations
+                </p>
+              </div>
+            </div>
+
+            {/* Deepgram STT */}
+            <div className="group relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-blue-800/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+              <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-8 hover:border-blue-500/30 transition-all duration-300 hover:transform hover:scale-105">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-blue-500/25 transition-all duration-300">
+                  <Headphones className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-4">Deepgram STT</h3>
+                <p className="text-slate-400 leading-relaxed">
+                  Advanced speech-to-text with Nova-3 model, real-time transcription, and multi-language support
+                </p>
+              </div>
+            </div>
+
+            {/* Google TTS */}
+            <div className="group relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 to-emerald-800/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+              <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-8 hover:border-emerald-500/30 transition-all duration-300 hover:transform hover:scale-105">
+                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-emerald-500/25 transition-all duration-300">
+                  <Phone className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-4">Google TTS</h3>
+                <p className="text-slate-400 leading-relaxed">
+                  Natural-sounding voice synthesis with Neural2 voices, optimized for telephony applications
+                </p>
               </div>
             </div>
           </div>
@@ -196,9 +254,9 @@ export default function LandingPage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-orange-500/25 transition-all duration-300">
                   <MessageSquare className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Real-time Call Monitoring</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Piopiy Telephony Integration</h3>
                 <p className="text-slate-400 leading-relaxed">
-                  Monitor live calls, view transcripts, track conversation outcomes, and analyze call performance in real-time
+                  Seamless integration with Piopiy's telephony infrastructure for reliable call routing, WebSocket streaming, and call transfer capabilities
                 </p>
               </div>
             </div>
@@ -224,9 +282,9 @@ export default function LandingPage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-teal-500/25 transition-all duration-300">
                   <Headphones className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Custom AI Configuration</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Advanced Call Features</h3>
                 <p className="text-slate-400 leading-relaxed">
-                  Configure AI prompts, greetings, knowledge bases, and conversation flows tailored to your business needs
+                  Call transfer to human agents, intelligent interruption handling, conversation memory, and timeout management for natural interactions
                 </p>
               </div>
             </div>
@@ -312,43 +370,101 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Stats Section */}
+      {/* Platform Capabilities */}
       <section className="py-20 relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-800/50 to-slate-900/50 rounded-3xl blur-3xl"></div>
-        <div className="container mx-auto px-4 relative">
+        <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold text-white">
-              Powerful Voice Automation Platform
+              Enterprise-Grade Platform Capabilities
             </h2>
             <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-              Built for sales teams, call centers, and businesses that need to scale their outbound calling
+              Built for businesses that need reliable, scalable voice automation solutions
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center space-y-2">
-              <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                AI
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Inbound & Outbound */}
+            <div className="relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-blue-800/10 rounded-2xl blur-xl"></div>
+              <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                    <PhoneCall className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">Inbound & Outbound</h3>
+                </div>
+                <p className="text-slate-400 text-sm">Handle both incoming calls and automated outbound campaigns with the same AI agent configuration</p>
               </div>
-              <p className="text-slate-400 font-medium">Voice Agents</p>
             </div>
-            <div className="text-center space-y-2">
-              <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                Multi
+
+            {/* WebSocket Streaming */}
+            <div className="relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 to-emerald-800/10 rounded-2xl blur-xl"></div>
+              <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                    <Zap className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">Real-time Streaming</h3>
+                </div>
+                <p className="text-slate-400 text-sm">Ultra-low latency voice processing with WebSocket streaming for natural conversation flow</p>
               </div>
-              <p className="text-slate-400 font-medium">Language Support</p>
             </div>
-            <div className="text-center space-y-2">
-              <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
-                Real-time
+
+            {/* Multi-Language */}
+            <div className="relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-purple-800/10 rounded-2xl blur-xl"></div>
+              <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <Globe className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">Multi-Language AI</h3>
+                </div>
+                <p className="text-slate-400 text-sm">Support for multiple languages with automatic language detection and appropriate voice selection</p>
               </div>
-              <p className="text-slate-400 font-medium">Call Monitoring</p>
             </div>
-            <div className="text-center space-y-2">
-              <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Enterprise
+
+            {/* Call Transfer */}
+            <div className="relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-600/10 to-orange-800/10 rounded-2xl blur-xl"></div>
+              <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+                    <ArrowRight className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">Smart Call Transfer</h3>
+                </div>
+                <p className="text-slate-400 text-sm">Seamless transfer to human agents when needed, with full conversation context preservation</p>
               </div>
-              <p className="text-slate-400 font-medium">Multi-Tenant</p>
+            </div>
+
+            {/* Conversation Memory */}
+            <div className="relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-teal-600/10 to-teal-800/10 rounded-2xl blur-xl"></div>
+              <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl flex items-center justify-center">
+                    <MessageSquare className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">Conversation Memory</h3>
+                </div>
+                <p className="text-slate-400 text-sm">Intelligent conversation tracking with context awareness across multiple interactions</p>
+              </div>
+            </div>
+
+            {/* Analytics & Reporting */}
+            <div className="relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 to-red-800/10 rounded-2xl blur-xl"></div>
+              <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center">
+                    <BarChart3 className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">Advanced Analytics</h3>
+                </div>
+                <p className="text-slate-400 text-sm">Comprehensive call analytics, conversion tracking, and performance metrics for optimization</p>
+              </div>
             </div>
           </div>
         </div>
