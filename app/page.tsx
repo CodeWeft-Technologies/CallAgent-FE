@@ -1,614 +1,468 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { 
   Phone, Users, TrendingUp, PhoneCall, 
   CheckCircle, AlertCircle, User, Calendar,
-  Settings, ArrowRight, RefreshCw
+  Settings, ArrowRight, RefreshCw, Bot,
+  Zap, Shield, Globe, Star, Play,
+  MessageSquare, BarChart3, Headphones,
+  Mail, Lock, Eye, EyeOff
 } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '../contexts/AuthContext'
+import { useRouter } from 'next/navigation'
 
-// API URL from environment variable
-const API_URL = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'
-
-export default function DashboardPage() {  
-  const { user, token } = useAuth()
-  const [stats, setStats] = useState({
-    leads: {
-      total: 0,
-      new: 0,
-      called: 0,
-      contacted: 0,
-      converted: 0,
-      total_calls: 0
-    },
-    calls: {
-      total_calls: 0,
-      calls_today: 0,
-      calls_this_week: 0,
-      average_duration: 0,
-      inbound_calls: 0,
-      outbound_calls: 0,
-      completed_calls: 0,
-      status_counts: { completed: 0, failed: 0, missed: 0 },
-      interest_counts: { interested: 0, not_interested: 0, neutral: 0 }
-    }
+export default function LandingPage() {  
+  const { user, token, login } = useAuth()
+  const router = useRouter()
+  const [showLogin, setShowLogin] = useState(false)
+  const [showDemo, setShowDemo] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [loginForm, setLoginForm] = useState({
+    email: '',
+    password: ''
   })
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [demoForm, setDemoForm] = useState({
+    name: '',
+    mobile: ''
+  })
+  const [loginLoading, setLoginLoading] = useState(false)
+  const [loginError, setLoginError] = useState('')
 
-  const loadDashboardStats = useCallback(async () => {
-    if (!token) {
-      setLoading(false)
-      return
-    }
+  // No authentication required for landing page - it's accessible to everyone
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoginLoading(true)
+    setLoginError('')
 
     try {
-      setLoading(true)
-      setError(null)
-      
-      // Fetch leads stats with authentication
-      const leadsResponse = await fetch(`${API_URL}/api/leads/stats`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      
-      // Fetch calls stats with authentication
-      const callsResponse = await fetch(`${API_URL}/api/calls/stats`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      
-      const leadsData = await leadsResponse.json()
-      const callsData = await callsResponse.json()
-      
-      if (!leadsResponse.ok || !callsResponse.ok) {
-        throw new Error('Failed to fetch stats')
+      const success = await login(loginForm.email, loginForm.password)
+      if (success) {
+        router.push('/dashboard')
+      } else {
+        setLoginError('Invalid email or password')
       }
-      
-      setStats(prevStats => ({
-        leads: leadsData.success ? leadsData.data : prevStats.leads,
-        calls: callsData.success ? callsData.data : prevStats.calls
-      }))
     } catch (error) {
-      console.error('❌ Error loading dashboard stats:', error)
-      setError('Failed to load dashboard statistics')
+      setLoginError('Login failed. Please try again.')
     } finally {
-      setLoading(false)
+      setLoginLoading(false)
     }
-  }, [token])
+  }
 
-  useEffect(() => {
-    loadDashboardStats()
-  }, [loadDashboardStats])
-
-  // Show authentication required message if not logged in
-  if (!user || !token) {
-    return (
-      <div className="space-y-8">
-        <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-red-600/10 via-orange-600/10 to-yellow-600/10 rounded-3xl blur-xl"></div>
-          <div className="relative bg-slate-900/80 backdrop-blur-sm rounded-3xl border border-slate-800/50 p-8">
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg mx-auto">
-                <AlertCircle className="w-8 h-8 text-white" />
-              </div>
-              <h1 className="text-3xl font-bold text-white">Authentication Required</h1>
-              <p className="text-slate-400 max-w-md mx-auto">Please log in to view your organization's dashboard statistics.</p>
-              <Link href="/login" className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
-                <span>Go to Login</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+  const handleDemoSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Demo functionality will be implemented later
+    alert(`Demo call will be initiated for ${demoForm.name} at ${demoForm.mobile}. This feature will be implemented soon!`)
   }
 
   return (
-    <div className="space-y-8">
-      {/* Error Alert */}
-      {error && (
-        <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-red-600/10 via-orange-600/10 to-yellow-600/10 rounded-2xl blur-xl"></div>
-          <div className="relative bg-red-900/20 backdrop-blur-sm rounded-2xl border border-red-500/30 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Navigation */}
+      <nav className="relative z-50 bg-slate-900/80 backdrop-blur-sm border-b border-slate-800/50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <AlertCircle className="w-5 h-5 text-red-400" />
-              <p className="text-red-300">{error}</p>
-              <button
-                onClick={() => setError(null)}
-                className="ml-auto text-red-400 hover:text-red-300 transition-colors"
-              >
-                ×
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Header */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-emerald-600/10 rounded-3xl blur-xl"></div>
-        <div className="relative bg-slate-900/80 backdrop-blur-sm rounded-3xl border border-slate-800/50 p-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-            <div className="space-y-2">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                  <Phone className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
-                    AI Calling Assistant
-                  </h1>
-                  <p className="text-slate-400 text-lg">Intelligent Voice Automation Dashboard</p>
-                </div>
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Bot className="w-6 h-6 text-white" />
               </div>
-              <p className="text-slate-300 max-w-2xl">Monitor your leads, track call performance, and analyze conversions with real-time insights powered by AI</p>
-              {user && (
-                <div className="flex items-center space-x-2 mt-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                  <span className="text-sm text-slate-400">Organization: <span className="text-emerald-400 font-medium">{user.organization_name || 'Default'}</span></span>
-                </div>
-              )}
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+                  Audixa AI
+                </h1>
+                <p className="text-xs text-slate-400">Intelligent Voice Automation</p>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <button
-                onClick={loadDashboardStats}
-                disabled={loading}
-                className="group flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-slate-800 to-slate-700 hover:from-slate-700 hover:to-slate-600 text-white rounded-xl transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:scale-105"
+                onClick={() => setShowDemo(true)}
+                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-lg hover:from-emerald-700 hover:to-emerald-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-300`} />
-                <span className="text-sm font-medium">Refresh Data</span>
+                <Play className="w-4 h-4" />
+                <span>See Demo</span>
               </button>
-              <div className="flex items-center space-x-3 px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                <div className="relative">
-                  <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-                  <div className="absolute inset-0 w-3 h-3 bg-emerald-500 rounded-full animate-ping opacity-75"></div>
+              {user && token ? (
+                <Link
+                  href="/dashboard"
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Dashboard</span>
+                </Link>
+              ) : (
+                <button
+                  onClick={() => setShowLogin(true)}
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <User className="w-4 h-4" />
+                  <span>Login</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-emerald-600/10 rounded-3xl blur-3xl"></div>
+        <div className="container mx-auto px-4 relative">
+          <div className="text-center space-y-8 max-w-4xl mx-auto">
+            <div className="space-y-4">
+              <h1 className="text-5xl lg:text-7xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent leading-tight">
+                AI-Powered Customer Engagement
+              </h1>
+              <p className="text-xl lg:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
+                Transform your customer interactions with intelligent voice automation, smart retail insights, and seamless conversation flows
+              </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+              <button
+                onClick={() => setShowDemo(true)}
+                className="group flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-xl hover:from-emerald-700 hover:to-emerald-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                <Play className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                <span className="text-lg font-semibold">Try Live Demo</span>
+              </button>
+              {user && token ? (
+                <Link
+                  href="/dashboard"
+                  className="group flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <CheckCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span className="text-lg font-semibold">Go to Dashboard</span>
+                </Link>
+              ) : (
+                <button
+                  onClick={() => setShowLogin(true)}
+                  className="group flex items-center space-x-3 px-8 py-4 bg-slate-800/50 border border-slate-700 text-white rounded-xl hover:bg-slate-700/50 hover:border-slate-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <User className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span className="text-lg font-semibold">Access Platform</span>
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center justify-center space-x-8 pt-8">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span className="text-sm text-slate-400">99.9% Uptime</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Shield className="w-4 h-4 text-blue-400" />
+                <span className="text-sm text-slate-400">Enterprise Security</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Globe className="w-4 h-4 text-purple-400" />
+                <span className="text-sm text-slate-400">Multi-Language</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 relative">
+        <div className="container mx-auto px-4">
+          <div className="text-center space-y-4 mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-white">
+              Powerful AI Features
+            </h2>
+            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+              Everything you need to automate and optimize your customer engagement
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Feature 1 */}
+            <div className="group relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-blue-800/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+              <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-8 hover:border-blue-500/30 transition-all duration-300 hover:transform hover:scale-105">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-blue-500/25 transition-all duration-300">
+                  <Bot className="w-8 h-8 text-white" />
                 </div>
-                <span className="text-sm text-emerald-400 font-medium">System Online</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div className="group relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-blue-800/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-          <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6 hover:border-blue-500/30 transition-all duration-300 hover:transform hover:scale-105">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-400 mb-1">Total Leads</p>
-                <p className="text-3xl font-bold text-white">{loading ? '...' : stats.leads.total.toLocaleString()}</p>
-              </div>
-              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-blue-500/25 transition-all duration-300">
-                <Users className="w-7 h-7 text-white" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center space-x-2">
-              <div className="flex items-center space-x-1 px-2 py-1 bg-blue-500/10 rounded-lg">
-                <User className="w-4 h-4 text-blue-400" />
-                <span className="text-sm text-blue-300 font-medium">{stats.leads.new}</span>
-              </div>
-              <span className="text-sm text-slate-400">new leads</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="group relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 to-emerald-800/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-          <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6 hover:border-emerald-500/30 transition-all duration-300 hover:transform hover:scale-105">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-400 mb-1">Total Calls</p>
-                <p className="text-3xl font-bold text-white">{loading ? '...' : stats.calls.total_calls.toLocaleString()}</p>
-              </div>
-              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-emerald-500/25 transition-all duration-300">
-                <Phone className="w-7 h-7 text-white" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center space-x-2">
-              <div className="flex items-center space-x-1 px-2 py-1 bg-emerald-500/10 rounded-lg">
-                <Calendar className="w-4 h-4 text-emerald-400" />
-                <span className="text-sm text-emerald-300 font-medium">{stats.calls.calls_today}</span>
-              </div>
-              <span className="text-sm text-slate-400">today</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="group relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-purple-800/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-          <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6 hover:border-purple-500/30 transition-all duration-300 hover:transform hover:scale-105">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-400 mb-1">Contacted Leads</p>
-                <p className="text-3xl font-bold text-white">{loading ? '...' : stats.leads.contacted.toLocaleString()}</p>
-              </div>
-              <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-purple-500/25 transition-all duration-300">
-                <CheckCircle className="w-7 h-7 text-white" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center space-x-2">
-              <div className="flex items-center space-x-1 px-2 py-1 bg-purple-500/10 rounded-lg">
-                <PhoneCall className="w-4 h-4 text-purple-400" />
-                <span className="text-sm text-purple-300 font-medium">{stats.leads.called}</span>
-              </div>
-              <span className="text-sm text-slate-400">called total</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="group relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-600/20 to-orange-800/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-          <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6 hover:border-orange-500/30 transition-all duration-300 hover:transform hover:scale-105">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-400 mb-1">Conversion Rate</p>
-                <p className="text-3xl font-bold text-white">
-                  {loading ? '...' : stats.leads.total > 0 ? `${((stats.leads.converted / stats.leads.total) * 100).toFixed(1)}%` : '0%'}
+                <h3 className="text-2xl font-bold text-white mb-4">Intelligent Voice AI</h3>
+                <p className="text-slate-400 leading-relaxed">
+                  Advanced conversational AI that understands context, handles complex queries, and provides natural, human-like interactions
                 </p>
               </div>
-              <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-orange-500/25 transition-all duration-300">
-                <TrendingUp className="w-7 h-7 text-white" />
-              </div>
             </div>
-            <div className="mt-4 flex items-center space-x-2">
-              <div className="flex items-center space-x-1 px-2 py-1 bg-orange-500/10 rounded-lg">
-                <CheckCircle className="w-4 h-4 text-orange-400" />
-                <span className="text-sm text-orange-300 font-medium">{stats.leads.converted}</span>
-              </div>
-              <span className="text-sm text-slate-400">conversions</span>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Quick Actions */}
-      <div className="space-y-4">
-        <div className="flex items-center space-x-3">
-          <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
-          <h2 className="text-2xl font-bold text-white">Quick Actions</h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          <Link href="/leads" className="group">
-            <div className="relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-blue-800/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6 hover:border-blue-500/30 hover:bg-slate-800/50 transition-all duration-300 hover:transform hover:scale-105">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-blue-500/25 transition-all duration-300">
-                    <Users className="w-7 h-7 text-white" />
-                  </div>
-                  <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-blue-400 group-hover:translate-x-1 transition-all duration-300" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-blue-100 transition-colors">Manage Leads</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">Upload CSV files, view leads, and initiate automated calling campaigns</p>
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/calls" className="group">
-            <div className="relative overflow-hidden">
+            {/* Feature 2 */}
+            <div className="group relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 to-emerald-800/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6 hover:border-emerald-500/30 hover:bg-slate-800/50 transition-all duration-300 hover:transform hover:scale-105">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-emerald-500/25 transition-all duration-300">
-                    <Phone className="w-7 h-7 text-white" />
-                  </div>
-                  <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all duration-300" />
+              <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-8 hover:border-emerald-500/30 transition-all duration-300 hover:transform hover:scale-105">
+                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-emerald-500/25 transition-all duration-300">
+                  <BarChart3 className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-emerald-100 transition-colors">Call History</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">View call logs, transcripts, and AI-powered conversation analysis</p>
+                <h3 className="text-2xl font-bold text-white mb-4">Smart Analytics</h3>
+                <p className="text-slate-400 leading-relaxed">
+                  Real-time insights into customer behavior, conversation patterns, and performance metrics to optimize your strategy
+                </p>
               </div>
             </div>
-          </Link>
 
-          <Link href="/config" className="group">
-            <div className="relative overflow-hidden">
+            {/* Feature 3 */}
+            <div className="group relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-purple-800/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6 hover:border-purple-500/30 hover:bg-slate-800/50 transition-all duration-300 hover:transform hover:scale-105">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-purple-500/25 transition-all duration-300">
-                    <Settings className="w-7 h-7 text-white" />
-                  </div>
-                  <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-purple-400 group-hover:translate-x-1 transition-all duration-300" />
+              <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-8 hover:border-purple-500/30 transition-all duration-300 hover:transform hover:scale-105">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-purple-500/25 transition-all duration-300">
+                  <Zap className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-100 transition-colors">AI Configuration</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">Configure AI prompts, greetings, and intelligent conversation flow</p>
+                <h3 className="text-2xl font-bold text-white mb-4">Automated Workflows</h3>
+                <p className="text-slate-400 leading-relaxed">
+                  Streamline your processes with intelligent automation, from lead qualification to appointment scheduling
+                </p>
               </div>
             </div>
-          </Link>
-        </div>
-      </div>
 
-      {/* Performance Insights */}
-      <div className="space-y-4">
-        <div className="flex items-center space-x-3">
-          <div className="w-1 h-8 bg-gradient-to-b from-emerald-500 to-blue-500 rounded-full"></div>
-          <h2 className="text-2xl font-bold text-white">Performance Insights</h2>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Lead Status Breakdown */}
-          <div className="relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-600/10 to-slate-800/10 rounded-2xl blur-xl"></div>
-            <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
-                  <Users className="w-5 h-5 text-white" />
+            {/* Feature 4 */}
+            <div className="group relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-600/10 to-orange-800/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+              <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-8 hover:border-orange-500/30 transition-all duration-300 hover:transform hover:scale-105">
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-orange-500/25 transition-all duration-300">
+                  <MessageSquare className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-white">Lead Status Breakdown</h3>
-              </div>
-              <div className="space-y-4">
-                <div className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-800/50 transition-all">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-4 h-4 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full shadow-lg"></div>
-                    <span className="text-slate-200 font-medium">New Leads</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-2xl font-bold text-white">{stats.leads.new}</span>
-                    <div className="w-12 h-2 bg-slate-700 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full" style={{width: `${stats.leads.total > 0 ? (stats.leads.new / stats.leads.total) * 100 : 0}%`}}></div>
-                    </div>
-                  </div>
-                </div>
-                <div className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-800/50 transition-all">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-4 h-4 bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full shadow-lg"></div>
-                    <span className="text-slate-200 font-medium">Called</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-2xl font-bold text-white">{stats.leads.called}</span>
-                    <div className="w-12 h-2 bg-slate-700 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full" style={{width: `${stats.leads.total > 0 ? (stats.leads.called / stats.leads.total) * 100 : 0}%`}}></div>
-                    </div>
-                  </div>
-                </div>
-                <div className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-800/50 transition-all">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-4 h-4 bg-gradient-to-r from-purple-400 to-purple-500 rounded-full shadow-lg"></div>
-                    <span className="text-slate-200 font-medium">Contacted</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-2xl font-bold text-white">{stats.leads.contacted}</span>
-                    <div className="w-12 h-2 bg-slate-700 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-purple-400 to-purple-500 rounded-full" style={{width: `${stats.leads.total > 0 ? (stats.leads.contacted / stats.leads.total) * 100 : 0}%`}}></div>
-                    </div>
-                  </div>
-                </div>
-                <div className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-800/50 transition-all">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-4 h-4 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full shadow-lg"></div>
-                    <span className="text-slate-200 font-medium">Converted</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-2xl font-bold text-white">{stats.leads.converted}</span>
-                    <div className="w-12 h-2 bg-slate-700 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full" style={{width: `${stats.leads.total > 0 ? (stats.leads.converted / stats.leads.total) * 100 : 0}%`}}></div>
-                    </div>
-                  </div>
-                </div>
+                <h3 className="text-2xl font-bold text-white mb-4">Multi-Channel Support</h3>
+                <p className="text-slate-400 leading-relaxed">
+                  Seamlessly handle voice calls, chat, and messaging across multiple platforms with unified conversation management
+                </p>
               </div>
             </div>
-          </div>
 
-          {/* Call Performance */}
-          <div className="relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-600/10 to-slate-800/10 rounded-2xl blur-xl"></div>
-            <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-xl flex items-center justify-center">
-                  <Phone className="w-5 h-5 text-white" />
+            {/* Feature 5 */}
+            <div className="group relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 to-red-800/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+              <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-8 hover:border-red-500/30 transition-all duration-300 hover:transform hover:scale-105">
+                <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-red-500/25 transition-all duration-300">
+                  <Shield className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-white">Call Performance</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Enterprise Security</h3>
+                <p className="text-slate-400 leading-relaxed">
+                  Bank-grade security with end-to-end encryption, compliance certifications, and advanced data protection
+                </p>
               </div>
-              <div className="space-y-4">
-                <div className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-800/50 transition-all">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-lg flex items-center justify-center">
-                      <Calendar className="w-4 h-4 text-blue-400" />
-                    </div>
-                    <span className="text-slate-200 font-medium">Average Duration</span>
-                  </div>
-                  <span className="text-2xl font-bold text-white">{Math.floor((stats.calls.average_duration || 0) / 60)}m {(stats.calls.average_duration || 0) % 60}s</span>
+            </div>
+
+            {/* Feature 6 */}
+            <div className="group relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-teal-600/10 to-teal-800/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+              <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-8 hover:border-teal-500/30 transition-all duration-300 hover:transform hover:scale-105">
+                <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-teal-500/25 transition-all duration-300">
+                  <Headphones className="w-8 h-8 text-white" />
                 </div>
-                <div className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-800/50 transition-all">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 rounded-lg flex items-center justify-center">
-                      <CheckCircle className="w-4 h-4 text-emerald-400" />
-                    </div>
-                    <span className="text-slate-200 font-medium">Successful Calls</span>
-                  </div>
-                  <span className="text-2xl font-bold text-emerald-400">{(stats.calls.completed_calls || 0).toLocaleString()}</span>
-                </div>
-                <div className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-800/50 transition-all">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-red-500/20 to-red-600/20 rounded-lg flex items-center justify-center">
-                      <PhoneCall className="w-4 h-4 text-red-400" />
-                    </div>
-                    <span className="text-slate-200 font-medium">Inbound Calls</span>
-                  </div>
-                  <span className="text-2xl font-bold text-red-400">{(stats.calls.inbound_calls || 0).toLocaleString()}</span>
-                </div>
-                <div className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-800/50 transition-all">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-lg flex items-center justify-center">
-                      <Phone className="w-4 h-4 text-purple-400" />
-                    </div>
-                    <span className="text-slate-200 font-medium">Outbound Calls</span>
-                  </div>
-                  <span className="text-2xl font-bold text-white">{(stats.calls.outbound_calls || 0).toLocaleString()}</span>
-                </div>
+                <h3 className="text-2xl font-bold text-white mb-4">24/7 Support</h3>
+                <p className="text-slate-400 leading-relaxed">
+                  Round-the-clock customer support with dedicated account management and technical assistance
+                </p>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Interest Analysis (if available) */}
-      {stats.calls.interest_counts && (stats.calls.interest_counts.interested > 0 || stats.calls.interest_counts.not_interested > 0) && (
-        <div className="space-y-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-1 h-8 bg-gradient-to-b from-emerald-500 to-red-500 rounded-full"></div>
-            <h2 className="text-2xl font-bold text-white">AI Interest Analysis</h2>
+      {/* Stats Section */}
+      <section className="py-20 relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-800/50 to-slate-900/50 rounded-3xl blur-3xl"></div>
+        <div className="container mx-auto px-4 relative">
+          <div className="text-center space-y-4 mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-white">
+              Trusted by Businesses Worldwide
+            </h2>
+            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+              Join thousands of companies that have transformed their customer engagement
+            </p>
           </div>
-          <div className="relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 via-yellow-600/10 to-red-600/10 rounded-2xl blur-xl"></div>
-            <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-red-500 rounded-xl flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-white">Conversation Sentiment Analysis</h3>
-                  <p className="text-slate-400 text-sm">AI-powered analysis of customer interest levels</p>
-                </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="text-center space-y-2">
+              <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                10M+
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div className="group text-center p-4 rounded-xl hover:bg-slate-800/50 transition-all">
-                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                    <CheckCircle className="w-8 h-8 text-emerald-400" />
-                  </div>
-                  <div className="text-3xl font-bold text-emerald-400 mb-1">{stats.calls.interest_counts.interested}</div>
-                  <div className="text-sm font-medium text-emerald-300 mb-1">Interested</div>
-                  <div className="text-xs text-slate-400">High conversion potential</div>
-                </div>
-                <div className="group text-center p-4 rounded-xl hover:bg-slate-800/50 transition-all">
-                  <div className="w-16 h-16 bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                    <AlertCircle className="w-8 h-8 text-yellow-400" />
-                  </div>
-                  <div className="text-3xl font-bold text-yellow-400 mb-1">{stats.calls.interest_counts.neutral}</div>
-                  <div className="text-sm font-medium text-yellow-300 mb-1">Neutral</div>
-                  <div className="text-xs text-slate-400">Requires follow-up</div>
-                </div>
-                <div className="group text-center p-4 rounded-xl hover:bg-slate-800/50 transition-all">
-                  <div className="w-16 h-16 bg-gradient-to-br from-red-500/20 to-red-600/20 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                    <User className="w-8 h-8 text-red-400" />
-                  </div>
-                  <div className="text-3xl font-bold text-red-400 mb-1">{stats.calls.interest_counts.not_interested}</div>
-                  <div className="text-sm font-medium text-red-300 mb-1">Not Interested</div>
-                  <div className="text-xs text-slate-400">Low conversion potential</div>
-                </div>
+              <p className="text-slate-400 font-medium">Calls Processed</p>
+            </div>
+            <div className="text-center space-y-2">
+              <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                99.9%
+              </div>
+              <p className="text-slate-400 font-medium">Uptime</p>
+            </div>
+            <div className="text-center space-y-2">
+              <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
+                500+
+              </div>
+              <p className="text-slate-400 font-medium">Enterprise Clients</p>
+            </div>
+            <div className="text-center space-y-2">
+              <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                50+
+              </div>
+              <p className="text-slate-400 font-medium">Countries</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 border-t border-slate-800/50">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <Bot className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Audixa AI</h3>
+                <p className="text-xs text-slate-400">Intelligent Voice Automation</p>
               </div>
             </div>
+            <div className="flex items-center space-x-6 text-sm text-slate-400">
+              <span>© 2024 Audixa AI. All rights reserved.</span>
+              <span>•</span>
+              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+              <span>•</span>
+              <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      {/* Login Modal */}
+      {showLogin && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="relative bg-slate-900 rounded-2xl border border-slate-800 p-8 w-full max-w-md">
+            <button
+              onClick={() => setShowLogin(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+            >
+              ×
+            </button>
+            
+            <div className="text-center space-y-4 mb-8">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg mx-auto">
+                <User className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-white">Welcome Back</h2>
+              <p className="text-slate-400">Sign in to access your dashboard</p>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-300">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input
+                    type="email"
+                    value={loginForm.email}
+                    onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
+                    className="w-full pl-12 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none transition-colors"
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-300">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={loginForm.password}
+                    onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                    className="w-full pl-12 pr-12 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none transition-colors"
+                    placeholder="Enter your password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              {loginError && (
+                <div className="p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
+                  <p className="text-red-300 text-sm">{loginError}</p>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loginLoading}
+                className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
+              >
+                {loginLoading ? 'Signing in...' : 'Sign In'}
+              </button>
+            </form>
           </div>
         </div>
       )}
 
-      {/* Organization Activity Summary */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-emerald-500 rounded-full"></div>
-            <h2 className="text-2xl font-bold text-white">Organization Activity</h2>
-          </div>
-          {user && (
-            <div className="flex items-center space-x-2 px-4 py-2 bg-slate-800/50 rounded-xl border border-slate-700/50">
-              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-              <span className="text-sm text-slate-300">Active Organization: <span className="text-emerald-400 font-medium">{user.organization_name}</span></span>
-            </div>
-          )}
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* This Week Activity */}
-          <div className="relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-blue-800/10 rounded-2xl blur-xl"></div>
-            <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6 hover:border-blue-500/30 transition-all duration-300">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-white">{stats.calls.calls_this_week}</p>
-                  <p className="text-xs text-blue-400 font-medium">This Week</p>
-                </div>
+      {/* Demo Modal */}
+      {showDemo && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="relative bg-slate-900 rounded-2xl border border-slate-800 p-8 w-full max-w-md">
+            <button
+              onClick={() => setShowDemo(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+            >
+              ×
+            </button>
+            
+            <div className="text-center space-y-4 mb-8">
+              <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg mx-auto">
+                <Play className="w-8 h-8 text-white" />
               </div>
-              <p className="text-sm text-slate-400">Calls made this week</p>
-              <div className="mt-2 flex items-center space-x-2">
-                <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full" style={{width: `${Math.min((stats.calls.calls_this_week / Math.max(stats.calls.total_calls, 1)) * 100, 100)}%`}}></div>
-                </div>
-                <span className="text-xs text-slate-400">{stats.calls.total_calls > 0 ? Math.round((stats.calls.calls_this_week / stats.calls.total_calls) * 100) : 0}%</span>
-              </div>
+              <h2 className="text-2xl font-bold text-white">Try Live Demo</h2>
+              <p className="text-slate-400">Experience our AI voice assistant in action</p>
             </div>
-          </div>
 
-          {/* Today's Activity */}
-          <div className="relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 to-emerald-800/10 rounded-2xl blur-xl"></div>
-            <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6 hover:border-emerald-500/30 transition-all duration-300">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                  <Phone className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-white">{stats.calls.calls_today}</p>
-                  <p className="text-xs text-emerald-400 font-medium">Today</p>
-                </div>
+            <form onSubmit={handleDemoSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-300">Your Name</label>
+                <input
+                  type="text"
+                  value={demoForm.name}
+                  onChange={(e) => setDemoForm({...demoForm, name: e.target.value})}
+                  className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:border-emerald-500 focus:outline-none transition-colors"
+                  placeholder="Enter your name"
+                  required
+                />
               </div>
-              <p className="text-sm text-slate-400">Calls made today</p>
-              <div className="mt-2 flex items-center space-x-2">
-                <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full" style={{width: `${Math.min((stats.calls.calls_today / Math.max(stats.calls.calls_this_week, 1)) * 100, 100)}%`}}></div>
-                </div>
-                <span className="text-xs text-slate-400">{stats.calls.calls_this_week > 0 ? Math.round((stats.calls.calls_today / stats.calls.calls_this_week) * 100) : 0}%</span>
-              </div>
-            </div>
-          </div>
 
-          {/* Success Rate */}
-          <div className="relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-purple-800/10 rounded-2xl blur-xl"></div>
-            <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6 hover:border-purple-500/30 transition-all duration-300">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-white">
-                    {stats.calls.total_calls > 0 ? Math.round((stats.calls.completed_calls / stats.calls.total_calls) * 100) : 0}%
-                  </p>
-                  <p className="text-xs text-purple-400 font-medium">Success Rate</p>
-                </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-300">Mobile Number</label>
+                <input
+                  type="tel"
+                  value={demoForm.mobile}
+                  onChange={(e) => setDemoForm({...demoForm, mobile: e.target.value})}
+                  className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:border-emerald-500 focus:outline-none transition-colors"
+                  placeholder="Enter your mobile number"
+                  required
+                />
               </div>
-              <p className="text-sm text-slate-400">Successful call completion</p>
-              <div className="mt-2 flex items-center space-x-2">
-                <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-purple-400 to-purple-500 rounded-full" style={{width: `${stats.calls.total_calls > 0 ? (stats.calls.completed_calls / stats.calls.total_calls) * 100 : 0}%`}}></div>
-                </div>
-                <span className="text-xs text-slate-400">{stats.calls.completed_calls}/{stats.calls.total_calls}</span>
-              </div>
-            </div>
-          </div>
 
-          {/* Lead Conversion */}
-          <div className="relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-600/10 to-orange-800/10 rounded-2xl blur-xl"></div>
-            <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6 hover:border-orange-500/30 transition-all duration-300">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-white">{stats.leads.converted}</p>
-                  <p className="text-xs text-orange-400 font-medium">Conversions</p>
-                </div>
+              <div className="p-4 bg-emerald-900/20 border border-emerald-500/30 rounded-lg">
+                <p className="text-emerald-300 text-sm">
+                  Our AI assistant will call you within 30 seconds to demonstrate our capabilities.
+                </p>
               </div>
-              <p className="text-sm text-slate-400">Total lead conversions</p>
-              <div className="mt-2 flex items-center space-x-2">
-                <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full" style={{width: `${stats.leads.total > 0 ? (stats.leads.converted / stats.leads.total) * 100 : 0}%`}}></div>
-                </div>
-                <span className="text-xs text-slate-400">{stats.leads.total > 0 ? ((stats.leads.converted / stats.leads.total) * 100).toFixed(1) : 0}%</span>
-              </div>
-            </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-lg hover:from-emerald-700 hover:to-emerald-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                Start Demo Call
+              </button>
+            </form>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
