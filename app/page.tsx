@@ -82,10 +82,10 @@ export default function LandingPage() {
           <div className="text-center space-y-8 max-w-4xl mx-auto">
             <div className="space-y-4">
               <h1 className="text-5xl lg:text-7xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent leading-tight">
-                AI-Powered Customer Engagement
+                AI Voice Calling Platform
               </h1>
               <p className="text-xl lg:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
-                Transform your customer interactions with intelligent voice automation, smart retail insights, and seamless conversation flows
+                Automate your outbound calling campaigns with intelligent AI agents. Upload leads, configure conversations, and let AI handle customer interactions with natural voice technology.
               </p>
             </div>
             
@@ -139,10 +139,10 @@ export default function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold text-white">
-              Powerful AI Features
+              Complete Voice Automation Suite
             </h2>
             <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-              Everything you need to automate and optimize your customer engagement
+              Everything you need to automate outbound calling and manage leads at scale
             </p>
           </div>
 
@@ -154,9 +154,9 @@ export default function LandingPage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-blue-500/25 transition-all duration-300">
                   <Bot className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Intelligent Voice AI</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">AI Voice Agents</h3>
                 <p className="text-slate-400 leading-relaxed">
-                  Advanced conversational AI that understands context, handles complex queries, and provides natural, human-like interactions
+                  Intelligent voice agents powered by Groq LLM, Deepgram STT, and Google TTS for natural, human-like phone conversations
                 </p>
               </div>
             </div>
@@ -168,9 +168,9 @@ export default function LandingPage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-emerald-500/25 transition-all duration-300">
                   <BarChart3 className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Smart Analytics</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Lead Management</h3>
                 <p className="text-slate-400 leading-relaxed">
-                  Real-time insights into customer behavior, conversation patterns, and performance metrics to optimize your strategy
+                  Upload CSV files, manage leads, track call attempts, and monitor conversion rates with comprehensive lead tracking
                 </p>
               </div>
             </div>
@@ -182,9 +182,9 @@ export default function LandingPage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-purple-500/25 transition-all duration-300">
                   <Zap className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Automated Workflows</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Sequential Calling</h3>
                 <p className="text-slate-400 leading-relaxed">
-                  Streamline your processes with intelligent automation, from lead qualification to appointment scheduling
+                  Automated sequential calling campaigns that work through your lead lists systematically with intelligent retry logic
                 </p>
               </div>
             </div>
@@ -196,9 +196,9 @@ export default function LandingPage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-orange-500/25 transition-all duration-300">
                   <MessageSquare className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Multi-Channel Support</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Real-time Call Monitoring</h3>
                 <p className="text-slate-400 leading-relaxed">
-                  Seamlessly handle voice calls, chat, and messaging across multiple platforms with unified conversation management
+                  Monitor live calls, view transcripts, track conversation outcomes, and analyze call performance in real-time
                 </p>
               </div>
             </div>
@@ -210,9 +210,9 @@ export default function LandingPage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-red-500/25 transition-all duration-300">
                   <Shield className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Enterprise Security</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Multi-Tenant Architecture</h3>
                 <p className="text-slate-400 leading-relaxed">
-                  Bank-grade security with end-to-end encryption, compliance certifications, and advanced data protection
+                  Complete organization isolation with separate credentials, configurations, and data for enterprise-grade security
                 </p>
               </div>
             </div>
@@ -224,11 +224,89 @@ export default function LandingPage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-teal-500/25 transition-all duration-300">
                   <Headphones className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4">24/7 Support</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Custom AI Configuration</h3>
                 <p className="text-slate-400 leading-relaxed">
-                  Round-the-clock customer support with dedicated account management and technical assistance
+                  Configure AI prompts, greetings, knowledge bases, and conversation flows tailored to your business needs
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-20 relative">
+        <div className="container mx-auto px-4">
+          <div className="text-center space-y-4 mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-white">
+              How It Works
+            </h2>
+            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+              Simple 4-step process to automate your outbound calling campaigns
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Step 1 */}
+            <div className="relative">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg mx-auto">
+                  <span className="text-2xl font-bold text-white">1</span>
+                </div>
+                <h3 className="text-xl font-bold text-white">Upload Leads</h3>
+                <p className="text-slate-400 text-sm">
+                  Upload your lead list via CSV file with names, phone numbers, and any additional data
+                </p>
+              </div>
+              {/* Arrow */}
+              <div className="hidden lg:block absolute top-8 -right-4 text-slate-600">
+                <ArrowRight className="w-8 h-8" />
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="relative">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg mx-auto">
+                  <span className="text-2xl font-bold text-white">2</span>
+                </div>
+                <h3 className="text-xl font-bold text-white">Configure AI</h3>
+                <p className="text-slate-400 text-sm">
+                  Set up your AI agent with custom prompts, greetings, and conversation flows
+                </p>
+              </div>
+              {/* Arrow */}
+              <div className="hidden lg:block absolute top-8 -right-4 text-slate-600">
+                <ArrowRight className="w-8 h-8" />
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="relative">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg mx-auto">
+                  <span className="text-2xl font-bold text-white">3</span>
+                </div>
+                <h3 className="text-xl font-bold text-white">Start Campaign</h3>
+                <p className="text-slate-400 text-sm">
+                  Launch your sequential calling campaign and let AI agents handle the conversations
+                </p>
+              </div>
+              {/* Arrow */}
+              <div className="hidden lg:block absolute top-8 -right-4 text-slate-600">
+                <ArrowRight className="w-8 h-8" />
+              </div>
+            </div>
+
+            {/* Step 4 */}
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg mx-auto">
+                <span className="text-2xl font-bold text-white">4</span>
+              </div>
+              <h3 className="text-xl font-bold text-white">Monitor Results</h3>
+              <p className="text-slate-400 text-sm">
+                Track call outcomes, view transcripts, and analyze performance metrics in real-time
+              </p>
             </div>
           </div>
         </div>
@@ -240,37 +318,37 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 relative">
           <div className="text-center space-y-4 mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold text-white">
-              Trusted by Businesses Worldwide
+              Powerful Voice Automation Platform
             </h2>
             <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-              Join thousands of companies that have transformed their customer engagement
+              Built for sales teams, call centers, and businesses that need to scale their outbound calling
             </p>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="text-center space-y-2">
               <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                10M+
+                AI
               </div>
-              <p className="text-slate-400 font-medium">Calls Processed</p>
+              <p className="text-slate-400 font-medium">Voice Agents</p>
             </div>
             <div className="text-center space-y-2">
               <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                99.9%
+                Multi
               </div>
-              <p className="text-slate-400 font-medium">Uptime</p>
+              <p className="text-slate-400 font-medium">Language Support</p>
             </div>
             <div className="text-center space-y-2">
               <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
-                500+
+                Real-time
               </div>
-              <p className="text-slate-400 font-medium">Enterprise Clients</p>
+              <p className="text-slate-400 font-medium">Call Monitoring</p>
             </div>
             <div className="text-center space-y-2">
               <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                50+
+                Enterprise
               </div>
-              <p className="text-slate-400 font-medium">Countries</p>
+              <p className="text-slate-400 font-medium">Multi-Tenant</p>
             </div>
           </div>
         </div>

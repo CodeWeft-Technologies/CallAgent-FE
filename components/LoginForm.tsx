@@ -3,9 +3,11 @@
 import React, { useState } from 'react'
 import { Eye, EyeOff, Lock, User, AlertCircle, Building } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function LoginForm() {
+  const router = useRouter()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -21,7 +23,10 @@ export default function LoginForm() {
     try {
       const success = await login(username, password)
       
-      if (!success) {
+      if (success) {
+        // Redirect to dashboard on successful login
+        router.push('/dashboard')
+      } else {
         setError(authError || 'Invalid username or password. Please try again.')
       }
     } catch (err) {
