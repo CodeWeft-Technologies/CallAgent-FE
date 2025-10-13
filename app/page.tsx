@@ -8,6 +8,8 @@ import {
   MessageSquare, BarChart3, Headphones
 } from 'lucide-react'
 import Link from 'next/link'
+import BlurText from '../components/BlurText'
+import CurvedLoop from '../components/CurvedLoop'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function LandingPage() {  
@@ -81,12 +83,22 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 relative">
           <div className="text-center space-y-8 max-w-4xl mx-auto">
             <div className="space-y-4">
-              <h1 className="text-5xl lg:text-7xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent leading-tight">
-                AI Voice Calling Platform
-              </h1>
-              <p className="text-xl lg:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
-                Automate your outbound calling campaigns with intelligent AI agents. Upload leads, configure conversations, and let AI handle customer interactions with natural voice technology.
-              </p>
+              <BlurText
+                className="text-5xl lg:text-7xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent leading-tight justify-center"
+                text="AI Voice Calling Platform"
+                animateBy="words"
+                direction="top"
+                delay={150}
+                stepDuration={0.4}
+              />
+              <BlurText
+                className="text-xl lg:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed justify-center"
+                text="Automate your outbound calling campaigns with intelligent AI agents. Upload leads, configure conversations, and let AI handle customer interactions with natural voice technology."
+                animateBy="words"
+                direction="bottom"
+                delay={25}
+                stepDuration={0.4}
+              />
             </div>
             
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
@@ -117,6 +129,16 @@ export default function LandingPage() {
             </div>
 
             <div className="flex items-center justify-center space-x-8 pt-8">
+              <div className="w-full max-w-5xl">
+                <CurvedLoop
+                  marqueeText="Audixa AI ✦ Piopiy WebSocket ✦ Groq LLM ✦ Deepgram STT ✦ Google TTS ✦ Multi-tenant Platform ✦"
+                  speed={2}
+                  curveAmount={420}
+                  direction="left"
+                  interactive={false}
+                  className="tracking-wide"
+                />
+              </div>
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
                 <span className="text-sm text-slate-400">Piopiy Integration</span>
