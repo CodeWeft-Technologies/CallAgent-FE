@@ -11,6 +11,8 @@ interface CurvedLoopProps {
   curveAmount?: number
   direction?: Direction
   interactive?: boolean
+  svgClassName?: string
+  uppercase?: boolean
 }
 
 const CurvedLoop = ({
@@ -20,6 +22,8 @@ const CurvedLoop = ({
   curveAmount = 400,
   direction = 'left',
   interactive = true,
+  svgClassName,
+  uppercase = true,
 }: CurvedLoopProps) => {
   const text = useMemo(() => {
     const hasTrailing = /\s|\u00A0$/.test(marqueeText)
@@ -121,7 +125,7 @@ const CurvedLoop = ({
       onPointerLeave={endDrag}
     >
       <svg
-        className="select-none w-full overflow-visible block aspect-[100/12] text-[2.5rem] md:text-[3.5rem] font-bold uppercase leading-none"
+        className={`${svgClassName ?? 'select-none w-full overflow-visible block aspect-[100/12] text-[1.125rem] md:text-[1.5rem] xl:text-[2rem] font-semibold'} ${uppercase ? 'uppercase' : ''} leading-none`}
         viewBox="0 0 1440 120"
       >
         <text ref={measureRef} xmlSpace="preserve" style={{ visibility: 'hidden', opacity: 0, pointerEvents: 'none' }}>

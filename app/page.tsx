@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, FormEvent, useRef, useEffect } from 'react'
 import { 
   Phone, Users, TrendingUp, PhoneCall, 
   CheckCircle, AlertCircle, User, Calendar,
@@ -9,9 +9,10 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import BlurText from '../components/BlurText'
-import CurvedLoop from '../components/CurvedLoop'
+import LaserFlow from '../components/LaserFlow'
+import LiquidEther from '../components/LiquidEther'
+import StaggeredMenu from '../components/StaggeredMenu'
 import { useAuth } from '../contexts/AuthContext'
-
 export default function LandingPage() {  
   const { user, token } = useAuth()
   const [showDemo, setShowDemo] = useState(false)
@@ -20,152 +21,220 @@ export default function LandingPage() {
     mobile: ''
   })
 
+  // Refs for interactive reveal overlay in hero
+  const heroRef = useRef<HTMLDivElement | null>(null)
+  const revealRef = useRef<HTMLDivElement | null>(null)
+
+  // Menu items for StaggeredMenu
+  const menuItems = [
+    { label: 'Home', link: '/', ariaLabel: 'Go to home page' },
+    { label: 'Features', link: '#features', ariaLabel: 'View features' },
+    { label: 'Pricing', link: '#pricing', ariaLabel: 'View pricing' },
+    { label: 'Demo', link: 'javascript:void(0)', ariaLabel: 'See demo call' },
+    { 
+      label: user ? 'Dashboard' : 'Login', 
+      link: user ? '/dashboard' : '/login', 
+      ariaLabel: user ? 'Go to dashboard' : 'Sign in to your account' 
+    },
+  ]
+
+  // Handle demo click from menu
+  useEffect(() => {
+    const handleDemoClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (target.textContent?.includes('Demo') && target.closest('a[href="javascript:void(0)"]')) {
+        e.preventDefault()
+        setShowDemo(true)
+      }
+    }
+    document.addEventListener('click', handleDemoClick)
+    return () => document.removeEventListener('click', handleDemoClick)
+  }, [])
+
+  const socialItems = [
+    { label: 'GitHub', link: 'https://github.com', ariaLabel: 'Visit our GitHub' },
+    { label: 'Twitter', link: 'https://twitter.com', ariaLabel: 'Follow us on Twitter' },
+  ]
+
   // No authentication required for landing page - it's accessible to everyone
 
 
 
-  const handleDemoSubmit = (e: React.FormEvent) => {
+  const handleDemoSubmit = (e: FormEvent) => {
     e.preventDefault()
     // Demo functionality will be implemented later
     alert(`Demo call will be initiated for ${demoForm.name} at ${demoForm.mobile}. This feature will be implemented soon!`)
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Navigation */}
-      <nav className="relative z-50 bg-slate-900/80 backdrop-blur-sm border-b border-slate-800/50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Bot className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-                  Audixa AI
-                </h1>
-                <p className="text-xs text-slate-400">Intelligent Voice Automation</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setShowDemo(true)}
-                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-lg hover:from-emerald-700 hover:to-emerald-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                <Play className="w-4 h-4" />
-                <span>See Demo</span>
-              </button>
-              {user && token ? (
-                <Link
-                  href="/dashboard"
-                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Dashboard</span>
-                </Link>
-              ) : (
-                <Link
-                  href="/login"
-                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-                >
-                  <User className="w-4 h-4" />
-                  <span>Login</span>
-                </Link>
-              )}
-            </div>
-          </div>
+    <>
+      {/* StaggeredMenu Navigation - Fixed overlay */}
+      <StaggeredMenu
+        position="right"
+        colors={['#B19EEF', '#5227FF']}
+        items={menuItems}
+        socialItems={socialItems}
+        displaySocials={true}
+        menuButtonColor="#ffffff"
+        accentColor="#5227FF"
+        isFixed={true}
+        onMenuOpen={() => console.log('Menu opened')}
+        onMenuClose={() => console.log('Menu closed')}
+      />
+
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+        {/* Background fluid effect */}
+        <LiquidEther
+          className="absolute inset-0 -z-10 opacity-70"
+          colors={[ '#5227FF', '#FF9FFC', '#B19EEF' ]}
+          resolution={0.5}
+          autoDemo={true}
+          autoSpeed={0.5}
+          autoIntensity={2.2}
+          isViscous={false}
+          isBounce={false}
+        />
+
+        <section
+      className="hero relative h-[1400px] overflow-hidden bg-[#090A0C] pt-[184px] lg:h-[1200px] lg:pt-28 md:h-[1000px] md:pt-24 sm:h-auto sm:pt-[92px]"
+      onMouseMove={(e) => {
+        const el = revealRef.current;
+        if (!el) return;
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        el.style.setProperty('--mx', `${x}px`);
+        el.style.setProperty('--my', `${y}px`);
+      }}
+      onMouseLeave={() => {
+        const el = revealRef.current;
+        if (!el) return;
+        el.style.setProperty('--mx', '-9999px');
+        el.style.setProperty('--my', '-9999px');
+      }}
+    >
+      {/* Container for content */}
+  <div className="container relative flex h-full flex-col pl-[100px] lg:pl-[80px] md:pl-[60px] sm:pl-[40px]">
+  <h1 className="relative z-30 max-w-[616px] pt-16 lg:pt-12 md:pt-10 sm:pt-6 bg-gradient-to-br from-white from-30% via-[#b8d4ff] via-80% to-[#e0e7ff] bg-clip-text font-extrabold text-[84px] leading-[0.9] tracking-tight text-transparent lg:max-w-[528px] lg:text-[72px] md:max-w-[441px] md:text-[56px] sm:max-w-64 sm:text-[32px]">
+          Voice Automation for Modern Teams
+        </h1>
+        <p className="relative z-30 mt-5 max-w-md text-[18px] leading-snug tracking-tight text-slate-400 lg:mt-4 md:mt-3.5 md:text-[16px] sm:mt-3 sm:max-w-[248px] sm:text-[15px]">
+          Audixa AI empowers your business with intelligent voice automation, seamless CRM integration, and real-time analytics. Streamline calls, boost productivity, and deliver exceptional customer experiences—all in one platform.
+        </p>
+
+        <div className="mt-11 lg:mt-9 md:mt-7 sm:mt-5">
+          <a
+            href="/demo"
+            className="inline-flex items-center space-x-1 px-16 h-10 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-blue-700 hover:to-purple-700 rounded-full border border-white/60 font-bold uppercase text-[12px] tracking-[-0.015em] text-white transition-all duration-200"
+          >
+            <span>Try Demo</span>
+          </a>
         </div>
-      </nav>
 
-      {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-emerald-600/10 rounded-3xl blur-3xl"></div>
-        <div className="container mx-auto px-4 relative">
-          <div className="text-center space-y-8 max-w-4xl mx-auto">
-            <div className="space-y-4">
-              <BlurText
-                className="text-5xl lg:text-7xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent leading-tight justify-center"
-                text="AI Voice Calling Platform"
-                animateBy="words"
-                direction="top"
-                delay={150}
-                stepDuration={0.4}
-              />
-              <BlurText
-                className="text-xl lg:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed justify-center"
-                text="Automate your outbound calling campaigns with intelligent AI agents. Upload leads, configure conversations, and let AI handle customer interactions with natural voice technology."
-                animateBy="words"
-                direction="bottom"
-                delay={25}
-                stepDuration={0.4}
-              />
-            </div>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
-              <button
-                onClick={() => setShowDemo(true)}
-                className="group flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-xl hover:from-emerald-700 hover:to-emerald-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                <Play className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                <span className="text-lg font-semibold">Try Live Demo</span>
-              </button>
-              {user && token ? (
-                <Link
-                  href="/dashboard"
-                  className="group flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-                >
-                  <CheckCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  <span className="text-lg font-semibold">Go to Dashboard</span>
-                </Link>
-              ) : (
-                <Link
-                  href="/login"
-                  className="group flex items-center space-x-3 px-8 py-4 bg-slate-800/50 border border-slate-700 text-white rounded-xl hover:bg-slate-700/50 hover:border-slate-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-                >
-                  <User className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  <span className="text-lg font-semibold">Access Platform</span>
-                </Link>
-              )}
-            </div>
+        {/* LaserFlow background video area */}
+  <div
+    className="absolute bottom-0 left-[20%] h-[200vh] aspect-[1.067842] w-[1574px] max-w-none z-0 lg:-bottom-[39px] lg:left-[10%] lg:h-[150vh] lg:w-[1220px] md:relative md:bottom-0 md:top-7 md:mb-6 md:mt-[-36%] md:h-[150vh] md:w-[120%] sm:-top-3 sm:mb-[-15%] sm:mt-0 sm:h-[120vh] sm:w-full"
+    onMouseMove={(e) => {
+      const el = revealRef.current;
+      if (!el) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      el.style.setProperty('--mx', `${x}px`);
+      el.style.setProperty('--my', `${y}px`);
+    }}
+    onMouseLeave={() => {
+      const el = revealRef.current;
+      if (!el) return;
+      el.style.setProperty('--mx', '-9999px');
+      el.style.setProperty('--my', '-9999px');
+    }}
+    style={{ position: 'relative' }}
+  >
+    {/* LaserFlow beam effect */}
+    <div className="absolute left-0 bottom-0 z-0 aspect-[1.335187] w-[1920px] max-w-none mix-blend-lighten lg:bottom-[23px] lg:left-0 lg:w-[1620px] md:bottom-[-2.1%] md:left-[-27%] md:w-[147%] sm:bottom-[5.4%] sm:left-[-34.95%] sm:w-[189%]">
+      <div className="absolute inset-0 w-full h-full">
+        <LaserFlow
+          wispDensity={1}
+          dpr={window.devicePixelRatio || 1}
+          mouseSmoothTime={0.0}
+          mouseTiltStrength={0.01}
+          horizontalBeamOffset={0.1}
+          verticalBeamOffset={-0.12}
+          flowSpeed={0.35}
+          verticalSizing={24.0}
+          horizontalSizing={0.5}
+          fogIntensity={0.45}
+          fogScale={0.3}
+          wispSpeed={15.0}
+          wispIntensity={5.0}
+          flowStrength={0.25}
+          decay={1.1}
+          falloffStart={1.2}
+          fogFallSpeed={0.6}
+          color="#9279ffff"
+          className="w-full h-full"
+        />
+      </div>
+    </div>
 
-            <div className="flex items-center justify-center space-x-8 pt-8">
-              <div className="w-full max-w-5xl">
-                <CurvedLoop
-                  marqueeText="Audixa AI ✦ Piopiy WebSocket ✦ Groq LLM ✦ Deepgram STT ✦ Google TTS ✦ Multi-tenant Platform ✦"
-                  speed={2}
-                  curveAmount={420}
-                  direction="left"
-                  interactive={false}
-                  className="tracking-wide"
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span className="text-sm text-slate-400">Piopiy Integration</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Shield className="w-4 h-4 text-blue-400" />
-                <span className="text-sm text-slate-400">Real-time WebSocket</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Globe className="w-4 h-4 text-purple-400" />
-                <span className="text-sm text-slate-400">Multi-Language AI</span>
-              </div>
-            </div>
+     {/* Dashboard image layered above beam */}
+     <img
+       src="/dashboard.png"
+       alt="Dashboard Preview"
+       className="absolute bottom-[55px] left-[69%] -translate-x-1/2 z-10 w-[1100px] max-w-[90vw] h-auto rounded-t-xl shadow-2xl lg:bottom-[70px] lg:w-[900px] md:bottom-[90px] md:w-[750px] sm:w-[90vw] sm:bottom-[60px]"
+       draggable={false}
+     />
+
+    {/* Interactive reveal overlay for dashboard image */}
+    <div
+      ref={revealRef}
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{
+        '--mx': '-9999px',
+        '--my': '-9999px',
+        '--hero-mask-size': '340px',
+        maskImage: 'radial-gradient(var(--hero-mask-size) at var(--mx) var(--my), black 20%, transparent)',
+        WebkitMaskImage: 'radial-gradient(var(--hero-mask-size) at var(--mx) var(--my), black 20%, transparent)',
+      } as any}
+    >
+      <img
+        src="/dashboard.png"
+        alt="Dashboard Preview"
+        className="absolute w-full h-full object-cover"
+        draggable={false}
+        style={{ pointerEvents: 'none' }}
+      />
+    </div>
+  </div>
+      </div>
+
+      {/* Bottom gradient fade */}
+      <div className="pointer-events-none absolute bottom-0 left-0 z-20 h-[340px] w-full bg-gradient-to-b from-[#090A0C]/0 to-[#090A0C] to-50% lg:h-[250px] md:h-44 sm:h-[170px]" />
+    </section>
+
+      {/* Trusted by */}
+      <section className="py-10">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center gap-8 opacity-70 flex-wrap">
+            <span className="text-sm text-slate-400">Trusted by teams at</span>
+            <div className="h-6 w-px bg-slate-700" />
+            <div className="text-slate-300/90">Acme</div>
+            <div className="text-slate-300/90">Globex</div>
+            <div className="text-slate-300/90">Umbrella</div>
+            <div className="text-slate-300/90">Initech</div>
+            <div className="text-slate-300/90">Soylent</div>
           </div>
         </div>
       </section>
 
-      {/* Technical Stack Section */}
-      <section className="py-20 relative">
+
+      {/* Feature highlights */}
+        <section className="py-20 relative">
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold text-white">
-              Powered by Leading AI Technologies
-            </h2>
-            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-              Built with enterprise-grade AI services for reliable, high-quality voice interactions
-            </p>
+              <h2 className="text-4xl lg:text-5xl font-bold text-white">Key capabilities</h2>
+              <p className="text-xl text-slate-400 max-w-2xl mx-auto">Fast, natural calls at scale—built on a modern, reliable stack.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
@@ -176,10 +245,8 @@ export default function LandingPage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-orange-500/25 transition-all duration-300">
                   <MessageSquare className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Groq LLM</h3>
-                <p className="text-slate-400 leading-relaxed">
-                  Lightning-fast language processing with Llama 3.1 70B model for intelligent, context-aware conversations
-                </p>
+                  <h3 className="text-2xl font-bold text-white mb-2">Language AI</h3>
+                  <p className="text-slate-400">Lightning-fast language processing for natural, context-aware conversations.</p>
               </div>
             </div>
 
@@ -190,10 +257,8 @@ export default function LandingPage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-blue-500/25 transition-all duration-300">
                   <Headphones className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Deepgram STT</h3>
-                <p className="text-slate-400 leading-relaxed">
-                  Advanced speech-to-text with Nova-3 model, real-time transcription, and multi-language support
-                </p>
+                <h3 className="text-2xl font-bold text-white mb-2">Speech-to-Text</h3>
+                <p className="text-slate-400">Real-time, accurate transcription with multi-language support.</p>
               </div>
             </div>
 
@@ -204,11 +269,33 @@ export default function LandingPage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-emerald-500/25 transition-all duration-300">
                   <Phone className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Google TTS</h3>
-                <p className="text-slate-400 leading-relaxed">
-                  Natural-sounding voice synthesis with Neural2 voices, optimized for telephony applications
-                </p>
+                <h3 className="text-2xl font-bold text-white mb-2">Voice Synthesis</h3>
+                <p className="text-slate-400">Natural-sounding voices optimized for telephony.</p>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Developer-first config example */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-10 items-center">
+            <div className="space-y-4">
+              <h3 className="text-2xl lg:text-3xl font-bold text-white">Ship faster with simple config</h3>
+              <p className="text-slate-400 max-w-lg">Define your agent, voice, and calling behavior in a few lines. Connect webhooks and you’re live.</p>
+            </div>
+            <div className="bg-slate-950/70 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+              <div className="px-4 py-2 text-xs text-slate-400 border-b border-slate-800 flex items-center justify-between">
+                <span>audixa.config.json</span>
+                <span className="text-slate-500">readonly</span>
+              </div>
+              <pre className="p-4 text-sm leading-relaxed text-slate-200 overflow-x-auto"><code>{`{
+  "agent": { "name": "Audixa", "voice": "neutral-female", "language": "en-US" },
+  "calling": { "concurrency": 5, "retry": 2, "timeout": 20 },
+  "campaign": { "list": "leads.csv", "schedule": "9am-6pm" },
+  "webhook": "https://api.example.com/calls/webhook"
+}`}</code></pre>
             </div>
           </div>
         </div>
@@ -236,7 +323,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-4">AI Voice Agents</h3>
                 <p className="text-slate-400 leading-relaxed">
-                  Intelligent voice agents powered by Groq LLM, Deepgram STT, and Google TTS for natural, human-like phone conversations
+                  Intelligent voice agents powered by advanced language, speech, and voice systems for natural, human-like phone conversations
                 </p>
               </div>
             </div>
@@ -276,9 +363,9 @@ export default function LandingPage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:shadow-orange-500/25 transition-all duration-300">
                   <MessageSquare className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Piopiy Telephony Integration</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Telephony Integration</h3>
                 <p className="text-slate-400 leading-relaxed">
-                  Seamless integration with Piopiy's telephony infrastructure for reliable call routing, WebSocket streaming, and call transfer capabilities
+                  Seamless integration with your telephony provider for reliable call routing, WebSocket streaming, and call transfer capabilities
                 </p>
               </div>
             </div>
@@ -578,6 +665,7 @@ export default function LandingPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }
