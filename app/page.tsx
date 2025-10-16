@@ -115,12 +115,24 @@ export default function LandingPage() {
     >
       {/* Container for content */}
   <div className="container relative flex h-full flex-col pl-[100px] lg:pl-[80px] md:pl-[60px] sm:pl-[40px]">
-  <h1 className="relative z-30 max-w-[616px] pt-16 lg:pt-12 md:pt-10 sm:pt-6 bg-gradient-to-br from-white from-30% via-[#b8d4ff] via-80% to-[#e0e7ff] bg-clip-text font-extrabold text-[84px] leading-[0.9] tracking-tight text-transparent lg:max-w-[528px] lg:text-[72px] md:max-w-[441px] md:text-[56px] sm:max-w-64 sm:text-[32px]">
-          Voice Automation for Modern Teams
-        </h1>
-        <p className="relative z-30 mt-5 max-w-md text-[18px] leading-snug tracking-tight text-slate-400 lg:mt-4 md:mt-3.5 md:text-[16px] sm:mt-3 sm:max-w-[248px] sm:text-[15px]">
-          Audixa AI empowers your business with intelligent voice automation, seamless CRM integration, and real-time analytics. Streamline calls, boost productivity, and deliver exceptional customer experiences—all in one platform.
-        </p>
+  <h1 className="relative z-30 max-w-[616px] pt-16 lg:pt-12 md:pt-10 sm:pt-6 lg:max-w-[528px] md:max-w-[441px] sm:max-w-64">
+    <BlurText
+      text="Voice Automation for Modern Teams"
+      delay={50}
+      animateBy="words"
+      direction="top"
+      className="font-extrabold text-[84px] leading-[0.9] tracking-tight text-white lg:text-[72px] md:text-[56px] sm:text-[32px]"
+    />
+  </h1>
+        <div className="relative z-30 mt-5 max-w-md lg:mt-4 md:mt-3.5 sm:mt-3 sm:max-w-[248px]">
+          <BlurText
+            text="Audixa AI empowers your business with intelligent voice automation, seamless CRM integration, and real-time analytics. Streamline calls, boost productivity, and deliver exceptional customer experiences—all in one platform."
+            delay={30}
+            animateBy="words"
+            direction="top"
+            className="text-[18px] leading-snug tracking-tight text-slate-400 md:text-[16px] sm:text-[15px]"
+          />
+        </div>
 
         <div className="mt-11 lg:mt-9 md:mt-7 sm:mt-5">
           <a
