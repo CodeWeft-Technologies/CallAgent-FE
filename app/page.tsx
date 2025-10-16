@@ -189,13 +189,13 @@ export default function LandingPage() {
     {/* Interactive reveal overlay for dashboard image */}
     <div
       ref={revealRef}
-      className="absolute inset-0 w-full h-full pointer-events-none"
+      className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-30"
       style={{
         '--mx': '-9999px',
         '--my': '-9999px',
-        '--hero-mask-size': '340px',
-        maskImage: 'radial-gradient(var(--hero-mask-size) at var(--mx) var(--my), black 20%, transparent)',
-        WebkitMaskImage: 'radial-gradient(var(--hero-mask-size) at var(--mx) var(--my), black 20%, transparent)',
+        '--hero-mask-size': '240px',
+        maskImage: 'radial-gradient(var(--hero-mask-size) at var(--mx) var(--my), black 10%, transparent 60%)',
+        WebkitMaskImage: 'radial-gradient(var(--hero-mask-size) at var(--mx) var(--my), black 10%, transparent 60%)',
       } as any}
     >
       <img
