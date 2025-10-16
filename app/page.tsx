@@ -21,10 +21,30 @@ export default function LandingPage() {
     name: '',
     mobile: ''
   })
+  const [heroScale, setHeroScale] = useState(1)
 
   // Refs for interactive reveal overlay in hero
   const heroRef = useRef<HTMLDivElement | null>(null)
   const revealRef = useRef<HTMLDivElement | null>(null)
+
+  // Handle hero scaling for responsive design
+  useEffect(() => {
+    const updateScale = () => {
+      const width = window.innerWidth
+      // Scale down on screens smaller than 1440px
+      if (width < 1440) {
+        // Use a minimum scale of 0.3 for very small screens
+        const calculatedScale = Math.max(width / 1440, 0.3)
+        setHeroScale(calculatedScale)
+      } else {
+        setHeroScale(1)
+      }
+    }
+    
+    updateScale()
+    window.addEventListener('resize', updateScale)
+    return () => window.removeEventListener('resize', updateScale)
+  }, [])
 
   // Menu items for StaggeredMenu
   const menuItems = [
@@ -96,8 +116,28 @@ export default function LandingPage() {
           isBounce={false}
         />
 
+        <div style={{ 
+          height: `${1400 * heroScale}px`,
+          overflow: 'hidden',
+          position: 'relative',
+          width: '100vw',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
         <section
-      className="hero relative h-[1400px] overflow-hidden bg-black pt-[184px] lg:h-[1200px] lg:pt-28 md:h-[1000px] md:pt-24 sm:h-auto sm:pt-[92px]"
+      className="hero relative overflow-hidden bg-black"
+      style={{
+        transform: `scale(${heroScale})`,
+        transformOrigin: 'top center',
+        height: '1400px',
+        paddingTop: '184px',
+        width: '1800px',
+        maxWidth: '100vw',
+        position: 'relative',
+        marginLeft: 'auto',
+        marginRight: 'auto'
+      }}
       onMouseMove={(e) => {
         const el = revealRef.current;
         if (!el) return;
@@ -115,27 +155,27 @@ export default function LandingPage() {
       }}
     >
       {/* Container for content */}
-  <div className="container relative flex h-full flex-col pl-[100px] lg:pl-[80px] md:pl-[60px] sm:pl-[40px]">
-  <h1 className="relative z-30 max-w-[616px] pt-16 lg:pt-12 md:pt-10 sm:pt-6 lg:max-w-[528px] md:max-w-[441px] sm:max-w-64">
+  <div className="container relative flex h-full flex-col pl-[100px]">
+  <h1 className="relative z-30 max-w-[616px] pt-16">
     <BlurText
       text="Voice Automation for Modern Teams"
       delay={50}
       animateBy="words"
       direction="top"
-      className="font-extrabold text-[84px] leading-[0.9] tracking-tight text-white lg:text-[72px] md:text-[56px] sm:text-[32px]"
+      className="font-extrabold text-[84px] leading-[0.9] tracking-tight text-white"
     />
   </h1>
-        <div className="relative z-30 mt-5 max-w-md lg:mt-4 md:mt-3.5 sm:mt-3 sm:max-w-[248px]">
+        <div className="relative z-30 mt-5 max-w-md">
           <BlurText
             text="Audixa AI empowers your business with intelligent voice automation, seamless CRM integration, and real-time analytics. Streamline calls, boost productivity, and deliver exceptional customer experiences—all in one platform."
             delay={30}
             animateBy="words"
             direction="top"
-            className="text-[18px] leading-snug tracking-tight text-slate-400 md:text-[16px] sm:text-[15px]"
+            className="text-[18px] leading-snug tracking-tight text-slate-400"
           />
         </div>
 
-        <div className="mt-11 lg:mt-9 md:mt-7 sm:mt-5">
+        <div className="mt-11">
           <a
             href="/demo"
             className="inline-flex items-center space-x-1 px-16 h-10 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-blue-700 hover:to-purple-700 rounded-full border border-white/60 font-bold uppercase text-[12px] tracking-[-0.015em] text-white transition-all duration-200"
@@ -146,7 +186,7 @@ export default function LandingPage() {
 
         {/* LaserFlow background video area */}
   <div
-    className="absolute bottom-0 left-[20%] h-[200vh] aspect-[1.067842] w-[1574px] max-w-none z-0 lg:-bottom-[39px] lg:left-[10%] lg:h-[150vh] lg:w-[1220px] md:relative md:bottom-0 md:top-7 md:mb-6 md:mt-[-36%] md:h-[150vh] md:w-[120%] sm:-top-3 sm:mb-[-15%] sm:mt-0 sm:h-[120vh] sm:w-full"
+    className="absolute bottom-[845px] left-[10%] h-[200vh] aspect-[1.067842] w-[1574px] max-w-none z-0"
     onMouseMove={(e) => {
       const el = revealRef.current;
       if (!el) return;
@@ -195,7 +235,7 @@ export default function LandingPage() {
      <img
        src="/dashboard.png"
        alt="Dashboard Preview"
-       className="absolute bottom-[55px] left-[69%] -translate-x-1/2 z-10 w-[1100px] max-w-[90vw] h-auto rounded-t-xl shadow-2xl lg:bottom-[70px] lg:w-[900px] md:bottom-[90px] md:w-[750px] sm:w-[90vw] sm:bottom-[60px]"
+       className="absolute bottom-[55px] left-[53%] -translate-x-1/2 z-10 w-[1100px] max-w-[90vw] h-auto rounded-t-xl shadow-2xl lg:bottom-[70px] lg:w-[900px] md:bottom-[90px] md:w-[750px] sm:w-[90vw] sm:bottom-[60px]"
        draggable={false}
      />
 
@@ -223,11 +263,12 @@ export default function LandingPage() {
       </div>
 
       {/* Bottom gradient fade */}
-      <div className="pointer-events-none absolute bottom-0 left-0 z-20 h-[340px] w-full bg-gradient-to-b from-black/0 to-black to-50% lg:h-[250px] md:h-44 sm:h-[170px]" />
+      <div className="pointer-events-none absolute bottom-800 left-0 z-20 h-[340px] w-full bg-gradient-to-b from-black/0 to-black to-50% lg:h-[250px] md:h-44 sm:h-[170px]" />
     </section>
+    </div>
 
       {/* Curved Loop Text Animation - Overlapping hero */}
-      <section className="relative -mt-20 z-30">
+      <section className="relative -mt-20 z-15">
         <CurvedLoop 
           marqueeText="Voice Automation ✦ AI Powered ✦ Real-Time Analytics ✦ Seamless Integration ✦"
           speed={2}
