@@ -12,6 +12,7 @@ import BlurText from '../components/BlurText'
 import LaserFlow from '../components/LaserFlow'
 import LiquidEther from '../components/LiquidEther'
 import StaggeredMenu from '../components/StaggeredMenu'
+import CurvedLoop from '../components/CurvedLoop'
 import { useAuth } from '../contexts/AuthContext'
 export default function LandingPage() {  
   const { user, token } = useAuth()
@@ -82,7 +83,7 @@ export default function LandingPage() {
         onMenuClose={() => console.log('Menu closed')}
       />
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+      <div className="min-h-screen bg-black relative overflow-hidden">
         {/* Background fluid effect */}
         <LiquidEther
           className="absolute inset-0 -z-10 opacity-70"
@@ -96,7 +97,7 @@ export default function LandingPage() {
         />
 
         <section
-      className="hero relative h-[1400px] overflow-hidden bg-[#090A0C] pt-[184px] lg:h-[1200px] lg:pt-28 md:h-[1000px] md:pt-24 sm:h-auto sm:pt-[92px]"
+      className="hero relative h-[1400px] overflow-hidden bg-black pt-[184px] lg:h-[1200px] lg:pt-28 md:h-[1000px] md:pt-24 sm:h-auto sm:pt-[92px]"
       onMouseMove={(e) => {
         const el = revealRef.current;
         if (!el) return;
@@ -222,8 +223,21 @@ export default function LandingPage() {
       </div>
 
       {/* Bottom gradient fade */}
-      <div className="pointer-events-none absolute bottom-0 left-0 z-20 h-[340px] w-full bg-gradient-to-b from-[#090A0C]/0 to-[#090A0C] to-50% lg:h-[250px] md:h-44 sm:h-[170px]" />
+      <div className="pointer-events-none absolute bottom-0 left-0 z-20 h-[340px] w-full bg-gradient-to-b from-black/0 to-black to-50% lg:h-[250px] md:h-44 sm:h-[170px]" />
     </section>
+
+      {/* Curved Loop Text Animation - Overlapping hero */}
+      <section className="relative -mt-20 z-30">
+        <CurvedLoop 
+          marqueeText="Voice Automation ✦ AI Powered ✦ Real-Time Analytics ✦ Seamless Integration ✦"
+          speed={2}
+          curveAmount={0}
+          direction="left"
+          interactive={true}
+          className="text-white/100"
+          svgClassName="select-none w-full overflow-visible block aspect-[100/12] text-[2rem] md:text-[4rem] lg:text-[5.5rem] xl:text-[4rem] font-bold uppercase leading-none"
+        />
+      </section>
 
       {/* Trusted by */}
       <section className="py-10">
