@@ -121,9 +121,12 @@ void main() {
 
 // Simple WebGL utilities
 class Renderer {
-  constructor(options = {}) {
+  gl: WebGLRenderingContext;
+  canvas: HTMLCanvasElement;
+
+  constructor(options: any = {}) {
     const canvas = document.createElement('canvas');
-    this.gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    this.gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl') as WebGLRenderingContext;
     this.canvas = canvas;
     
     if (options.alpha !== false) {
@@ -147,14 +150,19 @@ class Renderer {
 }
 
 class Program {
-  constructor(gl, { vertex, fragment, uniforms = {} }) {
+  gl: WebGLRenderingContext;
+  uniforms: any;
+  program: WebGLProgram;
+  uniformLocations: any;
+
+  constructor(gl: WebGLRenderingContext, { vertex, fragment, uniforms = {} }: any) {
     this.gl = gl;
     this.uniforms = uniforms;
     
     const vertexShader = this.createShader(gl.VERTEX_SHADER, vertex);
     const fragmentShader = this.createShader(gl.FRAGMENT_SHADER, fragment);
     
-    this.program = gl.createProgram();
+    this.program = gl.createProgram()!;
     gl.attachShader(this.program, vertexShader);
     gl.attachShader(this.program, fragmentShader);
     gl.linkProgram(this.program);
@@ -169,8 +177,8 @@ class Program {
     });
   }
   
-  createShader(type, source) {
-    const shader = this.gl.createShader(type);
+  createShader(type: number, source: string) {
+    const shader = this.gl.createShader(type)!;
     this.gl.shaderSource(shader, source);
     this.gl.compileShader(shader);
     
@@ -200,7 +208,11 @@ class Program {
 }
 
 class Mesh {
-  constructor(gl, { geometry, program }) {
+  gl: WebGLRenderingContext;
+  program: Program;
+  geometry: Triangle;
+
+  constructor(gl: WebGLRenderingContext, { geometry, program }: any) {
     this.gl = gl;
     this.program = program;
     this.geometry = geometry;
@@ -213,7 +225,12 @@ class Mesh {
 }
 
 class Triangle {
-  constructor(gl, program) {
+  gl: WebGLRenderingContext;
+  program: Program;
+  buffer: WebGLBuffer;
+  positionLocation: number;
+
+  constructor(gl: WebGLRenderingContext, program: Program) {
     this.gl = gl;
     this.program = program;
     
@@ -223,7 +240,7 @@ class Triangle {
       -1,  3
     ]);
     
-    this.buffer = gl.createBuffer();
+    this.buffer = gl.createBuffer()!;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
     
