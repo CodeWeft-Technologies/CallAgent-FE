@@ -1,49 +1,49 @@
 'use client'
-import { useState, FormEvent, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
-  Phone, Users, TrendingUp, PhoneCall,
-  CheckCircle, AlertCircle, User, Calendar,
-  Settings, ArrowRight, RefreshCw, Bot,
-  Zap, Shield, Globe, Star, Play,
-  MessageSquare, BarChart3, Headphones
+  Phone, Users, TrendingUp, PhoneCall, CheckCircle, 
+  Bot, Zap, Shield, Globe, Star, Play, MessageSquare, 
+  BarChart3, Headphones, ArrowRight, Clock, DollarSign,
+  Mic, Volume2, Brain, Target, Sparkles, ChevronRight,
+  Menu, X, Github, Twitter, Linkedin
 } from 'lucide-react'
 import Link from 'next/link'
-import BlurText from '../components/BlurText'
-import LaserFlow from '../components/LaserFlow'
-import LiquidEther from '../components/LiquidEther'
-import StaggeredMenu from '../components/StaggeredMenu'
-import CurvedLoop from '../components/CurvedLoop'
-import CardSwap, { Card } from '../components/CardSwap'
-import SpotlightCard from '../components/SpotlightCard'
-import Stepper, { Step } from '../components/Stepper'
 import { useAuth } from '../contexts/AuthContext'
+
 export default function LandingPage() {
-  const { user, token } = useAuth()
-  const [showDemo, setShowDemo] = useState(false)
-  const [demoForm, setDemoForm] = useState({
-    name: '',
-    mobile: ''
-  })
-  const [heroScale, setHeroScale] = useState(1)
+  const { user } = useAuth()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
 
-  // Refs for interactive reveal overlay in hero
-  const heroRef = useRef<HTMLDivElement | null>(null)
-  const revealRef = useRef<HTMLDivElement | null>(null)
-
-  // Handle hero scaling for responsive design
   useEffect(() => {
-    const updateScale = () => {
-      const width = window.innerWidth
-      let calculatedScale = 1
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
-      if (width <= 480) {
-        // Mobile phones - larger scale to ensure visibility
-        calculatedScale = 0.6
-      } else if (width <= 768) {
-        // Tablets portrait - better scale for visibility
-        calculatedScale = 0.75
-      } else if (width <= 1024) {
-        // Tablets landscape / small laptops
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Navigation */}
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+        scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-transparent'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <div className="flex items-center">
+              <Link href="/" className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                  <Phone className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-xl font-bold text-gray-900">CallAgent</span>
+              </Link>
+            </div>
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-8">
+              <a href="#features" className="text-gray-600 hover:text-gray-900 transition-colors">
         calculatedScale = 0.85
       } else if (width <= 1440) {
         // Medium screens - progressive scaling
@@ -65,7 +65,7 @@ export default function LandingPage() {
   const menuItems = [
     { label: 'Home', link: '/', ariaLabel: 'Go to home page' },
     { label: 'Features', link: '#features', ariaLabel: 'View features' },
-    { label: 'Pricing', link: '#pricing', ariaLabel: 'View pricing' },
+    { label: 'Pricing', link: '/pricing', ariaLabel: 'View pricing' },
     { label: 'Demo', link: 'javascript:void(0)', ariaLabel: 'See demo call' },
     {
       label: user ? 'Dashboard' : 'Login',

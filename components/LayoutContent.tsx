@@ -11,8 +11,8 @@ interface LayoutContentProps {
 export default function LayoutContent({ children }: LayoutContentProps) {
   const pathname = usePathname()
   
-  // Don't show sidebar/navigation on landing page, login page, register page and admin page
-  if (pathname === '/' || pathname === '/login' || pathname === '/register' || pathname === '/admin' || pathname === '/admin-login') {
+  // Don't show sidebar/navigation on landing page, login page, register page, pricing page and admin page
+  if (pathname === '/' || pathname === '/login' || pathname === '/register' || pathname === '/pricing' || pathname === '/admin' || pathname === '/admin-login') {
     return (
       <main className="min-h-screen bg-slate-950">
         {children}
