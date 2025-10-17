@@ -14,6 +14,7 @@ import { ArrowRightIcon, CreditCardIcon, StarIcon } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "../contexts/AuthContext";
+import Threads from "../components/Threads";
 
 const COMPANIES = [
   {
@@ -158,9 +159,21 @@ const HomePage = () => {
   return (
     <div className="overflow-x-hidden scrollbar-hide size-full">
       {/* Hero Section */}
-      <MaxWidthWrapper>
-        <div className="flex flex-col items-center justify-center w-full text-center bg-gradient-to-t from-background">
-          <AnimationContainer className="flex flex-col items-center justify-center w-full text-center">
+      <div className="relative min-h-screen">
+        {/* Threads Background - Fixed */}
+        <div className="fixed inset-0 w-full h-full z-0">
+          <Threads
+            amplitude={1.5}
+            distance={0.3}
+            enableMouseInteraction={true}
+            color={[0.8, 0.6, 1]}
+          />
+        </div>
+        
+        {/* Hero Content */}
+        <MaxWidthWrapper className="relative z-10">
+          <div className="flex flex-col items-center justify-center w-full text-center bg-gradient-to-t from-background/80 to-transparent min-h-screen">
+            <AnimationContainer className="flex flex-col items-center justify-center w-full text-center relative z-10">
             <button className="group relative grid overflow-hidden rounded-full px-4 py-1 shadow-[0_1000px_0_0_hsl(0_0%_20%)_inset] transition-colors duration-200">
               <span>
                 <span className="spark mask-gradient absolute inset-0 h-[100%] w-[100%] animate-flip overflow-hidden rounded-full [mask:linear-gradient(white,_transparent_50%)] before:absolute before:aspect-square before:w-[200%] before:rotate-[-90deg] before:animate-rotate before:bg-[conic-gradient(from_0deg,transparent_0_340deg,white_360deg)] before:content-[''] before:[inset:0_auto_auto_50%] before:[translate:-50%_-15%]" />
@@ -213,8 +226,9 @@ const HomePage = () => {
 
             </div>
           </AnimationContainer>
-        </div>
-      </MaxWidthWrapper>
+          </div>
+        </MaxWidthWrapper>
+      </div>
 
       {/* Companies Section */}
       <MaxWidthWrapper>
