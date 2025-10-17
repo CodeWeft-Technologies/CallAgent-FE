@@ -2,17 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, LoaderIcon, Building } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface RegistrationData {
-  // Organization details
   organizationName: string;
   subscriptionTier: 'basic' | 'premium' | 'enterprise';
   maxUsers: number;
-  
-  // Admin user details
   username: string;
   email: string;
   password: string;
@@ -39,6 +36,8 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -50,16 +49,15 @@ export default function RegisterPage() {
 
   const validateForm = (): string | null => {
     if (!formData.organizationName.trim()) return 'Organization name is required';
+    if (!formData.firstName.trim()) return 'First name is required';
+    if (!formData.lastName.trim()) return 'Last name is required';
     if (!formData.username.trim()) return 'Username is required';
     if (!formData.email.trim()) return 'Email is required';
     if (!formData.password) return 'Password is required';
     if (formData.password !== formData.confirmPassword) return 'Passwords do not match';
     if (formData.password.length < 8) return 'Password must be at least 8 characters';
-    if (!formData.firstName.trim()) return 'First name is required';
-    if (!formData.lastName.trim()) return 'Last name is required';
     if (formData.maxUsers < 1) return 'Max users must be at least 1';
     
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) return 'Please enter a valid email address';
     
@@ -99,10 +97,8 @@ export default function RegisterPage() {
 
       if (success) {
         setSuccess('Organization registered successfully! You can now login with your credentials.');
-        
-        // Redirect to login page after 2 seconds
         setTimeout(() => {
-          router.push('/');
+          router.push('/login');
         }, 2000);
       } else {
         setError(authError || 'Registration failed');
@@ -116,222 +112,247 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-2xl">
-        {/* Back Button */}
-        <div className="mb-4">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="inline-flex items-center space-x-2 text-slate-400 hover:text-white transition-colors text-sm"
-            aria-label="Go back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back</span>
-          </button>
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="flex flex-col items-start max-w-sm sm:max-w-md md:max-w-lg mx-auto w-full overflow-hidden pt-4 md:pt-8">
+        <div className="flex items-center w-full py-6 sm:py-8 border-b border-border/80">
+          <Link href="/" className="flex items-center gap-x-2">
+            <Building className="w-6 h-6" />
+            <h1 className="text-lg font-medium">
+              CallAgent
+            </h1>
+          </Link>
         </div>
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Register Your Organization</h1>
-          <p className="text-slate-400">Create your CallAgent account and start managing leads</p>
-        </div>
-      </div>
 
-      <div className="sm:mx-auto sm:w-full sm:max-w-2xl">
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-8">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            {/* Organization Details */}
-            <div className="border-b border-slate-700 pb-6">
-              <h3 className="text-lg font-medium text-white mb-4">Organization Details</h3>
+        <div className="flex flex-col items-start gap-y-6 py-6 sm:py-8 w-full px-0.5">
+          <h2 className="text-2xl font-semibold">
+            Create your organization
+          </h2>
+
+          <form onSubmit={handleSubmit} className="w-full space-y-4">
+            {/* Organization Details Section */}
+            <div className="space-y-4 pb-4 border-b border-border/50">
+              <h3 className="text-lg font-medium text-foreground">Organization Details</h3>
               
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="organizationName" className="block text-sm font-medium text-slate-300 mb-2">
-                    Organization Name *
-                  </label>
-                  <input
-                    id="organizationName"
-                    name="organizationName"
-                    type="text"
-                    required
-                    value={formData.organizationName}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Enter your organization name"
-                  />
-                </div>
+              <div className="space-y-2 w-full">
+                <label htmlFor="organizationName" className="block text-sm font-medium text-foreground">
+                  Organization Name *
+                </label>
+                <input
+                  id="organizationName"
+                  name="organizationName"
+                  type="text"
+                  value={formData.organizationName}
+                  disabled={loading}
+                  onChange={handleInputChange}
+                  placeholder="Enter your organization name"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
+                />
+              </div>
 
-                <div>
-                  <label htmlFor="subscriptionTier" className="block text-sm font-medium text-slate-300 mb-2">
-                    Subscription Tier
-                  </label>
-                  <select
-                    id="subscriptionTier"
-                    name="subscriptionTier"
-                    value={formData.subscriptionTier}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  >
-                    <option value="basic">Basic - Standard features</option>
-                    <option value="premium">Premium - Enhanced features</option>
-                    <option value="enterprise">Enterprise - Full feature set</option>
-                  </select>
-                </div>
+              <div className="space-y-2 w-full">
+                <label htmlFor="subscriptionTier" className="block text-sm font-medium text-foreground">
+                  Subscription Tier
+                </label>
+                <select
+                  id="subscriptionTier"
+                  name="subscriptionTier"
+                  value={formData.subscriptionTier}
+                  disabled={loading}
+                  onChange={handleInputChange}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
+                >
+                  <option value="basic">Basic - Standard features</option>
+                  <option value="premium">Premium - Enhanced features</option>
+                  <option value="enterprise">Enterprise - Full feature set</option>
+                </select>
+              </div>
 
-                <div>
-                  <label htmlFor="maxUsers" className="block text-sm font-medium text-slate-300 mb-2">
-                    Maximum Users
-                  </label>
-                  <input
-                    id="maxUsers"
-                    name="maxUsers"
-                    type="number"
-                    min="1"
-                    max="1000"
-                    value={formData.maxUsers}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  />
-                </div>
+              <div className="space-y-2 w-full">
+                <label htmlFor="maxUsers" className="block text-sm font-medium text-foreground">
+                  Maximum Users
+                </label>
+                <input
+                  id="maxUsers"
+                  name="maxUsers"
+                  type="number"
+                  min="1"
+                  max="1000"
+                  value={formData.maxUsers}
+                  disabled={loading}
+                  onChange={handleInputChange}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
+                />
               </div>
             </div>
 
-            {/* Admin User Details */}
-            <div>
-              <h3 className="text-lg font-medium text-white mb-4">Admin User Details</h3>
+            {/* Admin User Details Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-foreground">Admin User Details</h3>
               
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="firstName" className="block text-sm font-medium text-slate-300 mb-2">
-                      First Name *
-                    </label>
-                    <input
-                      id="firstName"
-                      name="firstName"
-                      type="text"
-                      required
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="lastName" className="block text-sm font-medium text-slate-300 mb-2">
-                      Last Name *
-                    </label>
-                    <input
-                      id="lastName"
-                      name="lastName"
-                      type="text"
-                      required
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="username" className="block text-sm font-medium text-slate-300 mb-2">
-                    Username *
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="firstName" className="block text-sm font-medium text-foreground">
+                    First Name *
                   </label>
                   <input
-                    id="username"
-                    name="username"
+                    id="firstName"
+                    name="firstName"
                     type="text"
-                    required
-                    value={formData.username}
+                    value={formData.firstName}
+                    disabled={loading}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Choose a username"
+                    placeholder="First name"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
                   />
                 </div>
-
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
-                    Email Address *
+                <div className="space-y-2">
+                  <label htmlFor="lastName" className="block text-sm font-medium text-foreground">
+                    Last Name *
                   </label>
                   <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    value={formData.email}
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    value={formData.lastName}
+                    disabled={loading}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="admin@yourcompany.com"
+                    placeholder="Last name"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
                   />
                 </div>
+              </div>
 
-                <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-2">
-                    Password *
-                  </label>
+              <div className="space-y-2 w-full">
+                <label htmlFor="username" className="block text-sm font-medium text-foreground">
+                  Username *
+                </label>
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  value={formData.username}
+                  disabled={loading}
+                  onChange={handleInputChange}
+                  placeholder="Choose a username"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
+                />
+              </div>
+
+              <div className="space-y-2 w-full">
+                <label htmlFor="email" className="block text-sm font-medium text-foreground">
+                  Email Address *
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  disabled={loading}
+                  onChange={handleInputChange}
+                  placeholder="admin@yourcompany.com"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="password" className="block text-sm font-medium text-foreground">
+                  Password *
+                </label>
+                <div className="relative w-full">
                   <input
                     id="password"
                     name="password"
-                    type="password"
-                    required
+                    type={showPassword ? "text" : "password"}
                     value={formData.password}
+                    disabled={loading}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="Minimum 8 characters"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
                   />
+                  <button
+                    type="button"
+                    disabled={loading}
+                    className="absolute top-1 right-1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
+              </div>
 
-                <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-300 mb-2">
-                    Confirm Password *
-                  </label>
+              <div className="space-y-2">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground">
+                  Confirm Password *
+                </label>
+                <div className="relative w-full">
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
-                    type="password"
-                    required
+                    type={showConfirmPassword ? "text" : "password"}
                     value={formData.confirmPassword}
+                    disabled={loading}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="Confirm your password"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
                   />
+                  <button
+                    type="button"
+                    disabled={loading}
+                    className="absolute top-1 right-1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
             </div>
 
             {error && (
-              <div className="rounded-xl bg-red-900/20 border border-red-800 p-4">
-                <div className="text-sm text-red-400">{error}</div>
+              <div className="text-sm text-red-500 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md p-3">
+                {error}
               </div>
             )}
 
             {success && (
-              <div className="rounded-xl bg-green-900/20 border border-green-800 p-4">
-                <div className="text-sm text-green-400">{success}</div>
+              <div className="text-sm text-green-500 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-md p-3">
+                {success}
               </div>
             )}
 
-            <div>
+            <div className="w-full pt-2">
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
               >
-                {loading ? 'Creating Organization...' : 'Register Organization'}
+                {loading ? (
+                  <LoaderIcon className="w-5 h-5 animate-spin" />
+                ) : "Register Organization"}
               </button>
             </div>
-
-            <div className="text-center">
-              <Link href="/" className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
-                Already have an account? Sign in
-              </Link>
-            </div>
           </form>
+        </div>
+
+        <div className="flex flex-col items-start w-full px-0.5">
+          <p className="text-sm text-muted-foreground">
+            By signing up, you agree to our{" "}
+            <Link href="/terms" className="text-primary hover:text-primary/80 transition-colors">
+              Terms of Service{" "}
+            </Link>
+            and{" "}
+            <Link href="/privacy" className="text-primary hover:text-primary/80 transition-colors">
+              Privacy Policy
+            </Link>
+          </p>
+        </div>
+        
+        <div className="flex items-start mt-6 border-t border-border/80 py-6 w-full px-0.5">
+          <p className="text-sm text-muted-foreground">
+            Already have an account?{" "}
+            <Link href="/login" className="text-primary hover:text-primary/80 transition-colors">
+              Sign in
+            </Link>
+          </p>
         </div>
       </div>
     </div>

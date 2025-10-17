@@ -2,9 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import { Eye, EyeOff, LoaderIcon, Shield } from 'lucide-react'
 import Link from 'next/link'
-import { Shield, User, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'
 
@@ -21,6 +20,12 @@ export default function AdminLoginPage() {
     setLoading(true)
     setError('')
 
+    if (!username || !password) {
+      setError('Username and password are required!')
+      setLoading(false)
+      return
+    }
+
     try {
       const response = await fetch(`${API_URL}/api/auth/super-admin/token`, {
         method: 'POST',
@@ -36,7 +41,6 @@ export default function AdminLoginPage() {
       if (response.ok) {
         const data = await response.json()
         
-        // Store the authentication data in the same format as AuthContext expects
         const authData = {
           token: data.access_token,
           user: {
@@ -55,8 +59,6 @@ export default function AdminLoginPage() {
         }
         
         localStorage.setItem('ai_agent_auth', JSON.stringify(authData))
-        
-        // Force a page reload to trigger AuthContext to recognize the authentication
         window.location.href = '/admin'
       } else {
         const errorData = await response.json()
@@ -70,133 +72,103 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Back Button */}
-        <div className="mb-4">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="inline-flex items-center space-x-2 text-slate-400 hover:text-white transition-colors text-sm"
-            aria-label="Go back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back</span>
-          </button>
-        </div>
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-red-600 to-orange-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-            <Shield className="w-8 h-8 text-white" />
+    <div className="flex flex-col items-start max-w-sm mx-auto h-dvh overflow-hidden pt-4 md:pt-20">
+      <div className="flex items-center w-full py-8 border-b border-border/80">
+        <Link href="/" className="flex items-center gap-x-2">
+          <Shield className="w-6 h-6 text-red-500" />
+          <h1 className="text-lg font-medium">
+            Super Admin
+          </h1>
+        </Link>
+      </div>
+
+      <div className="flex flex-col items-start gap-y-6 py-8 w-full px-0.5">
+        <h2 className="text-2xl font-semibold">
+          Super Admin Access
+        </h2>
+
+        <form onSubmit={handleSubmit} className="w-full">
+          <div className="space-y-2 w-full">
+            <label htmlFor="username" className="block text-sm font-medium text-foreground">
+              Super Admin Username
+            </label>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              disabled={loading}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter super admin username"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
+            />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Super Admin Login</h1>
-          <p className="text-slate-400">Access the system administration panel</p>
-        </div>
-
-        {/* Login Form */}
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Username Field */}
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-slate-300 mb-2">
-                Super Admin Username
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-slate-400" />
-                </div>
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
-                  placeholder="Enter super admin username"
-                />
-              </div>
+          <div className="mt-4 space-y-2">
+            <label htmlFor="password" className="block text-sm font-medium text-foreground">
+              Password
+            </label>
+            <div className="relative w-full">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                disabled={loading}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
+              />
+              <button
+                type="button"
+                disabled={loading}
+                className="absolute top-1 right-1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ?
+                  <EyeOff className="w-4 h-4" /> :
+                  <Eye className="w-4 h-4" />
+                }
+              </button>
             </div>
-
-            {/* Password Field */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-slate-400" />
-                </div>
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-12 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
-                  placeholder="Enter password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white transition-colors"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
+          </div>
+          
+          {error && (
+            <div className="mt-4 text-sm text-red-500">
+              {error}
             </div>
-
-            {/* Error Message */}
-            {error && (
-              <div className="flex items-center space-x-2 text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg p-3">
-                <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                <span className="text-sm">{error}</span>
-              </div>
-            )}
-
-            {/* Submit Button */}
+          )}
+          
+          <div className="mt-4 w-full">
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-red-600 text-white hover:bg-red-600/90 h-10 px-4 py-2 w-full"
             >
               {loading ? (
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                  <span>Signing in...</span>
-                </div>
-              ) : (
-                'Sign In as Super Admin'
-              )}
+                <LoaderIcon className="w-5 h-5 animate-spin" />
+              ) : "Sign in as Super Admin"}
             </button>
-          </form>
-
-          {/* Back to Regular Login */}
-          <div className="mt-6 text-center">
-            <Link 
-              href="/" 
-              className="text-sm text-slate-400 hover:text-white transition-colors"
-            >
-              ← Back to Organization Login
-            </Link>
           </div>
+        </form>
+      </div>
 
-          {/* Security Notice */}
-          <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-            <div className="flex items-start space-x-2">
-              <Shield className="h-4 w-4 text-amber-400 mt-0.5 flex-shrink-0" />
-              <div className="text-xs text-amber-400">
-                <strong>Security Notice:</strong> This login is for system administrators only. 
-                All access attempts are logged and monitored.
-              </div>
+      <div className="flex flex-col items-start w-full">
+        <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg w-full">
+          <div className="flex items-start space-x-2">
+            <Shield className="h-4 w-4 text-amber-400 mt-0.5 flex-shrink-0" />
+            <div className="text-xs text-amber-400">
+              <strong>Security Notice:</strong> This login is for system administrators only. 
+              All access attempts are logged and monitored.
             </div>
           </div>
         </div>
+      </div>
+      
+      <div className="flex items-start mt-auto border-t border-border/80 py-6 w-full">
+        <p className="text-sm text-muted-foreground">
+          Need organization access?{" "}
+          <Link href="/login" className="text-primary">
+            Organization Login
+          </Link>
+        </p>
       </div>
     </div>
   )
