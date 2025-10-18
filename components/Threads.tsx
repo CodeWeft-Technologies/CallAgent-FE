@@ -263,16 +263,17 @@ const Threads = ({
   ...rest 
 }) => {
   const containerRef = useRef(null);
-  const animationFrameId = useRef();
+  const animationFrameId = useRef<number>();
 
   useEffect(() => {
     if (!containerRef.current) return;
-    const container = containerRef.current;
+    const container = containerRef.current as HTMLDivElement;
+    if (!container) return;
 
     const renderer = new Renderer({ alpha: true });
     const gl = renderer.gl;
     gl.clearColor(0, 0, 0, 0);
-    container.appendChild(gl.canvas);
+    container.appendChild(gl.canvas as HTMLCanvasElement);
 
     const program = new Program(gl, {
       vertex: vertexShader,
@@ -301,7 +302,7 @@ const Threads = ({
     let currentMouse = [0.5, 0.5];
     let targetMouse = [0.5, 0.5];
 
-    function handleMouseMove(e) {
+    function handleMouseMove(e: MouseEvent) {
       const rect = container.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width;
       const y = 1.0 - (e.clientY - rect.top) / rect.height;
@@ -315,7 +316,7 @@ const Threads = ({
       container.addEventListener('mouseleave', handleMouseLeave);
     }
 
-    function update(t) {
+    function update(t: number) {
       if (enableMouseInteraction) {
         const smoothing = 0.05;
         currentMouse[0] += smoothing * (targetMouse[0] - currentMouse[0]);
@@ -339,7 +340,7 @@ const Threads = ({
         container.removeEventListener('mousemove', handleMouseMove);
         container.removeEventListener('mouseleave', handleMouseLeave);
       }
-      if (container.contains(gl.canvas)) container.removeChild(gl.canvas);
+      if (container.contains(gl.canvas as HTMLCanvasElement)) container.removeChild(gl.canvas as HTMLCanvasElement);
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
   }, [color, amplitude, distance, enableMouseInteraction]);
