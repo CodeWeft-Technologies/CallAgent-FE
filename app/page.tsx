@@ -15,6 +15,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "../contexts/AuthContext";
 import Threads from "../components/Threads";
+import ScrollStack, { ScrollStackItem } from "../components/ScrollStack";
 
 const COMPANIES = [
   {
@@ -82,17 +83,20 @@ const PROCESS = [
   {
     icon: () => <span className="text-2xl">📤</span>,
     title: "Upload Your Leads",
-    description: "Import your contact list via CSV or connect your CRM directly. Our system validates and organizes your data automatically."
+    description: "Import your contact list via CSV or connect your CRM directly. Our system validates and organizes your data automatically.",
+    videoPlaceholder: "Upload Demo"
   },
   {
     icon: () => <span className="text-2xl">🤖</span>,
     title: "Configure AI Agent",
-    description: "Customize your agent's voice, script, conversation flow, and objection handling. No technical skills required."
+    description: "Customize your agent's voice, script, conversation flow, and objection handling. No technical skills required.",
+    videoPlaceholder: "Configuration Demo"
   },
   {
     icon: () => <span className="text-2xl">🚀</span>,
     title: "Launch Campaign",
-    description: "Start calling and watch your AI agents convert leads automatically. Monitor performance in real-time."
+    description: "Start calling and watch your AI agents convert leads automatically. Monitor performance in real-time.",
+    videoPlaceholder: "Campaign Demo"
   }
 ];
 
@@ -157,7 +161,7 @@ const HomePage = () => {
   const { user } = useAuth();
 
   return (
-    <div className="overflow-x-hidden scrollbar-hide size-full">
+    <div className="overflow-x-hidden scrollbar-hide size-full" style={{ scrollBehavior: 'smooth' }}>
       {/* Hero Section */}
       <div className="relative min-h-screen">
         {/* Threads Background - Fixed */}
@@ -274,41 +278,128 @@ const HomePage = () => {
         </AnimationContainer>
       </MaxWidthWrapper>
 
-      {/* Process Section */}
-      <MaxWidthWrapper className="py-10">
-        <AnimationContainer delay={0.1}>
-          <div className="flex flex-col items-center lg:items-center justify-center w-full py-8 max-w-xl mx-auto">
-            <MagicBadge title="The Process" />
-            <h2 className="text-center lg:text-center text-3xl md:text-5xl !leading-[1.1] font-medium font-heading text-foreground mt-6">
-              Effortless automation in 3 steps
-            </h2>
-            <p className="mt-4 text-center lg:text-center text-lg text-muted-foreground max-w-lg">
-              Follow these simple steps to optimize, organize, and automate your outbound calls with ease.
-            </p>
-          </div>
-        </AnimationContainer>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full py-8 gap-4 md:gap-8">
-          {PROCESS.map((process, id) => (
-            <AnimationContainer delay={0.2 * id} key={id}>
-              <MagicCard className="group md:py-8">
-                <div className="flex flex-col items-start justify-center w-full">
-                  <process.icon />
-                  <div className="flex flex-col relative items-start">
-                    <span className="absolute -top-6 right-0 border-2 border-border text-foreground font-medium text-2xl rounded-full w-12 h-12 flex items-center justify-center pt-0.5">
-                      {id + 1}
-                    </span>
-                    <h3 className="text-base mt-6 font-medium text-foreground">
-                      {process.title}
-                    </h3>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {process.description}
-                    </p>
+      {/* Process Section with ScrollStack */}
+      <div className="h-screen">
+        <ScrollStack className="bg-transparent">
+          <MaxWidthWrapper>
+            <div className="flex flex-col items-center justify-center w-full py-8 max-w-xl mx-auto">
+              <MagicBadge title="The Process" />
+              <h2 className="text-center text-3xl md:text-5xl !leading-[1.1] font-medium font-heading text-foreground mt-6">
+                Effortless automation in 3 steps
+              </h2>
+              <p className="mt-4 text-center text-lg text-muted-foreground max-w-lg">
+                Follow these simple steps to optimize, organize, and automate your outbound calls with ease.
+              </p>
+            </div>
+          </MaxWidthWrapper>
+
+          <MaxWidthWrapper>
+            {PROCESS.map((process, id) => (
+              <ScrollStackItem key={id} itemClassName="bg-gradient-to-br from-background/80 to-muted/20 border border-border backdrop-blur-sm">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center w-full h-full">
+                  {/* Text Content */}
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-4">
+                      <span className="border-2 border-primary text-primary font-medium text-2xl rounded-full w-12 h-12 flex items-center justify-center">
+                        {id + 1}
+                      </span>
+                      <div className="text-3xl">
+                        <process.icon />
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-3xl font-medium text-foreground mb-4">
+                        {process.title}
+                      </h3>
+                      <p className="text-lg text-muted-foreground leading-relaxed">
+                        {process.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Video Content */}
+                  <div className="relative">
+                    <div className="aspect-video bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl relative overflow-hidden ring-1 ring-border shadow-xl">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="w-16 h-16 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          </div>
+                          <h4 className="text-white text-sm font-medium mb-1">{process.videoPlaceholder}</h4>
+                          <p className="text-gray-400 text-xs">Watch step {id + 1}</p>
+                        </div>
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                    </div>
+
+                    {/* Decorative elements */}
+                    <div className="absolute -top-2 -right-2 w-16 h-16 bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 rounded-full blur-xl"></div>
+                    <div className="absolute -bottom-2 -left-2 w-20 h-20 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl"></div>
                   </div>
                 </div>
-              </MagicCard>
-            </AnimationContainer>
-          ))}
-        </div>
+              </ScrollStackItem>
+            ))}
+          </MaxWidthWrapper>
+        </ScrollStack>
+      </div>
+
+      {/* Video Demo Section */}
+      <MaxWidthWrapper className="py-20">
+        <AnimationContainer delay={0.1}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Text Content */}
+            <div className="space-y-6">
+              <MagicBadge title="See It In Action" />
+              <h2 className="text-3xl md:text-5xl !leading-[1.1] font-medium font-heading text-foreground">
+                Watch Our AI Agent
+                <span className="text-transparent bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text block">
+                  Convert Leads Live
+                </span>
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-lg">
+                See how our AI voice agents handle real conversations, overcome objections, and convert prospects into customers with human-like precision.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button asChild>
+                  <Link href="/register" className="flex items-center">
+                    Start Your Campaign
+                    <ArrowRightIcon className="w-4 h-4 ml-2" />
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link href="/features" className="flex items-center">
+                    Learn More
+                  </Link>
+                </Button>
+              </div>
+            </div>
+
+            {/* Video Content */}
+            <div className="relative">
+              <div className="aspect-video bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl relative overflow-hidden ring-1 ring-border shadow-2xl">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-20 h-20 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-white text-lg font-semibold mb-2">Demo Video</h3>
+                    <p className="text-gray-400 text-sm">Watch our AI agent in action</p>
+                  </div>
+                </div>
+                {/* Video placeholder - replace with actual video later */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+              </div>
+
+              {/* Decorative elements */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 rounded-full blur-xl"></div>
+              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl"></div>
+            </div>
+          </div>
+        </AnimationContainer>
       </MaxWidthWrapper>
 
       {/* Pricing Section */}
