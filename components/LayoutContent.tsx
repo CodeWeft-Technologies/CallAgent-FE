@@ -12,8 +12,8 @@ interface LayoutContentProps {
 export default function LayoutContent({ children }: LayoutContentProps) {
   const pathname = usePathname()
   
-  // Marketing pages (show navbar and footer, no sidebar)
-  const isMarketingPage = pathname === '/' || pathname === '/login' || pathname === '/register' || pathname === '/pricing' || pathname === '/admin-login' || pathname === '/features' || pathname === '/enterprise' || pathname === '/changelog' || pathname === '/privacy' || pathname === '/terms'
+  // Marketing pages and admin pages (show navbar and footer, no sidebar)
+  const isMarketingPage = pathname === '/' || pathname === '/login' || pathname === '/register' || pathname === '/pricing' || pathname === '/admin-login' || pathname === '/features' || pathname === '/enterprise' || pathname === '/changelog' || pathname === '/privacy' || pathname === '/terms' || pathname === '/admin'
   
   if (isMarketingPage) {
     return (
