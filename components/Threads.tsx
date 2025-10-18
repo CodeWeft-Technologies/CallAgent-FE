@@ -135,7 +135,7 @@ class Renderer {
     }
   }
   
-  setSize(width, height) {
+  setSize(width: number, height: number) {
     this.canvas.width = width;
     this.canvas.height = height;
     this.canvas.style.width = width + 'px';
