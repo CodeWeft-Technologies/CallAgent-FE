@@ -143,7 +143,7 @@ class Renderer {
     this.gl.viewport(0, 0, width, height);
   }
   
-  render({ scene }) {
+  render({ scene }: { scene: any }) {
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
     scene.render();
   }
