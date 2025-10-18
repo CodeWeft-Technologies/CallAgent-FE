@@ -37,7 +37,7 @@ const NAV_LINKS = [
             },
             {
                 title: "Real-time Analytics",
-                href: "/features", 
+                href: "/features",
                 tagline: "Track performance and ROI instantly",
                 icon: () => (
                     <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -71,10 +71,7 @@ const NAV_LINKS = [
         title: "Pricing",
         href: "/pricing"
     },
-    {
-        title: "Enterprise",
-        href: "/enterprise"
-    }
+
 ];
 
 const Navbar = () => {
@@ -167,7 +164,7 @@ const Navbar = () => {
                                     <Link href="/login" className={buttonVariants({ size: "sm", variant: "ghost" })}>
                                         Sign In
                                     </Link>
-                                    <button 
+                                    <button
                                         onClick={() => setIsDemoFormOpen(true)}
                                         className={buttonVariants({ size: "sm", className: "bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 border-0" })}
                                     >
@@ -183,9 +180,9 @@ const Navbar = () => {
                 </AnimationContainer>
             </header>
 
-            <DemoForm 
-                isOpen={isDemoFormOpen} 
-                onClose={() => setIsDemoFormOpen(false)} 
+            <DemoForm
+                isOpen={isDemoFormOpen}
+                onClose={() => setIsDemoFormOpen(false)}
             />
         </>
     )
