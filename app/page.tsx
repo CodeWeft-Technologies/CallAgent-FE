@@ -21,59 +21,54 @@ const COMPANIES = [
   {
     name: "Microsoft",
     logo: (
-      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-9 lg:h-9" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="2" y="2" width="12" height="12" fill="#F25022" />
         <rect x="18" y="2" width="12" height="12" fill="#7FBA00" />
         <rect x="2" y="18" width="12" height="12" fill="#00A4EF" />
         <rect x="18" y="18" width="12" height="12" fill="#FFB900" />
-
       </svg>
     )
   },
   {
     name: "Google",
     logo: (
-      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-9 lg:h-9" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M16 6.4c2.6 0 4.9.9 6.7 2.4l5-5C24.4 1.1 20.5 0 16 0 9.7 0 4.4 3.9 1.7 9.6l5.8 4.5C9.1 9.9 12.2 6.4 16 6.4z" fill="#4285F4" />
         <path d="M32 16.4c0-1-.1-2-.3-2.9H16v5.5h9c-.4 2.1-1.6 3.9-3.4 5.1l5.5 4.3c3.2-3 5.1-7.4 5.1-12z" fill="#34A853" />
         <path d="M7.5 19.1c-.5-1.5-.8-3.1-.8-4.7s.3-3.2.8-4.7L1.7 5.2C.6 7.6 0 10.7 0 14s.6 6.4 1.7 8.8l5.8-3.7z" fill="#FBBC04" />
         <path d="M16 32c4.5 0 8.3-1.5 11.1-4l-5.5-4.3c-1.5 1-3.4 1.6-5.6 1.6-3.8 0-7-2.6-8.1-6.1l-5.8 4.5C4.4 28.1 9.7 32 16 32z" fill="#EA4335" />
-
       </svg>
     )
   },
   {
     name: "Amazon",
     logo: (
-      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-9 lg:h-9" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M20.3 24.5c-3.1 2.3-7.6 3.5-11.5 3.5-5.4 0-10.3-2-14-5.3-.3-.3 0-.7.3-.5 4.2 2.4 9.4 3.9 14.8 3.9 3.6 0 7.6-.7 11.3-2.2.5-.2.9.4.4.6z" fill="#FF9900" />
         <path d="M21.8 22.8c-.4-.5-2.6-.2-3.6-.1-.3 0-.4-.2-.1-.4 1.8-1.3 4.7-.9 5-.5.3.5-.1 3.7-1.9 5.3-.3.2-.5.1-.4-.1.4-.9 1.2-3 1-4.2z" fill="#FF9900" />
-
       </svg>
     )
   },
   {
     name: "Salesforce",
     logo: (
-      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-9 lg:h-9" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M11.5 8.5c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5c0 .8-.2 1.5-.6 2.1 1.4.4 2.4 1.7 2.4 3.2 0 1.9-1.5 3.4-3.4 3.4-.5 0-1-.1-1.4-.3-.4 1.2-1.5 2.1-2.8 2.1-1.6 0-2.9-1.3-2.9-2.9 0-.4.1-.8.2-1.1-1.3-.5-2.2-1.7-2.2-3.1 0-1.9 1.5-3.4 3.4-3.4.1 0 .2 0 .3 0z" fill="#00A1E0" />
         <circle cx="8" cy="12" r="3" fill="#00A1E0" />
         <circle cx="24" cy="16" r="2.5" fill="#00A1E0" />
         <circle cx="6" cy="20" r="2" fill="#00A1E0" />
         <circle cx="26" cy="24" r="2" fill="#00A1E0" />
-
       </svg>
     )
   },
   {
     name: "HubSpot",
     logo: (
-      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-9 lg:h-9" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="16" cy="16" r="14" fill="#FF7A59" />
         <circle cx="16" cy="16" r="8" fill="white" />
         <circle cx="16" cy="16" r="4" fill="#FF7A59" />
         <path d="M16 2v4M16 26v4M2 16h4M26 16h4M6.3 6.3l2.8 2.8M22.9 22.9l2.8 2.8M6.3 25.7l2.8-2.8M22.9 9.1l2.8-2.8" stroke="white" strokeWidth="1.5" />
-
       </svg>
     )
   }
@@ -237,16 +232,18 @@ const HomePage = () => {
       {/* Companies Section */}
       <MaxWidthWrapper>
         <AnimationContainer delay={0.4}>
-          <div className="py-14">
-            <div className="mx-auto px-4 md:px-8">
-              <h2 className="text-center text-sm font-medium font-heading text-neutral-400 uppercase">
+          <div className="py-10 sm:py-12 md:py-14">
+            <div className="mx-auto px-4 sm:px-6 md:px-8">
+              <h2 className="text-center text-xs sm:text-sm font-medium font-heading text-neutral-400 uppercase tracking-wider">
                 Trusted by the best in the industry
               </h2>
-              <div className="mt-8">
-                <ul className="flex flex-wrap items-center gap-x-12 gap-y-12 md:gap-x-20 justify-center">
+              <div className="mt-6 sm:mt-8">
+                <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-6 sm:gap-x-8 sm:gap-y-8 md:gap-x-12 md:gap-y-10 lg:gap-x-16 lg:gap-y-12">
                   {COMPANIES.map((company) => (
-                    <li key={company.name} className="opacity-100">
-                      {company.logo}
+                    <li key={company.name} className="opacity-70 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <div className="flex items-center justify-center p-2 sm:p-3 md:p-4 rounded-lg hover:bg-muted/20 transition-colors duration-300">
+                        {company.logo}
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -281,12 +278,12 @@ const HomePage = () => {
       {/* Process Section with ScrollStack */}
       <ScrollStack className="bg-transparent">
         <MaxWidthWrapper>
-          <div className="flex flex-col items-center justify-center w-full py-8 max-w-xl mx-auto">
+          <div className="flex flex-col items-center justify-center w-full py-6 sm:py-8 max-w-xl mx-auto px-4 sm:px-6">
             <MagicBadge title="The Process" />
-            <h2 className="text-center text-3xl md:text-5xl !leading-[1.1] font-medium font-heading text-foreground mt-6">
+            <h2 className="text-center text-2xl sm:text-3xl md:text-4xl lg:text-5xl !leading-[1.1] font-medium font-heading text-foreground mt-4 sm:mt-6">
               Effortless automation in 3 steps
             </h2>
-            <p className="mt-4 text-center text-lg text-muted-foreground max-w-lg">
+            <p className="mt-3 sm:mt-4 text-center text-base sm:text-lg text-muted-foreground max-w-lg">
               Follow these simple steps to optimize, organize, and automate your outbound calls with ease.
             </p>
           </div>
@@ -295,47 +292,47 @@ const HomePage = () => {
         <MaxWidthWrapper>
           {PROCESS.map((process, id) => (
             <ScrollStackItem key={id} itemClassName="bg-gradient-to-br from-background/80 to-muted/20 border border-border backdrop-blur-sm">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center w-full h-full">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8 items-center w-full h-full">
                 {/* Text Content */}
-                <div className="space-y-6">
-                  <div className="flex items-center gap-4">
-                    <span className="border-2 border-primary text-primary font-medium text-2xl rounded-full w-12 h-12 flex items-center justify-center">
+                <div className="space-y-4 sm:space-y-6 order-2 lg:order-1">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <span className="border-2 border-primary text-primary font-medium text-lg sm:text-xl md:text-2xl rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center flex-shrink-0">
                       {id + 1}
                     </span>
-                    <div className="text-3xl">
+                    <div className="text-2xl sm:text-3xl">
                       <process.icon />
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-3xl font-medium text-foreground mb-4">
+                    <h3 className="text-xl sm:text-2xl md:text-3xl font-medium text-foreground mb-2 sm:mb-3 md:mb-4 leading-tight">
                       {process.title}
                     </h3>
-                    <p className="text-lg text-muted-foreground leading-relaxed">
+                    <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
                       {process.description}
                     </p>
                   </div>
                 </div>
 
                 {/* Video Content */}
-                <div className="relative">
-                  <div className="aspect-video bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl relative overflow-hidden ring-1 ring-border shadow-xl">
+                <div className="relative order-1 lg:order-2">
+                  <div className="aspect-video bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg sm:rounded-xl relative overflow-hidden ring-1 ring-border shadow-xl">
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center">
-                        <div className="w-16 h-16 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                          <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M8 5v14l11-7z" />
                           </svg>
                         </div>
-                        <h4 className="text-white text-sm font-medium mb-1">{process.videoPlaceholder}</h4>
+                        <h4 className="text-white text-xs sm:text-sm font-medium mb-1">{process.videoPlaceholder}</h4>
                         <p className="text-gray-400 text-xs">Watch step {id + 1}</p>
                       </div>
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
                   </div>
 
-                  {/* Decorative elements */}
-                  <div className="absolute -top-2 -right-2 w-16 h-16 bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 rounded-full blur-xl"></div>
-                  <div className="absolute -bottom-2 -left-2 w-20 h-20 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl"></div>
+                  {/* Decorative elements - hidden on mobile for cleaner look */}
+                  <div className="hidden sm:block absolute -top-2 -right-2 w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 rounded-full blur-xl"></div>
+                  <div className="hidden sm:block absolute -bottom-2 -left-2 w-16 h-16 md:w-20 md:h-20 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl"></div>
                 </div>
               </div>
             </ScrollStackItem>
