@@ -279,71 +279,69 @@ const HomePage = () => {
       </MaxWidthWrapper>
 
       {/* Process Section with ScrollStack */}
-      <div className="h-screen">
-        <ScrollStack className="bg-transparent">
-          <MaxWidthWrapper>
-            <div className="flex flex-col items-center justify-center w-full py-8 max-w-xl mx-auto">
-              <MagicBadge title="The Process" />
-              <h2 className="text-center text-3xl md:text-5xl !leading-[1.1] font-medium font-heading text-foreground mt-6">
-                Effortless automation in 3 steps
-              </h2>
-              <p className="mt-4 text-center text-lg text-muted-foreground max-w-lg">
-                Follow these simple steps to optimize, organize, and automate your outbound calls with ease.
-              </p>
-            </div>
-          </MaxWidthWrapper>
+      <ScrollStack className="bg-transparent">
+        <MaxWidthWrapper>
+          <div className="flex flex-col items-center justify-center w-full py-8 max-w-xl mx-auto">
+            <MagicBadge title="The Process" />
+            <h2 className="text-center text-3xl md:text-5xl !leading-[1.1] font-medium font-heading text-foreground mt-6">
+              Effortless automation in 3 steps
+            </h2>
+            <p className="mt-4 text-center text-lg text-muted-foreground max-w-lg">
+              Follow these simple steps to optimize, organize, and automate your outbound calls with ease.
+            </p>
+          </div>
+        </MaxWidthWrapper>
 
-          <MaxWidthWrapper>
-            {PROCESS.map((process, id) => (
-              <ScrollStackItem key={id} itemClassName="bg-gradient-to-br from-background/80 to-muted/20 border border-border backdrop-blur-sm">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center w-full h-full">
-                  {/* Text Content */}
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-4">
-                      <span className="border-2 border-primary text-primary font-medium text-2xl rounded-full w-12 h-12 flex items-center justify-center">
-                        {id + 1}
-                      </span>
-                      <div className="text-3xl">
-                        <process.icon />
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="text-3xl font-medium text-foreground mb-4">
-                        {process.title}
-                      </h3>
-                      <p className="text-lg text-muted-foreground leading-relaxed">
-                        {process.description}
-                      </p>
+        <MaxWidthWrapper>
+          {PROCESS.map((process, id) => (
+            <ScrollStackItem key={id} itemClassName="bg-gradient-to-br from-background/80 to-muted/20 border border-border backdrop-blur-sm">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center w-full h-full">
+                {/* Text Content */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4">
+                    <span className="border-2 border-primary text-primary font-medium text-2xl rounded-full w-12 h-12 flex items-center justify-center">
+                      {id + 1}
+                    </span>
+                    <div className="text-3xl">
+                      <process.icon />
                     </div>
                   </div>
-
-                  {/* Video Content */}
-                  <div className="relative">
-                    <div className="aspect-video bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl relative overflow-hidden ring-1 ring-border shadow-xl">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center">
-                          <div className="w-16 h-16 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M8 5v14l11-7z" />
-                            </svg>
-                          </div>
-                          <h4 className="text-white text-sm font-medium mb-1">{process.videoPlaceholder}</h4>
-                          <p className="text-gray-400 text-xs">Watch step {id + 1}</p>
-                        </div>
-                      </div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-                    </div>
-
-                    {/* Decorative elements */}
-                    <div className="absolute -top-2 -right-2 w-16 h-16 bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 rounded-full blur-xl"></div>
-                    <div className="absolute -bottom-2 -left-2 w-20 h-20 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl"></div>
+                  <div>
+                    <h3 className="text-3xl font-medium text-foreground mb-4">
+                      {process.title}
+                    </h3>
+                    <p className="text-lg text-muted-foreground leading-relaxed">
+                      {process.description}
+                    </p>
                   </div>
                 </div>
-              </ScrollStackItem>
-            ))}
-          </MaxWidthWrapper>
-        </ScrollStack>
-      </div>
+
+                {/* Video Content */}
+                <div className="relative">
+                  <div className="aspect-video bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl relative overflow-hidden ring-1 ring-border shadow-xl">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="w-16 h-16 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </div>
+                        <h4 className="text-white text-sm font-medium mb-1">{process.videoPlaceholder}</h4>
+                        <p className="text-gray-400 text-xs">Watch step {id + 1}</p>
+                      </div>
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                  </div>
+
+                  {/* Decorative elements */}
+                  <div className="absolute -top-2 -right-2 w-16 h-16 bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 rounded-full blur-xl"></div>
+                  <div className="absolute -bottom-2 -left-2 w-20 h-20 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl"></div>
+                </div>
+              </div>
+            </ScrollStackItem>
+          ))}
+        </MaxWidthWrapper>
+      </ScrollStack>
 
       {/* Video Demo Section */}
       <MaxWidthWrapper className="py-20">
