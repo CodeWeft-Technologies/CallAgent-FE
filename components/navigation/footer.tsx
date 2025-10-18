@@ -34,7 +34,7 @@ const Footer = () => {
                                 </h3>
                                 <ul className="mt-4 text-sm text-muted-foreground">
                                     <li className="mt-2">
-                                        <Link href="#features" className="hover:text-foreground transition-all duration-300">
+                                        <Link href="/features" className="hover:text-foreground transition-all duration-300">
                                             Features
                                         </Link>
                                     </li>
@@ -43,43 +43,23 @@ const Footer = () => {
                                             Pricing
                                         </Link>
                                     </li>
-                                    <li className="mt-2">
-                                        <Link href="#testimonials" className="hover:text-foreground transition-all duration-300">
-                                            Testimonials
-                                        </Link>
-                                    </li>
-                                    <li className="mt-2">
-                                        <Link href="#" className="hover:text-foreground transition-all duration-300">
-                                            API
-                                        </Link>
-                                    </li>
                                 </ul>
                             </div>
                         </AnimationContainer>
                         <AnimationContainer delay={0.3}>
                             <div className="mt-10 md:mt-0 flex flex-col">
                                 <h3 className="text-base font-medium text-white">
-                                    Integrations
+                                    Account
                                 </h3>
                                 <ul className="mt-4 text-sm text-muted-foreground">
                                     <li className="">
-                                        <Link href="#" className="hover:text-foreground transition-all duration-300">
-                                            Salesforce
+                                        <Link href="/login" className="hover:text-foreground transition-all duration-300">
+                                            Login
                                         </Link>
                                     </li>
                                     <li className="mt-2">
-                                        <Link href="#" className="hover:text-foreground transition-all duration-300">
-                                            HubSpot
-                                        </Link>
-                                    </li>
-                                    <li className="mt-2">
-                                        <Link href="#" className="hover:text-foreground transition-all duration-300">
-                                            Pipedrive
-                                        </Link>
-                                    </li>
-                                    <li className="mt-2">
-                                        <Link href="#" className="hover:text-foreground transition-all duration-300">
-                                            Zapier
+                                        <Link href="/register" className="hover:text-foreground transition-all duration-300">
+                                            Sign Up
                                         </Link>
                                     </li>
                                 </ul>
@@ -90,22 +70,17 @@ const Footer = () => {
                         <AnimationContainer delay={0.4}>
                             <div className="">
                                 <h3 className="text-base font-medium text-white">
-                                    Resources
+                                    Company
                                 </h3>
                                 <ul className="mt-4 text-sm text-muted-foreground">
                                     <li className="mt-2">
-                                        <Link href="#" className="hover:text-foreground transition-all duration-300">
-                                            Blog
+                                        <Link href="/about" className="hover:text-foreground transition-all duration-300">
+                                            About Us
                                         </Link>
                                     </li>
                                     <li className="mt-2">
-                                        <Link href="#" className="hover:text-foreground transition-all duration-300">
-                                            Support
-                                        </Link>
-                                    </li>
-                                    <li className="mt-2">
-                                        <Link href="#" className="hover:text-foreground transition-all duration-300">
-                                            Documentation
+                                        <Link href="/contact" className="hover:text-foreground transition-all duration-300">
+                                            Contact Us
                                         </Link>
                                     </li>
                                 </ul>
@@ -114,22 +89,17 @@ const Footer = () => {
                         <AnimationContainer delay={0.5}>
                             <div className="mt-10 md:mt-0 flex flex-col">
                                 <h3 className="text-base font-medium text-white">
-                                    Company
+                                    Legal
                                 </h3>
                                 <ul className="mt-4 text-sm text-muted-foreground">
                                     <li className="">
-                                        <Link href="#" className="hover:text-foreground transition-all duration-300">
-                                            About Us
-                                        </Link>
-                                    </li>
-                                    <li className="mt-2">
-                                        <Link href="#" className="hover:text-foreground transition-all duration-300">
+                                        <Link href="/privacy" className="hover:text-foreground transition-all duration-300">
                                             Privacy Policy
                                         </Link>
                                     </li>
                                     <li className="mt-2">
-                                        <Link href="#" className="hover:text-foreground transition-all duration-300">
-                                            Terms & Conditions
+                                        <Link href="/terms" className="hover:text-foreground transition-all duration-300">
+                                            Terms of Service
                                         </Link>
                                     </li>
                                 </ul>

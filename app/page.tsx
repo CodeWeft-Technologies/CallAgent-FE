@@ -185,7 +185,9 @@ const HomePage = () => {
                 </span>
               </button>
               <h1 className="text-foreground text-center py-6 text-5xl font-medium tracking-normal text-balance sm:text-6xl md:text-7xl lg:text-8xl !leading-[1.15] w-full font-heading">
-                Smart Calls with <span className="text-transparent bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text inline-bloc">
+                Smart Calls
+                <br />
+                with <span className="text-transparent bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text inline-block">
                   Precision
                 </span>
               </h1>
@@ -204,7 +206,7 @@ const HomePage = () => {
               </div>
             </AnimationContainer>
 
-            <AnimationContainer delay={0.2} className="relative pt-20 pb-20 md:py-32 px-2 bg-black w-full">
+            <AnimationContainer delay={0.2} className="relative pt-20 pb-20 md:py-32 px-2 w-full">
               <div className="absolute md:top-[10%] left-1/2 gradient w-3/4 -translate-x-1/2 h-1/4 md:h-1/3 inset-0 blur-[5rem] animate-image-glow"></div>
               <div className="-m-2 rounded-xl p-2 ring-1 ring-inset ring-foreground/20 lg:-m-4 lg:rounded-2xl bg-opacity-50 backdrop-blur-3xl">
                 <BorderBeam
@@ -220,9 +222,8 @@ const HomePage = () => {
                   quality={100}
                   className="rounded-md lg:rounded-xl bg-foreground/10 ring-1 ring-border"
                 />
-                <div className="absolute -bottom-4 inset-x-0 w-full h-1/2 bg-gradient-to-t from-black z-40"></div>
-                <div className="absolute bottom-0 md:-bottom-8 inset-x-0 w-full h-1/4 bg-gradient-to-t from-black z-50"></div>
-
+                <div className="absolute -bottom-4 inset-x-0 w-full h-1/2 bg-gradient-to-t from-background z-40"></div>
+                <div className="absolute bottom-0 md:-bottom-8 inset-x-0 w-full h-1/4 bg-gradient-to-t from-background z-50"></div>
               </div>
             </AnimationContainer>
           </div>
@@ -315,7 +316,7 @@ const HomePage = () => {
 
                 {/* Video Content */}
                 <div className="relative order-1 lg:order-2">
-                  <div className="aspect-video bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg sm:rounded-xl relative overflow-hidden ring-1 ring-border shadow-xl">
+                  <div className="aspect-video bg-gradient-to-br from-background/95 to-background/80 rounded-lg sm:rounded-xl relative overflow-hidden ring-1 ring-border shadow-xl">
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center">
                         <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
@@ -324,7 +325,7 @@ const HomePage = () => {
                           </svg>
                         </div>
                         <h4 className="text-white text-xs sm:text-sm font-medium mb-1">{process.videoPlaceholder}</h4>
-                        <p className="text-gray-400 text-xs">Watch step {id + 1}</p>
+                        <p className="text-muted-foreground text-xs">Watch step {id + 1}</p>
                       </div>
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
@@ -373,7 +374,7 @@ const HomePage = () => {
 
             {/* Video Content */}
             <div className="relative">
-              <div className="aspect-video bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl relative overflow-hidden ring-1 ring-border shadow-2xl">
+              <div className="aspect-video bg-gradient-to-br from-background/95 to-background/80 rounded-xl relative overflow-hidden ring-1 ring-border shadow-2xl">
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
                     <div className="w-20 h-20 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -382,7 +383,7 @@ const HomePage = () => {
                       </svg>
                     </div>
                     <h3 className="text-white text-lg font-semibold mb-2">Demo Video</h3>
-                    <p className="text-gray-400 text-sm">Watch our AI agent in action</p>
+                    <p className="text-muted-foreground text-sm">Watch our AI agent in action</p>
                   </div>
                 </div>
                 {/* Video placeholder - replace with actual video later */}
@@ -529,24 +530,29 @@ const HomePage = () => {
       {/* CTA Section */}
       <MaxWidthWrapper className="mt-20 max-w-[100vw] overflow-x-hidden scrollbar-hide">
         <AnimationContainer delay={0.1}>
-          <LampContainer>
-            <div className="flex flex-col items-center justify-center relative w-full text-center">
-              <h2 className="bg-gradient-to-b from-neutral-200 to-neutral-400 py-4 bg-clip-text text-center text-4xl md:text-7xl !leading-[1.15] font-medium font-heading tracking-tight text-transparent mt-8">
-                Step into the future of sales automation
-              </h2>
-              <p className="text-muted-foreground mt-6 max-w-md mx-auto">
-                Experience the cutting-edge solution that transforms how you handle outbound sales. Elevate your conversion rates with our AI-powered platform.
-              </p>
-              <div className="mt-6">
-                <Button asChild>
-                  <Link href="/register">
-                    Get started for free
-                    <ArrowRightIcon className="w-4 h-4 ml-2" />
-                  </Link>
-                </Button>
+          <div className="relative">
+            <LampContainer>
+              <div className="flex flex-col items-center justify-center relative w-full text-center">
+                <h2 className="bg-gradient-to-b from-neutral-200 to-neutral-400 py-4 bg-clip-text text-center text-4xl md:text-7xl !leading-[1.15] font-medium font-heading tracking-tight text-transparent mt-8">
+                  Step into the future of sales automation
+                </h2>
+                <p className="text-muted-foreground mt-6 max-w-md mx-auto">
+                  Experience the cutting-edge solution that transforms how you handle outbound sales. Elevate your conversion rates with our AI-powered platform.
+                </p>
+                <div className="mt-6">
+                  <Button asChild>
+                    <Link href="/register">
+                      Get started for free
+                      <ArrowRightIcon className="w-4 h-4 ml-2" />
+                    </Link>
+                  </Button>
+                </div>
               </div>
-            </div>
-          </LampContainer>
+            </LampContainer>
+
+            {/* Bottom fade to blend with background */}
+            <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none z-10"></div>
+          </div>
         </AnimationContainer>
       </MaxWidthWrapper>
     </div>
