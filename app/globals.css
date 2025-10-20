@@ -189,4 +189,71 @@ html, body {
 
 .footer-text-hover:hover {
   color: rgba(115, 115, 115, 0.6);
+}/* Da
+tabase with REST API Component Animations */
+.database {
+  offset-anchor: 10px 0px;
+  animation: database-animation-path;
+  animation-iteration-count: infinite;
+  animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  animation-duration: 4s;
+  animation-delay: 1s;
+}
+
+.db-light-1 {
+  offset-path: path("M 31 10 v 15 q 0 5 5 5 h 59 q 5 0 5 5 v 25");
+}
+
+.db-light-2 {
+  offset-path: path("M 77 10 v 10 q 0 5 5 5 h 13 q 5 0 5 5 v 25");
+}
+
+.db-light-3 {
+  offset-path: path("M 124 10 v 10 q 0 5 -5 5 h -14 q -5 0 -5 5 v 25");
+}
+
+.db-light-4 {
+  offset-path: path("M 170 10 v 15 q 0 5 -5 5 h -60 q -5 0 -5 5 v 25");
+}
+
+@keyframes database-animation-path {
+  0% {
+    offset-distance: 0%;
+  }
+  100% {
+    offset-distance: 100%;
+  }
+}/* Fe
+atures Page Hero Section Styles */
+.title-char {
+  display: inline-block;
+  transform-origin: center bottom;
+}
+
+.subtitle-line {
+  display: block;
+  transform-origin: left center;
+}
+
+/* Smooth scrolling for features page */
+.features-page {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for features page */
+.features-page::-webkit-scrollbar {
+  width: 4px;
+}
+
+.features-page::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.features-page::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #3b82f6, #8b5cf6);
+  border-radius: 2px;
+}
+
+.features-page::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #2563eb, #7c3aed);
 }

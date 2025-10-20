@@ -20,7 +20,7 @@ const Footer = () => {
                             Automate your outbound sales with AI voice agents.
                         </p>
                         <span className="mt-4 text-neutral-200 text-sm flex items-center">
-                            Made with ❤️ for sales teams
+                            Made with ❤️ by Codeweft 
                         </span>
                     </div>
                 </AnimationContainer>

@@ -15,7 +15,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "../contexts/AuthContext";
 import Threads from "../components/Threads";
-import ScrollStack, { ScrollStackItem } from "../components/ScrollStack";
+import { Skiper67 } from "../components/VideoPlayer";
+import { FeatureCarousel } from "../components/FullScreenScrollFX";
+import DatabaseWithRestApi from "../components/ui/database-with-rest-api";
 
 const COMPANIES = [
   {
@@ -74,26 +76,15 @@ const COMPANIES = [
   }
 ];
 
-const PROCESS = [
-  {
-    icon: () => <span className="text-2xl">📤</span>,
-    title: "Upload Your Leads",
-    description: "Import your contact list via CSV or connect your CRM directly. Our system validates and organizes your data automatically.",
-    videoPlaceholder: "Upload Demo"
-  },
-  {
-    icon: () => <span className="text-2xl">🤖</span>,
-    title: "Configure AI Agent",
-    description: "Customize your agent's voice, script, conversation flow, and objection handling. No technical skills required.",
-    videoPlaceholder: "Configuration Demo"
-  },
-  {
-    icon: () => <span className="text-2xl">🚀</span>,
-    title: "Launch Campaign",
-    description: "Start calling and watch your AI agents convert leads automatically. Monitor performance in real-time.",
-    videoPlaceholder: "Campaign Demo"
-  }
-];
+const PROCESS_IMAGES = {
+  step1img1: "/dashboard.png",
+  step1img2: "/dashboard.png", 
+  step2img1: "/dashboard.png",
+  step2img2: "/dashboard.png",
+  step3img: "/dashboard.png",
+  step4img: "/dashboard.png",
+  alt: "Audixa AI Process Steps"
+};
 
 const REVIEWS = [
   {
@@ -109,21 +100,9 @@ const REVIEWS = [
     rating: 5
   },
   {
-    name: "Emily Rodriguez",
-    username: "@emily_growth",
-    review: "Setup was incredibly easy. We were running campaigns within minutes of signing up.",
-    rating: 5
-  },
-  {
     name: "David Kim",
     username: "@davidk_startup",
     review: "The ROI has been incredible. We're converting 40% more leads with half the effort.",
-    rating: 5
-  },
-  {
-    name: "Lisa Thompson",
-    username: "@lisa_marketing",
-    review: "Customer support is outstanding. They helped us optimize our campaigns immediately.",
     rating: 5
   },
   {
@@ -142,12 +121,6 @@ const REVIEWS = [
     name: "Maria Garcia",
     username: "@maria_sales",
     review: "Incredible results in just the first month. Our conversion rates doubled.",
-    rating: 5
-  },
-  {
-    name: "Tom Anderson",
-    username: "@tom_bizdev",
-    review: "The analytics dashboard gives us insights we never had before. Highly recommended.",
     rating: 5
   }
 ];
@@ -276,70 +249,23 @@ const HomePage = () => {
         </AnimationContainer>
       </MaxWidthWrapper>
 
-      {/* Process Section with ScrollStack */}
-      <ScrollStack className="bg-transparent">
-        <MaxWidthWrapper>
+      {/* Process Section with Feature Carousel */}
+      <MaxWidthWrapper className="py-20">
+        <AnimationContainer delay={0.1}>
           <div className="flex flex-col items-center justify-center w-full py-6 sm:py-8 max-w-xl mx-auto px-4 sm:px-6">
             <MagicBadge title="The Process" />
             <h2 className="text-center text-2xl sm:text-3xl md:text-4xl lg:text-5xl !leading-[1.1] font-medium font-heading text-foreground mt-4 sm:mt-6">
-              Effortless automation in 3 steps
+              Effortless automation in 4 steps
             </h2>
             <p className="mt-3 sm:mt-4 text-center text-base sm:text-lg text-muted-foreground max-w-lg">
               Follow these simple steps to optimize, organize, and automate your outbound calls with ease.
             </p>
           </div>
-        </MaxWidthWrapper>
-
-        <MaxWidthWrapper>
-          {PROCESS.map((process, id) => (
-            <ScrollStackItem key={id} itemClassName="bg-gradient-to-br from-background/80 to-muted/20 border border-border backdrop-blur-sm">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8 items-center w-full h-full">
-                {/* Text Content */}
-                <div className="space-y-4 sm:space-y-6 order-2 lg:order-1">
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <span className="border-2 border-primary text-primary font-medium text-lg sm:text-xl md:text-2xl rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center flex-shrink-0">
-                      {id + 1}
-                    </span>
-                    <div className="text-2xl sm:text-3xl">
-                      <process.icon />
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-xl sm:text-2xl md:text-3xl font-medium text-foreground mb-2 sm:mb-3 md:mb-4 leading-tight">
-                      {process.title}
-                    </h3>
-                    <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
-                      {process.description}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Video Content */}
-                <div className="relative order-1 lg:order-2">
-                  <div className="aspect-video bg-gradient-to-br from-background/95 to-background/80 rounded-lg sm:rounded-xl relative overflow-hidden ring-1 ring-border shadow-xl">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
-                          <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z" />
-                          </svg>
-                        </div>
-                        <h4 className="text-white text-xs sm:text-sm font-medium mb-1">{process.videoPlaceholder}</h4>
-                        <p className="text-muted-foreground text-xs">Watch step {id + 1}</p>
-                      </div>
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-                  </div>
-
-                  {/* Decorative elements - hidden on mobile for cleaner look */}
-                  <div className="hidden sm:block absolute -top-2 -right-2 w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 rounded-full blur-xl"></div>
-                  <div className="hidden sm:block absolute -bottom-2 -left-2 w-16 h-16 md:w-20 md:h-20 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl"></div>
-                </div>
-              </div>
-            </ScrollStackItem>
-          ))}
-        </MaxWidthWrapper>
-      </ScrollStack>
+        </AnimationContainer>
+        <AnimationContainer delay={0.2}>
+          <FeatureCarousel image={PROCESS_IMAGES} />
+        </AnimationContainer>
+      </MaxWidthWrapper>
 
       {/* Video Demo Section */}
       <MaxWidthWrapper className="py-20">
@@ -372,28 +298,112 @@ const HomePage = () => {
               </div>
             </div>
 
-            {/* Video Content */}
+            {/* Interactive Video Player */}
             <div className="relative">
-              <div className="aspect-video bg-gradient-to-br from-background/95 to-background/80 rounded-xl relative overflow-hidden ring-1 ring-border shadow-2xl">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="w-20 h-20 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-white text-lg font-semibold mb-2">Demo Video</h3>
-                    <p className="text-muted-foreground text-sm">Watch our AI agent in action</p>
-                  </div>
-                </div>
-                {/* Video placeholder - replace with actual video later */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+              <div className="aspect-video rounded-xl overflow-hidden shadow-2xl">
+                <Skiper67 />
               </div>
 
               {/* Decorative elements */}
               <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 rounded-full blur-xl"></div>
               <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl"></div>
             </div>
+          </div>
+        </AnimationContainer>
+      </MaxWidthWrapper>
+
+      {/* AI Workflow Section */}
+      <MaxWidthWrapper className="py-12 sm:py-16 lg:py-20">
+        <AnimationContainer delay={0.1}>
+          <div className="flex flex-col items-center text-center space-y-8 sm:space-y-12">
+            {/* Header - Full Width */}
+            <div className="space-y-4 sm:space-y-6 w-full">
+              <div className="flex justify-center">
+                <MagicBadge title="AI Workflow" />
+              </div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl !leading-[1.1] font-medium font-heading text-foreground w-full">
+                How Our AI Agents
+                <span className="text-transparent bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text block">
+                  Drive Results
+                </span>
+              </h2>
+              <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl lg:max-w-3xl mx-auto px-4">
+                Watch how our intelligent AI workflow transforms every lead into a potential customer through our proven 4-step process.
+              </p>
+            </div>
+
+            {/* Centered Flow Component */}
+            <div className="relative flex justify-center w-full px-4 sm:px-6 lg:px-8">
+              <div className="w-full max-w-lg sm:max-w-xl lg:max-w-2xl">
+                <DatabaseWithRestApi
+                  title="Smart AI Workflow That Converts Leads"
+                  circleText="AI"
+                  badgeTexts={{
+                    first: "QUALIFY",
+                    second: "CONVERT",
+                    third: "BOOK",
+                    fourth: "FOLLOW-UP"
+                  }}
+                  buttonTexts={{
+                    first: "CallAgent",
+                    second: "AI_Flow"
+                  }}
+                  lightColor="#8B5CF6"
+                  className="mx-auto w-full"
+                />
+              </div>
+
+              {/* Responsive Decorative elements */}
+              <div className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 rounded-full blur-xl"></div>
+              <div className="absolute -bottom-2 -left-2 sm:-bottom-4 sm:-left-4 w-20 h-20 sm:w-32 sm:h-32 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl"></div>
+            </div>
+
+            {/* Bottom Info */}
+            <div className="space-y-6 sm:space-y-8 w-full max-w-5xl px-4 sm:px-6">
+              {/* Key Benefits */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                <div className="text-center space-y-3 sm:space-y-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center mx-auto">
+                    <span className="text-white font-bold text-lg sm:text-xl">1</span>
+                  </div>
+                  <h3 className="font-semibold text-foreground text-lg sm:text-xl">Qualify Leads</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">AI agents identify high-quality prospects and gather essential information automatically.</p>
+                </div>
+
+                <div className="text-center space-y-3 sm:space-y-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-fuchsia-500 to-purple-500 rounded-full flex items-center justify-center mx-auto">
+                    <span className="text-white font-bold text-lg sm:text-xl">2</span>
+                  </div>
+                  <h3 className="font-semibold text-foreground text-lg sm:text-xl">Convert Interest</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Personalized conversations that address objections and build trust with potential customers.</p>
+                </div>
+
+                <div className="text-center space-y-3 sm:space-y-4 sm:col-span-2 lg:col-span-1">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto">
+                    <span className="text-white font-bold text-lg sm:text-xl">3</span>
+                  </div>
+                  <h3 className="font-semibold text-foreground text-lg sm:text-xl">Book & Follow-up</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Schedule appointments and maintain engagement with automated follow-up sequences.</p>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/register" className="flex items-center justify-center">
+                    Start Your Campaign
+                    <ArrowRightIcon className="w-4 h-4 ml-2" />
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild className="w-full sm:w-auto">
+                  <Link href="/features" className="flex items-center justify-center">
+                    Learn More
+                  </Link>
+                </Button>
+              </div>
+            </div>
+
+
           </div>
         </AnimationContainer>
       </MaxWidthWrapper>
@@ -440,11 +450,11 @@ const HomePage = () => {
           </div>
         </AnimationContainer>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 place-items-start gap-4 md:gap-8 py-10">
-          <div className="flex flex-col items-start h-min gap-6">
-            {REVIEWS.slice(0, 3).map((review, index) => (
+          <div className="flex flex-col items-start gap-6">
+            {REVIEWS.slice(0, 2).map((review, index) => (
               <AnimationContainer delay={0.2 * index} key={index}>
-                <MagicCard key={index} className="md:p-0">
-                  <Card className="flex flex-col w-full border-none h-min">
+                <MagicCard key={index} className="md:p-0 h-full">
+                  <Card className="flex flex-col w-full border-none h-[280px]">
                     <CardHeader className="space-y-0">
                       <CardTitle className="text-lg font-medium text-muted-foreground">
                         {review.name}
@@ -453,7 +463,7 @@ const HomePage = () => {
                         {review.username}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4 pb-4">
+                    <CardContent className="space-y-4 pb-4 flex-1">
                       <p className="text-muted-foreground">
                         {review.review}
                       </p>
@@ -468,11 +478,11 @@ const HomePage = () => {
               </AnimationContainer>
             ))}
           </div>
-          <div className="flex flex-col items-start h-min gap-6">
-            {REVIEWS.slice(3, 6).map((review, index) => (
+          <div className="flex flex-col items-start gap-6">
+            {REVIEWS.slice(2, 4).map((review, index) => (
               <AnimationContainer delay={0.2 * index} key={index}>
-                <MagicCard key={index} className="md:p-0">
-                  <Card className="flex flex-col w-full border-none h-min">
+                <MagicCard key={index} className="md:p-0 h-full">
+                  <Card className="flex flex-col w-full border-none h-[280px]">
                     <CardHeader className="space-y-0">
                       <CardTitle className="text-lg font-medium text-muted-foreground">
                         {review.name}
@@ -481,7 +491,7 @@ const HomePage = () => {
                         {review.username}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4 pb-4">
+                    <CardContent className="space-y-4 pb-4 flex-1">
                       <p className="text-muted-foreground">
                         {review.review}
                       </p>
@@ -496,11 +506,11 @@ const HomePage = () => {
               </AnimationContainer>
             ))}
           </div>
-          <div className="flex flex-col items-start h-min gap-6">
-            {REVIEWS.slice(6, 9).map((review, index) => (
+          <div className="flex flex-col items-start gap-6">
+            {REVIEWS.slice(4, 6).map((review, index) => (
               <AnimationContainer delay={0.2 * index} key={index}>
-                <MagicCard key={index} className="md:p-0">
-                  <Card className="flex flex-col w-full border-none h-min">
+                <MagicCard key={index} className="md:p-0 h-full">
+                  <Card className="flex flex-col w-full border-none h-[280px]">
                     <CardHeader className="space-y-0">
                       <CardTitle className="text-lg font-medium text-muted-foreground">
                         {review.name}
@@ -509,7 +519,7 @@ const HomePage = () => {
                         {review.username}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4 pb-4">
+                    <CardContent className="space-y-4 pb-4 flex-1">
                       <p className="text-muted-foreground">
                         {review.review}
                       </p>
@@ -534,7 +544,7 @@ const HomePage = () => {
             <LampContainer>
               <div className="flex flex-col items-center justify-center relative w-full text-center">
                 <h2 className="bg-gradient-to-b from-neutral-200 to-neutral-400 py-4 bg-clip-text text-center text-4xl md:text-7xl !leading-[1.15] font-medium font-heading tracking-tight text-transparent mt-8">
-                  Step into the future of sales automation
+                  Step into the future of voice automation
                 </h2>
                 <p className="text-muted-foreground mt-6 max-w-md mx-auto">
                   Experience the cutting-edge solution that transforms how you handle outbound sales. Elevate your conversion rates with our AI-powered platform.

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, LoaderIcon, Building } from 'lucide-react';
+import { Eye, EyeOff, LoaderIcon, Building, Home } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -112,26 +112,40 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="flex flex-col items-start max-w-sm sm:max-w-md md:max-w-lg mx-auto w-full overflow-hidden pt-4 md:pt-8">
-        <div className="flex items-center w-full py-6 sm:py-8 border-b border-border/80">
-          <Link href="/" className="flex items-center gap-x-2">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-sm sm:max-w-md lg:max-w-lg mx-auto">
+        {/* Header with Home Button */}
+        <div className="flex items-center justify-between w-full py-6 sm:py-8 border-b border-border/80 mb-6 sm:mb-8">
+          <Link href="/" className="flex items-center gap-x-2 text-foreground hover:text-primary transition-colors">
             <Building className="w-6 h-6" />
             <h1 className="text-lg font-medium">
               CallAgent
             </h1>
           </Link>
+          <Link 
+            href="/" 
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent"
+          >
+            <Home className="w-4 h-4" />
+            <span className="hidden sm:inline">Home</span>
+          </Link>
         </div>
 
-        <div className="flex flex-col items-start gap-y-6 py-6 sm:py-8 w-full px-0.5">
-          <h2 className="text-2xl font-semibold">
-            Create your organization
-          </h2>
+        {/* Main Content */}
+        <div className="space-y-6">
+          <div className="text-center sm:text-left">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-foreground">
+              Create your organization
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Set up your CallAgent organization and admin account to get started.
+            </p>
+          </div>
 
-          <form onSubmit={handleSubmit} className="w-full space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Organization Details Section */}
-            <div className="space-y-4 pb-4 border-b border-border/50">
-              <h3 className="text-lg font-medium text-foreground">Organization Details</h3>
+            <div className="space-y-4 pb-6 border-b border-border/50">
+              <h3 className="text-lg font-semibold text-foreground">Organization Details</h3>
               
               <div className="space-y-2 w-full">
                 <label htmlFor="organizationName" className="block text-sm font-medium text-foreground">
@@ -145,7 +159,7 @@ export default function RegisterPage() {
                   disabled={loading}
                   onChange={handleInputChange}
                   placeholder="Enter your organization name"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
+                  className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-primary transition-colors"
                 />
               </div>
 
@@ -159,7 +173,7 @@ export default function RegisterPage() {
                   value={formData.subscriptionTier}
                   disabled={loading}
                   onChange={handleInputChange}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
+                  className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-primary transition-colors"
                 >
                   <option value="basic">Basic - Standard features</option>
                   <option value="premium">Premium - Enhanced features</option>
@@ -180,14 +194,14 @@ export default function RegisterPage() {
                   value={formData.maxUsers}
                   disabled={loading}
                   onChange={handleInputChange}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
+                  className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-primary transition-colors"
                 />
               </div>
             </div>
 
             {/* Admin User Details Section */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-foreground">Admin User Details</h3>
+              <h3 className="text-lg font-semibold text-foreground">Admin User Details</h3>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -202,7 +216,7 @@ export default function RegisterPage() {
                     disabled={loading}
                     onChange={handleInputChange}
                     placeholder="First name"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
+                    className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-primary transition-colors"
                   />
                 </div>
                 <div className="space-y-2">
@@ -217,7 +231,7 @@ export default function RegisterPage() {
                     disabled={loading}
                     onChange={handleInputChange}
                     placeholder="Last name"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
+                    className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-primary transition-colors"
                   />
                 </div>
               </div>
@@ -234,7 +248,7 @@ export default function RegisterPage() {
                   disabled={loading}
                   onChange={handleInputChange}
                   placeholder="Choose a username"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
+                  className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-primary transition-colors"
                 />
               </div>
 
@@ -250,7 +264,7 @@ export default function RegisterPage() {
                   disabled={loading}
                   onChange={handleInputChange}
                   placeholder="admin@yourcompany.com"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
+                  className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-primary transition-colors"
                 />
               </div>
 
@@ -258,7 +272,7 @@ export default function RegisterPage() {
                 <label htmlFor="password" className="block text-sm font-medium text-foreground">
                   Password *
                 </label>
-                <div className="relative w-full">
+                <div className="relative">
                   <input
                     id="password"
                     name="password"
@@ -267,12 +281,12 @@ export default function RegisterPage() {
                     disabled={loading}
                     onChange={handleInputChange}
                     placeholder="Minimum 8 characters"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
+                    className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-primary transition-colors"
                   />
                   <button
                     type="button"
                     disabled={loading}
-                    className="absolute top-1 right-1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -284,7 +298,7 @@ export default function RegisterPage() {
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground">
                   Confirm Password *
                 </label>
-                <div className="relative w-full">
+                <div className="relative">
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
@@ -293,12 +307,12 @@ export default function RegisterPage() {
                     disabled={loading}
                     onChange={handleInputChange}
                     placeholder="Confirm your password"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-foreground"
+                    className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-primary transition-colors"
                   />
                   <button
                     type="button"
                     disabled={loading}
-                    className="absolute top-1 right-1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -308,51 +322,56 @@ export default function RegisterPage() {
             </div>
 
             {error && (
-              <div className="text-sm text-red-500 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md p-3">
-                {error}
+              <div className="rounded-md bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 p-3">
+                <div className="text-sm text-red-600 dark:text-red-400">
+                  {error}
+                </div>
               </div>
             )}
 
             {success && (
-              <div className="text-sm text-green-500 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-md p-3">
-                {success}
+              <div className="rounded-md bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 p-3">
+                <div className="text-sm text-green-600 dark:text-green-400">
+                  {success}
+                </div>
               </div>
             )}
 
-            <div className="w-full pt-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
-              >
-                {loading ? (
-                  <LoaderIcon className="w-5 h-5 animate-spin" />
-                ) : "Register Organization"}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-700 hover:to-fuchsia-700 h-11 px-8"
+            >
+              {loading ? (
+                <LoaderIcon className="w-5 h-5 animate-spin" />
+              ) : "Register Organization"}
+            </button>
           </form>
-        </div>
 
-        <div className="flex flex-col items-start w-full px-0.5">
-          <p className="text-sm text-muted-foreground">
-            By signing up, you agree to our{" "}
-            <Link href="/terms" className="text-primary hover:text-primary/80 transition-colors">
-              Terms of Service{" "}
-            </Link>
-            and{" "}
-            <Link href="/privacy" className="text-primary hover:text-primary/80 transition-colors">
-              Privacy Policy
-            </Link>
-          </p>
-        </div>
-        
-        <div className="flex items-start mt-6 border-t border-border/80 py-6 w-full px-0.5">
-          <p className="text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link href="/login" className="text-primary hover:text-primary/80 transition-colors">
-              Sign in
-            </Link>
-          </p>
+          {/* Footer Links */}
+          <div className="space-y-6 pt-6">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">
+                By signing up, you agree to our{" "}
+                <Link href="/terms" className="text-primary hover:text-primary/80 transition-colors underline underline-offset-4">
+                  Terms of Service
+                </Link>
+                {" "}and{" "}
+                <Link href="/privacy" className="text-primary hover:text-primary/80 transition-colors underline underline-offset-4">
+                  Privacy Policy
+                </Link>
+              </p>
+            </div>
+            
+            <div className="border-t border-border/80 pt-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <Link href="/login" className="text-primary hover:text-primary/80 transition-colors font-medium">
+                  Sign in
+                </Link>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
