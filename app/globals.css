@@ -256,4 +256,30 @@ atures Page Hero Section Styles */
 
 .features-page::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(to bottom, #2563eb, #7c3aed);
+}/* Sideb
+ar tooltip styles */
+.sidebar-tooltip {
+  @apply absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50;
+}
+
+/* Ensure proper z-index for sidebar */
+.sidebar {
+  z-index: 40;
+}
+
+/* Mobile sidebar overlay */
+.sidebar-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 z-30;
+}
+
+/* Smooth transitions for sidebar */
+.sidebar-transition {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+/* Fix for mobile touch targets */
+@media (max-width: 1024px) {
+  .sidebar nav a {
+    @apply min-h-[44px] flex items-center;
+  }
 }

@@ -192,7 +192,10 @@ const Sidebar = React.memo(() => {
                   }
                   ${isCollapsed ? 'justify-center' : ''}
                 `}
-                onClick={() => setIsMobileOpen(false)} // Close mobile menu on navigation
+                onClick={(e) => {
+                  // Ensure the link navigation works properly
+                  setIsMobileOpen(false) // Close mobile menu on navigation
+                }}
               >
                 <item.icon className={`h-5 w-5 flex-shrink-0 ${
                   isActive ? 'text-white' : 'text-slate-500 group-hover:text-white'
@@ -203,7 +206,7 @@ const Sidebar = React.memo(() => {
                 
                 {/* Tooltip for collapsed state */}
                 {isCollapsed && (
-                  <div className="sidebar-tooltip">
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 border border-slate-700">
                     {item.name}
                   </div>
                 )}
