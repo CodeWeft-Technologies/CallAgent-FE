@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '../../contexts/AuthContext'
+import ResourceUsageMinutes from '../../components/ResourceUsageMinutes'
 
 // API URL from environment variable
 const API_URL = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'
@@ -445,6 +446,18 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Call Minutes Usage Card */}
+      <div className="space-y-4">
+        <div className="flex items-center space-x-3">
+          <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
+          <h2 className="text-2xl font-bold text-white">Resource Usage</h2>
+        </div>
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-purple-600/10 to-blue-600/10 rounded-2xl blur-xl"></div>
+          <ResourceUsageMinutes token={token} organizationId={user?.organization_id || null} />
         </div>
       </div>
 

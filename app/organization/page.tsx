@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { Shield } from 'lucide-react'
 import toast from 'react-hot-toast'
+import ResourceUsageMinutes from '../../components/ResourceUsageMinutes'
 
 
 const API_URL = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'
@@ -233,26 +234,35 @@ export default function OrganizationPage() {
 
                         {activeTab === 'resources' && (
                             <div className="bg-slate-800 rounded-lg p-4 sm:p-6">
-                                <h2 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6">Resource Limits</h2>
-                                {resourceLimits.length === 0 ? (
-                                    <div className="bg-slate-700 rounded-lg p-6 text-center">
-                                        <p className="text-slate-400">No resource limits configured.</p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-3 sm:space-y-4">
-                                        {resourceLimits.map((limit) => (
-                                            <div key={limit.id} className="bg-slate-700 rounded-lg p-4">
-                                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
-                                                    <div className="flex-1">
-                                                        <h3 className="text-white font-medium">{limit.resource_type}</h3>
-                                                        <p className="text-slate-400 text-sm">{limit.description}</p>
-                                                    </div>
-                                                    <div className="text-white font-medium">{limit.limit_value}</div>
-                                                </div>
+                                <h2 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6">Resource Usage</h2>
+                                <div className="space-y-6">
+                                    {/* Call Minutes Usage Card */}
+                                    <ResourceUsageMinutes token={token} organizationId={user?.organization_id || null} />
+                                    
+                                    {/* Resource Limits */}
+                                    <div>
+                                        <h3 className="text-lg font-medium text-white mb-4">Resource Limits</h3>
+                                        {resourceLimits.length === 0 ? (
+                                            <div className="bg-slate-700 rounded-lg p-6 text-center">
+                                                <p className="text-slate-400">No resource limits configured.</p>
                                             </div>
-                                        ))}
+                                        ) : (
+                                            <div className="space-y-3 sm:space-y-4">
+                                                {resourceLimits.map((limit) => (
+                                                    <div key={limit.id} className="bg-slate-700 rounded-lg p-4">
+                                                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
+                                                            <div className="flex-1">
+                                                                <h3 className="text-white font-medium">{limit.resource_type}</h3>
+                                                                <p className="text-slate-400 text-sm">{limit.description}</p>
+                                                            </div>
+                                                            <div className="text-white font-medium">{limit.limit_value}</div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
-                                )}
+                                </div>
                             </div>
                         )}
 
