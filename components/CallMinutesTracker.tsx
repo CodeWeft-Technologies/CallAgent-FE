@@ -37,10 +37,15 @@ const CallMinutesTracker = () => {
   // Fetch call minutes data
   useEffect(() => {
     const fetchMinutesData = async () => {
+      if (!user || !user.organization_id) {
+        setLoading(false);
+        return;
+      }
+      
       try {
         setLoading(true);
-        const response = await axios.get<MinutesData>(
-          `${process.env.NEXT_PUBLIC_API_URL}/call-minutes/organization/${(user as User).organization_id}`,
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/call-minutes/summary/${user.organization_id}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setMinutesData(response.data);

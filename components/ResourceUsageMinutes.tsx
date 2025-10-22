@@ -35,8 +35,9 @@ const ResourceUsageMinutes: React.FC<ResourceUsageMinutesProps> = ({ token, orga
     
     try {
       setLoading(true);
+      // Updated endpoint to match the backend route structure
       const response = await fetch(
-        `${API_URL}/api/call-minutes/organization/${organizationId}`,
+        `${API_URL}/call-minutes/summary/${organizationId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       

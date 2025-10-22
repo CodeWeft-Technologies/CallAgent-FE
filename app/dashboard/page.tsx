@@ -8,6 +8,7 @@ import {
 import Link from 'next/link'
 import { useAuth } from '../../contexts/AuthContext'
 import ResourceUsageMinutes from '../../components/ResourceUsageMinutes'
+import SuperAdminCallMinutes from '../../components/SuperAdminCallMinutes'
 
 // API URL from environment variable
 const API_URL = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'
@@ -455,10 +456,21 @@ export default function DashboardPage() {
           <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
           <h2 className="text-2xl font-bold text-white">Resource Usage</h2>
         </div>
-        <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-purple-600/10 to-blue-600/10 rounded-2xl blur-xl"></div>
-          <ResourceUsageMinutes token={token} organizationId={user?.organization_id || null} />
-        </div>
+        
+        {/* Show SuperAdminCallMinutes for super admins */}
+        {user?.role === 'super_admin' ? (
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-purple-600/10 to-blue-600/10 rounded-2xl blur-xl"></div>
+            <div className="relative bg-slate-900/80 backdrop-blur-sm rounded-3xl border border-slate-800/50 p-6">
+              <SuperAdminCallMinutes />
+            </div>
+          </div>
+        ) : (
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-purple-600/10 to-blue-600/10 rounded-2xl blur-xl"></div>
+            <ResourceUsageMinutes token={token} organizationId={user?.organization_id || null} />
+          </div>
+        )}
       </div>
 
       {/* Interest Analysis (if available) */}
