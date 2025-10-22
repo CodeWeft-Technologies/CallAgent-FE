@@ -5,7 +5,8 @@ import { useAuth } from '../../contexts/AuthContext'
 import { 
   Building2, Key, Settings, Users, Plus, Edit, Trash2, 
   Eye, EyeOff, Save, X, Check, AlertCircle, Search,
-  Shield, Database, Mic, MessageSquare, Volume2, LogOut
+  Shield, Database, Mic, MessageSquare, Volume2, LogOut,
+  Clock, Timer
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import APIKeyManager from '../../components/APIKeyManager'
@@ -193,6 +194,43 @@ export default function AdminDashboard() {
             </button>
           </div>
           <p className="text-slate-400">Manage organizations and their API key configurations</p>
+        </div>
+
+        {/* Admin Functions */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Call Minutes Management */}
+          <a href="/admin/call-minutes" className="bg-slate-800 hover:bg-slate-700 rounded-lg p-6 transition-colors cursor-pointer">
+            <div className="flex items-center mb-4">
+              <Timer className="w-12 h-12 text-blue-400 mr-4" />
+              <div>
+                <h3 className="text-xl font-semibold text-white">Call Minutes Management</h3>
+                <p className="text-slate-400 text-sm">Allocate and manage call minutes for organizations</p>
+              </div>
+            </div>
+            <div className="mt-2 text-blue-400 text-sm">Click to manage call minutes →</div>
+          </a>
+
+          {/* API Key Management */}
+          <div className="bg-slate-800 rounded-lg p-6">
+            <div className="flex items-center mb-4">
+              <Key className="w-12 h-12 text-purple-400 mr-4" />
+              <div>
+                <h3 className="text-xl font-semibold text-white">API Keys</h3>
+                <p className="text-slate-400 text-sm">Manage organization API credentials</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* User Management */}
+          <div className="bg-slate-800 rounded-lg p-6">
+            <div className="flex items-center mb-4">
+              <Users className="w-12 h-12 text-green-400 mr-4" />
+              <div>
+                <h3 className="text-xl font-semibold text-white">User Management</h3>
+                <p className="text-slate-400 text-sm">Manage users across all organizations</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Search and Stats */}

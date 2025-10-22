@@ -14,7 +14,8 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
-  Menu
+  Menu,
+  Clock
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -69,6 +70,7 @@ const Sidebar = React.memo(() => {
     // Add admin panel for super admin only
     if (user && user.role === 'super_admin' && user.is_super_admin) {
       nav.push({ name: 'Admin Panel', href: '/admin', icon: Shield })
+      nav.push({ name: 'Call Minutes', href: '/admin/call-minutes', icon: Clock })
     }
 
     return nav
