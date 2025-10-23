@@ -234,7 +234,7 @@ export default function AdminDashboard() {
 
   // Quick reset to zero
   const quickResetToZero = async (org: Organization) => {
-    if (!confirm(`Are you sure you want to reset ${org.name}'s minutes to 0? This action cannot be undone.`)) {
+    if (!confirm(`Are you sure you want to completely reset ${org.name}'s minutes to 0? This will clear both total allocation and usage history. This action cannot be undone.`)) {
       return
     }
 
@@ -255,7 +255,7 @@ export default function AdminDashboard() {
       })
 
       if (response.ok) {
-        toast.success(`Successfully reset ${org.name}'s minutes to 0`)
+        toast.success(`Successfully completed full reset for ${org.name} - all minutes cleared`)
         // Refresh data
         await fetchCallMinutesData(organizations)
       } else {
@@ -695,7 +695,7 @@ export default function AdminDashboard() {
                             quickResetToZero(org)
                           }}
                           className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-700 rounded-lg transition-colors"
-                          title="Quick Reset to Zero Minutes"
+                          title="Complete Reset - Clear All Minutes and Usage"
                         >
                           <X className="w-5 h-5" />
                         </button>
@@ -1015,7 +1015,9 @@ export default function AdminDashboard() {
                   <p className="text-xs text-slate-400 mt-2">
                     {minutesAllocation.allocation_type === 'add' 
                       ? 'Add the specified minutes to the current allocation'
-                      : 'Reset the available balance to exactly the specified amount'
+                      : minutesAllocation.minutes_to_allocate === 0 
+                        ? 'Complete reset: Clears both total allocation and usage history to zero'
+                        : 'Reset the available balance to exactly the specified amount'
                     }
                   </p>
                 </div>
