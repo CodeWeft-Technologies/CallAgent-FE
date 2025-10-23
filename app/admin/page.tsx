@@ -26,6 +26,17 @@ interface Organization {
     tts_provider?: string
     tts_api_key?: string
   }
+  call_minutes?: {
+    total_minutes_allocated: number
+    minutes_used: number
+    minutes_remaining: number
+    is_active: boolean
+  }
+}
+
+interface CallMinutesAllocation {
+  minutes_to_allocate: number
+  allocation_reason?: string
 }
 
 interface APIKeyConfig {
@@ -48,6 +59,16 @@ export default function AdminDashboard() {
   const [showAPIKeys, setShowAPIKeys] = useState<{[key: number]: boolean}>({})
   const [editingKeys, setEditingKeys] = useState<{[key: number]: boolean}>({})
   const [apiKeyConfigs, setApiKeyConfigs] = useState<{[key: number]: APIKeyConfig}>({})
+  
+  // Call minutes allocation state
+  const [showAllocateDialog, setShowAllocateDialog] = useState(false)
+  const [selectedOrgForMinutes, setSelectedOrgForMinutes] = useState<Organization | null>(null)
+  const [minutesAllocation, setMinutesAllocation] = useState<CallMinutesAllocation>({
+    minutes_to_allocate: 60,
+    allocation_reason: ''
+  })
+  const [organizationMinutes, setOrganizationMinutes] = useState<{[key: number]: any}>({})
+  const [loadingMinutes, setLoadingMinutes] = useState(false)
 
   // Handle logout
   const handleLogout = () => {
@@ -74,6 +95,9 @@ export default function AdminDashboard() {
       if (response.ok) {
         const data = await response.json()
         setOrganizations(data)
+        
+        // Fetch call minutes data for each organization
+        await fetchCallMinutesData(data)
       } else {
         toast.error('Failed to fetch organizations')
       }
@@ -82,6 +106,139 @@ export default function AdminDashboard() {
       toast.error('Error fetching organizations')
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Fetch call minutes data for all organizations
+  const fetchCallMinutesData = async (orgs: Organization[]) => {
+    try {
+      const minutesData: {[key: number]: any} = {}
+      
+      for (const org of orgs) {
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/call-minutes/organization/${org.id}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            minutesData[org.id] = data
+          } else {
+            // If no data exists, set defaults
+            minutesData[org.id] = {
+              total_minutes_allocated: 0,
+              minutes_used: 0,
+              minutes_remaining: 0,
+              is_active: false
+            }
+          }
+        } catch (error) {
+          console.error(`Error fetching minutes for org ${org.id}:`, error)
+          minutesData[org.id] = {
+            total_minutes_allocated: 0,
+            minutes_used: 0,
+            minutes_remaining: 0,
+            is_active: false
+          }
+        }
+      }
+      
+      setOrganizationMinutes(minutesData)
+    } catch (error) {
+      console.error('Error fetching call minutes data:', error)
+    }
+  }
+
+  // Open allocate minutes dialog
+  const openAllocateDialog = (org: Organization) => {
+    setSelectedOrgForMinutes(org)
+    setShowAllocateDialog(true)
+    setMinutesAllocation({
+      minutes_to_allocate: 60,
+      allocation_reason: ''
+    })
+  }
+
+  // Close allocate minutes dialog
+  const closeAllocateDialog = () => {
+    setShowAllocateDialog(false)
+    setSelectedOrgForMinutes(null)
+    setMinutesAllocation({
+      minutes_to_allocate: 60,
+      allocation_reason: ''
+    })
+  }
+
+  // Allocate minutes to organization
+  const allocateMinutes = async () => {
+    if (!selectedOrgForMinutes) return
+    
+    setLoadingMinutes(true)
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/call-minutes/allocate`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          organization_id: selectedOrgForMinutes.id,
+          minutes_to_allocate: minutesAllocation.minutes_to_allocate,
+          allocation_reason: minutesAllocation.allocation_reason
+        })
+      })
+
+      if (response.ok) {
+        toast.success(`Successfully allocated ${minutesAllocation.minutes_to_allocate} minutes to ${selectedOrgForMinutes.name}`)
+        closeAllocateDialog()
+        // Refresh data
+        await fetchCallMinutesData(organizations)
+      } else {
+        const errorData = await response.json()
+        toast.error(errorData.detail || 'Failed to allocate minutes')
+      }
+    } catch (error) {
+      console.error('Error allocating minutes:', error)
+      toast.error('Error allocating minutes')
+    } finally {
+      setLoadingMinutes(false)
+    }
+  }
+
+  // Toggle minutes active status
+  const toggleMinutesStatus = async (orgId: number, currentStatus: boolean) => {
+    try {
+      const endpoint = currentStatus 
+        ? `/call-minutes/organization/${orgId}/deactivate`
+        : `/call-minutes/organization/${orgId}/activate`
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        toast.success(`Minutes ${currentStatus ? 'deactivated' : 'activated'} successfully`)
+        // Update local state
+        setOrganizationMinutes(prev => ({
+          ...prev,
+          [orgId]: {
+            ...prev[orgId],
+            is_active: !currentStatus
+          }
+        }))
+      } else {
+        toast.error('Failed to update minutes status')
+      }
+    } catch (error) {
+      console.error('Error updating minutes status:', error)
+      toast.error('Error updating minutes status')
     }
   }
 
@@ -309,10 +466,79 @@ export default function AdminDashboard() {
                           <span>{org.user_count} users</span>
                           <span>Max: {org.max_users}</span>
                         </div>
+                        
+                        {/* Call Minutes Info */}
+                        {organizationMinutes[org.id] && (
+                          <div className="flex items-center space-x-4 text-sm mt-2">
+                            <div className="flex items-center space-x-2">
+                              <Clock className="w-4 h-4 text-blue-400" />
+                              <span className="text-slate-300">
+                                {organizationMinutes[org.id].minutes_remaining || 0} / {organizationMinutes[org.id].total_minutes_allocated || 0} mins
+                              </span>
+                            </div>
+                            <span className={`px-2 py-1 rounded-full text-xs ${
+                              organizationMinutes[org.id].is_active ? 'bg-green-600/20 text-green-400' : 'bg-red-600/20 text-red-400'
+                            }`}>
+                              {organizationMinutes[org.id].is_active ? 'Active' : 'Inactive'}
+                            </span>
+                            {organizationMinutes[org.id].total_minutes_allocated > 0 && (
+                              <div className="flex-1 max-w-32">
+                                <div className="w-full bg-slate-600 rounded-full h-2">
+                                  <div 
+                                    className={`h-2 rounded-full ${
+                                      (organizationMinutes[org.id].minutes_used / organizationMinutes[org.id].total_minutes_allocated * 100) >= 90 
+                                        ? 'bg-red-500' 
+                                        : (organizationMinutes[org.id].minutes_used / organizationMinutes[org.id].total_minutes_allocated * 100) >= 75 
+                                        ? 'bg-yellow-500' 
+                                        : 'bg-green-500'
+                                    }`}
+                                    style={{
+                                      width: `${Math.min((organizationMinutes[org.id].minutes_used / organizationMinutes[org.id].total_minutes_allocated * 100), 100)}%`
+                                    }}
+                                  ></div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                     
                     <div className="flex items-center space-x-2">
+                      {/* Call Minutes Allocation Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          openAllocateDialog(org)
+                        }}
+                        className="p-2 text-slate-400 hover:text-green-400 hover:bg-slate-700 rounded-lg transition-colors"
+                        title="Allocate Call Minutes"
+                      >
+                        <Timer className="w-5 h-5" />
+                      </button>
+                      
+                      {/* Toggle Minutes Status Button */}
+                      {organizationMinutes[org.id]?.total_minutes_allocated > 0 && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            toggleMinutesStatus(org.id, organizationMinutes[org.id].is_active)
+                          }}
+                          className={`p-2 hover:bg-slate-700 rounded-lg transition-colors ${
+                            organizationMinutes[org.id].is_active 
+                              ? 'text-green-400 hover:text-red-400' 
+                              : 'text-red-400 hover:text-green-400'
+                          }`}
+                          title={organizationMinutes[org.id].is_active ? "Deactivate Minutes" : "Activate Minutes"}
+                        >
+                          <Clock className="w-5 h-5" />
+                        </button>
+                      )}
+                      
                       <button
                         type="button"
                         onClick={(e) => {
@@ -531,6 +757,129 @@ export default function AdminDashboard() {
           )}
         </div>
       </div>
+      
+      {/* Call Minutes Allocation Dialog */}
+      {showAllocateDialog && selectedOrgForMinutes && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 rounded-lg shadow-xl w-full max-w-md">
+            <div className="flex items-center justify-between p-6 border-b border-slate-700">
+              <h2 className="text-xl font-semibold text-white flex items-center">
+                <Timer className="w-5 h-5 mr-2 text-green-400" />
+                Allocate Call Minutes
+              </h2>
+              <button
+                type="button"
+                onClick={closeAllocateDialog}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div>
+                <p className="text-slate-300 mb-4">
+                  Allocating minutes to: <span className="font-semibold text-white">{selectedOrgForMinutes.name}</span>
+                </p>
+                
+                {/* Current Allocation Display */}
+                {organizationMinutes[selectedOrgForMinutes.id] && (
+                  <div className="bg-slate-700 rounded-lg p-4 mb-4">
+                    <h4 className="text-white font-medium mb-2">Current Allocation</h4>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-slate-400">Total:</span>
+                        <span className="text-white ml-2">
+                          {organizationMinutes[selectedOrgForMinutes.id].total_minutes_allocated} mins
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400">Used:</span>
+                        <span className="text-white ml-2">
+                          {organizationMinutes[selectedOrgForMinutes.id].minutes_used} mins
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400">Remaining:</span>
+                        <span className="text-white ml-2">
+                          {organizationMinutes[selectedOrgForMinutes.id].minutes_remaining} mins
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400">Status:</span>
+                        <span className={`ml-2 ${organizationMinutes[selectedOrgForMinutes.id].is_active ? 'text-green-400' : 'text-red-400'}`}>
+                          {organizationMinutes[selectedOrgForMinutes.id].is_active ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Minutes to Allocate
+                  </label>
+                  <input
+                    type="number"
+                    className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={minutesAllocation.minutes_to_allocate}
+                    onChange={(e) => setMinutesAllocation(prev => ({
+                      ...prev,
+                      minutes_to_allocate: parseInt(e.target.value) || 0
+                    }))}
+                    min="1"
+                    placeholder="Enter minutes to allocate"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Allocation Reason (Optional)
+                  </label>
+                  <textarea
+                    className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={minutesAllocation.allocation_reason}
+                    onChange={(e) => setMinutesAllocation(prev => ({
+                      ...prev,
+                      allocation_reason: e.target.value
+                    }))}
+                    rows={3}
+                    placeholder="Add a note about this allocation..."
+                  />
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-3 pt-4 border-t border-slate-700">
+                <button
+                  type="button"
+                  onClick={closeAllocateDialog}
+                  className="px-4 py-2 border border-slate-600 rounded-lg text-slate-300 hover:bg-slate-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={allocateMinutes}
+                  disabled={loadingMinutes || minutesAllocation.minutes_to_allocate <= 0}
+                  className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {loadingMinutes ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Allocating...
+                    </>
+                  ) : (
+                    <>
+                      <Timer className="w-4 h-4 mr-2" />
+                      Allocate Minutes
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

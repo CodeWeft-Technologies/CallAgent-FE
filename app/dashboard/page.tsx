@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { 
   Phone, Users, TrendingUp, PhoneCall, 
   CheckCircle, AlertCircle, User, Calendar,
-  Settings, ArrowRight, RefreshCw, Clock
+  Settings, ArrowRight, RefreshCw
 } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '../../contexts/AuthContext'
@@ -165,16 +165,6 @@ export default function DashboardPage() {
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-300`} />
                 <span className="text-sm font-medium">Refresh Data</span>
               </button>
-              
-              {/* Call Minutes button for Super Admin */}
-              {user && (user.role === 'super_admin' || user.is_super_admin) && (
-                <Link href="/admin/call-minutes">
-                  <button className="group flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-purple-700 to-purple-600 hover:from-purple-600 hover:to-purple-500 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
-                    <Clock className="w-4 h-4" />
-                    <span className="text-sm font-medium">Call Minutes</span>
-                  </button>
-                </Link>
-              )}
               
               <div className="flex items-center space-x-3 px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
                 <div className="relative">

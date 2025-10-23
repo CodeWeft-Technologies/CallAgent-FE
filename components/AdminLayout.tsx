@@ -26,8 +26,7 @@ import {
   Settings as SettingsIcon,
   Phone as PhoneIcon,
   Event as EventIcon,
-  Logout as LogoutIcon,
-  Timer as TimerIcon
+  Logout as LogoutIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import Link from 'next/link';
@@ -68,7 +67,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     { text: 'Calls', icon: <PhoneIcon />, href: '/calls' },
     { text: 'Calendar', icon: <EventIcon />, href: '/calendar' },
     { text: 'Users', icon: <PersonIcon />, href: '/admin/users' },
-    { text: 'Call Minutes', icon: <TimerIcon />, href: '/admin/call-minutes' },
     { text: 'Settings', icon: <SettingsIcon />, href: '/admin/settings' },
   ];
 
