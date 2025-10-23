@@ -68,6 +68,10 @@ export default function AdminDashboard() {
     allocation_reason: ''
   })
   const [organizationMinutes, setOrganizationMinutes] = useState<{[key: number]: any}>({})
+  
+  // Real-time polling state
+  const [isPollingEnabled, setIsPollingEnabled] = useState(true)
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
   const [loadingMinutes, setLoadingMinutes] = useState(false)
 
   // Handle logout
@@ -248,6 +252,32 @@ export default function AdminDashboard() {
     }
   }, [token, user])
 
+  // Real-time polling for call minutes updates
+  useEffect(() => {
+    if (!isPollingEnabled || !token || !(user?.role === 'super_admin' || user?.is_super_admin)) {
+      return
+    }
+
+    const startPolling = () => {
+      const interval = setInterval(async () => {
+        if (organizations.length > 0) {
+          await fetchCallMinutesData(organizations)
+        }
+      }, 30000) // Poll every 30 seconds
+      
+      setPollingInterval(interval)
+    }
+
+    startPolling()
+
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval)
+        setPollingInterval(null)
+      }
+    }
+  }, [token, user, organizations, isPollingEnabled])
+
   // Toggle API key visibility
   const toggleAPIKeyVisibility = (orgId: number) => {
     setShowAPIKeys(prev => ({
@@ -351,6 +381,37 @@ export default function AdminDashboard() {
             </button>
           </div>
           <p className="text-slate-400">Manage organizations and their API key configurations</p>
+        </div>
+
+        {/* Real-time Polling Controls */}
+        <div className="bg-slate-800 rounded-lg p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Clock className="w-5 h-5 text-blue-400" />
+              <span className="text-white font-medium">Real-time Updates</span>
+              <span className="text-slate-400 text-sm">
+                Auto-refresh call minutes every 30 seconds
+              </span>
+            </div>
+            <div className="flex items-center space-x-3">
+              {isPollingEnabled && (
+                <div className="flex items-center space-x-1 text-green-400 text-sm">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span>Live</span>
+                </div>
+              )}
+              <button
+                onClick={() => setIsPollingEnabled(!isPollingEnabled)}
+                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                  isPollingEnabled 
+                    ? 'bg-green-600 hover:bg-green-700 text-white' 
+                    : 'bg-slate-600 hover:bg-slate-500 text-slate-300'
+                }`}
+              >
+                {isPollingEnabled ? 'Enabled' : 'Disabled'}
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Admin Functions */}

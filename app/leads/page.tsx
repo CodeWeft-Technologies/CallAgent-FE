@@ -9,6 +9,8 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../contexts/AuthContext'
+import { useCallMinutes } from '../../hooks/useCallMinutes'
+import MinutesExhaustedModal from '../../components/MinutesExhaustedModal'
 
 interface Lead {
   id: string
@@ -39,6 +41,10 @@ const CONFIG_API_BASE = process.env.NEXT_PUBLIC_CONFIG_API_URL || 'http://localh
 
 export default function LeadsPage() {
   const { token } = useAuth()
+  
+  // Call minutes management hooks
+  const { checkMinutesAvailability, consumeMinutes, isChecking } = useCallMinutes()
+  const [showMinutesModal, setShowMinutesModal] = useState(false)
   
   const [leads, setLeads] = useState<Lead[]>([])
   const [stats, setStats] = useState<LeadStats>({
@@ -316,6 +322,15 @@ export default function LeadsPage() {
     if (!token) return
     
     try {
+      // Check minutes availability before initiating call (estimate 3 minutes per call)
+      const availability = await checkMinutesAvailability(3)
+      
+      if (!availability.available) {
+        console.log('Minutes unavailable:', availability.message)
+        setShowMinutesModal(true)
+        return
+      }
+      
       // Ensure we have a valid lead ID
       const leadId = lead._id || lead.id
       if (!leadId) {
@@ -356,7 +371,7 @@ export default function LeadsPage() {
       toast.error('Error calling lead')
       console.error('Error calling lead:', error)
     }
-  }, [retryConfig.max_retries, loadStats, loadLeads, token])
+  }, [retryConfig.max_retries, loadStats, loadLeads, token, checkMinutesAvailability])
 
   const checkCallCompletion = async (leadId: string, callInitiatedTime: number): Promise<boolean> => {
     try {
@@ -426,8 +441,18 @@ export default function LeadsPage() {
   }
 
   const handleCallAll = useCallback(async () => {
+    // Apply the same filtering logic as filteredLeads
+    const currentFilteredLeads = leads.filter(lead => {
+      const matchesSearch = (lead.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           (lead.phone || '').includes(searchTerm) ||
+                           (lead.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           (lead.company || '').toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesStatus = statusFilter === 'all' || lead.status === statusFilter
+      return matchesSearch && matchesStatus
+    })
+
     // Filter for new leads only (not called, contacted, or converted)
-    const newLeads = filteredLeads.filter(lead => lead.status === 'new')
+    const newLeads = currentFilteredLeads.filter(lead => lead.status === 'new')
     
     if (newLeads.length === 0) {
       toast.error('No new leads to call. All leads have already been contacted.')
@@ -436,6 +461,22 @@ export default function LeadsPage() {
 
     if (isCallingAll) {
       toast.error('Call All is already in progress')
+      return
+    }
+
+    try {
+      // Check minutes availability before starting sequential calls (estimate 3 minutes per lead)
+      const estimatedMinutes = newLeads.length * 3
+      const availability = await checkMinutesAvailability(estimatedMinutes)
+      
+      if (!availability.available) {
+        console.log('Insufficient minutes for sequential calling:', availability.message)
+        setShowMinutesModal(true)
+        return
+      }
+    } catch (error) {
+      console.error('Error checking minutes availability:', error)
+      toast.error('Unable to verify minute availability. Please try again.')
       return
     }
 
@@ -484,17 +525,17 @@ export default function LeadsPage() {
       } else {
         console.error(`❌ Failed to start sequential calling: ${data.error}`)
         toast.error(`Failed to start sequential calling: ${data.error}`)
-        setCallAllProgress(prev => ({ ...prev, failedCalls: filteredLeads.length }))
+        setCallAllProgress(prev => ({ ...prev, failedCalls: newLeads.length }))
       }
       
     } catch (error) {
       console.error('Error starting sequential calling:', error)
       toast.error('Error starting sequential calling')
-      setCallAllProgress(prev => ({ ...prev, failedCalls: filteredLeads.length }))
+      setCallAllProgress(prev => ({ ...prev, failedCalls: newLeads.length }))
     } finally {
       // Note: Don't set isCallingAll to false here, let pollCallAllProgress handle it
     }
-  }, [leads.length, isCallingAll, statusFilter, searchTerm, token])
+  }, [leads.length, isCallingAll, statusFilter, searchTerm, token, checkMinutesAvailability])
 
   const pollCallAllProgress = useCallback(async () => {
     if (!token) return
@@ -1453,6 +1494,14 @@ export default function LeadsPage() {
           </div>
         </div>
       )}
+
+      {/* Minutes Exhausted Modal */}
+      <MinutesExhaustedModal 
+        isOpen={showMinutesModal}
+        onClose={() => setShowMinutesModal(false)}
+        minutesRemaining={0}
+        message="Your organization has exhausted all allocated call minutes. Contact our sales team to purchase additional minutes."
+      />
     </div>
   )
 }
