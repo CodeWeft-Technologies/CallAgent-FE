@@ -116,6 +116,7 @@ export default function AdminDashboard() {
   // Fetch call minutes data for all organizations
   const fetchCallMinutesData = async (orgs: Organization[]) => {
     try {
+      console.log('🔄 [ADMIN] Fetching call minutes data for', orgs.length, 'organizations')
       const minutesData: {[key: number]: any} = {}
       
       for (const org of orgs) {
@@ -130,6 +131,7 @@ export default function AdminDashboard() {
           if (response.ok) {
             const data = await response.json()
             minutesData[org.id] = data
+            console.log(`✅ [ADMIN] Org ${org.id} minutes:`, data)
           } else {
             // If no data exists, set defaults
             minutesData[org.id] = {
@@ -138,6 +140,7 @@ export default function AdminDashboard() {
               minutes_remaining: 0,
               is_active: false
             }
+            console.log(`⚠️ [ADMIN] No minutes data for org ${org.id}, using defaults`)
           }
         } catch (error) {
           console.error(`Error fetching minutes for org ${org.id}:`, error)
@@ -150,6 +153,7 @@ export default function AdminDashboard() {
         }
       }
       
+      console.log('🔄 [ADMIN] Setting organization minutes:', minutesData)
       setOrganizationMinutes(minutesData)
     } catch (error) {
       console.error('Error fetching call minutes data:', error)
@@ -263,7 +267,7 @@ export default function AdminDashboard() {
         if (organizations.length > 0) {
           await fetchCallMinutesData(organizations)
         }
-      }, 30000) // Poll every 30 seconds
+      }, 5000) // Poll every 5 seconds for testing (was 30000)
       
       setPollingInterval(interval)
     }
@@ -390,7 +394,7 @@ export default function AdminDashboard() {
               <Clock className="w-5 h-5 text-blue-400" />
               <span className="text-white font-medium">Real-time Updates</span>
               <span className="text-slate-400 text-sm">
-                Auto-refresh call minutes every 30 seconds
+                Auto-refresh call minutes every 5 seconds
               </span>
             </div>
             <div className="flex items-center space-x-3">
@@ -400,6 +404,17 @@ export default function AdminDashboard() {
                   <span>Live</span>
                 </div>
               )}
+              <button
+                onClick={async () => {
+                  if (organizations.length > 0) {
+                    await fetchCallMinutesData(organizations)
+                    console.log('Manual refresh completed')
+                  }
+                }}
+                className="px-3 py-1 rounded text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+              >
+                Refresh Now
+              </button>
               <button
                 onClick={() => setIsPollingEnabled(!isPollingEnabled)}
                 className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
