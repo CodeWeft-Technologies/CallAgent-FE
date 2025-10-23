@@ -122,6 +122,39 @@ const SuperAdminCallMinutes = () => {
     }
   };
 
+  // Handle quick reset to zero
+  const handleResetToZero = async (org: Organization) => {
+    if (!window.confirm(`Are you sure you want to reset ${org.name}'s minutes to 0? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await axios.post(
+        `${API_URL}/call-minutes/allocate`,
+        {
+          organization_id: org.id,
+          minutes_to_allocate: 0,
+          allocation_reason: `Quick reset to zero minutes by super admin`,
+          allocation_type: 'reset'
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Refresh the data
+      const minutesResponse = await axios.get(
+        `${API_URL}/call-minutes/summary`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      setMinutesSummary(minutesResponse.data);
+      
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.detail || 'Failed to reset minutes to zero';
+      setError(errorMessage);
+      console.error('Error resetting minutes to zero:', err);
+    }
+  };
+
   // Handle activation/deactivation of call minutes
   const handleToggleMinutesStatus = async (orgId: number, currentStatus: boolean) => {
     try {
@@ -243,41 +276,52 @@ const SuperAdminCallMinutes = () => {
                       )}
                     </TableCell>
                     <TableCell align="right">
-                      <Button 
-                        variant="outlined" 
-                        size="small" 
-                        onClick={() => {
-                          setAllocationType('add');
-                          handleOpenAllocateDialog(org);
-                        }}
-                        sx={{ mr: 1 }}
-                      >
-                        Add Minutes
-                      </Button>
-                      
-                      <Button 
-                        variant="contained" 
-                        size="small" 
-                        color="warning"
-                        onClick={() => {
-                          setAllocationType('reset');
-                          handleOpenAllocateDialog(org);
-                        }}
-                        sx={{ mr: 1, fontWeight: 'bold' }}
-                      >
-                        Reset Minutes
-                      </Button>
-                      
-                      {minutesData.total_minutes_allocated > 0 && (
+                      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                         <Button 
                           variant="outlined" 
                           size="small" 
-                          color={minutesData.is_active ? "error" : "success"}
-                          onClick={() => handleToggleMinutesStatus(org.id, minutesData.is_active)}
+                          onClick={() => {
+                            setAllocationType('add');
+                            handleOpenAllocateDialog(org);
+                          }}
                         >
-                          {minutesData.is_active ? "Deactivate" : "Activate"}
+                          Add Minutes
                         </Button>
-                      )}
+                        
+                        <Button 
+                          variant="contained" 
+                          size="small" 
+                          color="warning"
+                          onClick={() => {
+                            setAllocationType('reset');
+                            handleOpenAllocateDialog(org);
+                          }}
+                          sx={{ fontWeight: 'bold' }}
+                        >
+                          Reset Minutes
+                        </Button>
+                        
+                        <Button 
+                          variant="outlined" 
+                          size="small" 
+                          color="error"
+                          onClick={() => handleResetToZero(org)}
+                          title="Quickly reset minutes to zero"
+                        >
+                          Reset to 0
+                        </Button>
+                        
+                        {minutesData.total_minutes_allocated > 0 && (
+                          <Button 
+                            variant="outlined" 
+                            size="small" 
+                            color={minutesData.is_active ? "error" : "success"}
+                            onClick={() => handleToggleMinutesStatus(org.id, minutesData.is_active)}
+                          >
+                            {minutesData.is_active ? "Deactivate" : "Activate"}
+                          </Button>
+                        )}
+                      </Box>
                     </TableCell>
                   </TableRow>
                 );
