@@ -11,6 +11,8 @@ import toast from 'react-hot-toast'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCallMinutes } from '../../hooks/useCallMinutes'
 import MinutesExhaustedModal from '../../components/MinutesExhaustedModal'
+import NegativeBalanceWarningModal from '../../components/NegativeBalanceWarningModal'
+import CreditLimitExceededModal from '../../components/CreditLimitExceededModal'
 
 interface Lead {
   id: string
@@ -45,6 +47,19 @@ export default function LeadsPage() {
   // Call minutes management hooks
   const { checkMinutesAvailability, consumeMinutes, isChecking } = useCallMinutes()
   const [showMinutesModal, setShowMinutesModal] = useState(false)
+  const [showNegativeBalanceModal, setShowNegativeBalanceModal] = useState(false)
+  const [showCreditLimitModal, setShowCreditLimitModal] = useState(false)
+  const [negativeBalanceData, setNegativeBalanceData] = useState({
+    minutesRemaining: 0,
+    extraMinutesDeficit: 0,
+    message: '',
+    pendingCall: null as (() => void) | null
+  })
+  const [creditLimitData, setCreditLimitData] = useState({
+    minutesRemaining: 0,
+    extraMinutesDeficit: 0,
+    message: ''
+  })
   
   const [leads, setLeads] = useState<Lead[]>([])
   const [stats, setStats] = useState<LeadStats>({
@@ -325,12 +340,47 @@ export default function LeadsPage() {
       // Check minutes availability before initiating call (estimate 3 minutes per call)
       const availability = await checkMinutesAvailability(3)
       
+      // Handle different warning types
+      if (availability.warning_type === 'credit_limit_exceeded') {
+        // Hard block: Credit limit exceeded
+        setCreditLimitData({
+          minutesRemaining: availability.minutes_remaining,
+          extraMinutesDeficit: availability.extra_minutes_deficit || 0,
+          message: availability.message
+        })
+        setShowCreditLimitModal(true)
+        return
+      }
+      
+      if (availability.warning_type === 'negative_balance') {
+        // Show warning modal for negative balance but allow proceeding
+        setNegativeBalanceData({
+          minutesRemaining: availability.minutes_remaining,
+          extraMinutesDeficit: availability.extra_minutes_deficit || 0,
+          message: availability.message,
+          pendingCall: () => proceedWithCall(lead, maxRetries)
+        })
+        setShowNegativeBalanceModal(true)
+        return
+      }
+      
       if (!availability.available) {
         console.log('Minutes unavailable:', availability.message)
         setShowMinutesModal(true)
         return
       }
       
+      // Proceed with normal call
+      await proceedWithCall(lead, maxRetries)
+      
+    } catch (error) {
+      console.error('Error checking minutes or calling lead:', error)
+      toast.error('Unable to verify minute availability. Please try again.')
+    }
+  }, [token, checkMinutesAvailability, retryConfig.max_retries])
+
+  const proceedWithCall = useCallback(async (lead: Lead, maxRetries: number) => {
+    try {
       // Ensure we have a valid lead ID
       const leadId = lead._id || lead.id
       if (!leadId) {
@@ -371,7 +421,7 @@ export default function LeadsPage() {
       toast.error('Error calling lead')
       console.error('Error calling lead:', error)
     }
-  }, [retryConfig.max_retries, loadStats, loadLeads, token, checkMinutesAvailability])
+  }, [token, loadStats, loadLeads])
 
   const checkCallCompletion = async (leadId: string, callInitiatedTime: number): Promise<boolean> => {
     try {
@@ -469,17 +519,47 @@ export default function LeadsPage() {
       const estimatedMinutes = newLeads.length * 3
       const availability = await checkMinutesAvailability(estimatedMinutes)
       
+      // Handle different warning types  
+      if (availability.warning_type === 'credit_limit_exceeded') {
+        // Hard block: Credit limit exceeded
+        setCreditLimitData({
+          minutesRemaining: availability.minutes_remaining,
+          extraMinutesDeficit: availability.extra_minutes_deficit || 0,
+          message: availability.message
+        })
+        setShowCreditLimitModal(true)
+        return
+      }
+      
+      if (availability.warning_type === 'negative_balance') {
+        // Show warning modal for negative balance but allow proceeding
+        setNegativeBalanceData({
+          minutesRemaining: availability.minutes_remaining,
+          extraMinutesDeficit: availability.extra_minutes_deficit || 0,
+          message: availability.message,
+          pendingCall: () => proceedWithCallAll(newLeads)
+        })
+        setShowNegativeBalanceModal(true)
+        return
+      }
+      
       if (!availability.available) {
         console.log('Insufficient minutes for sequential calling:', availability.message)
         setShowMinutesModal(true)
         return
       }
+      
+      // Proceed with normal call all
+      await proceedWithCallAll(newLeads)
+      
     } catch (error) {
       console.error('Error checking minutes availability:', error)
       toast.error('Unable to verify minute availability. Please try again.')
       return
     }
+  }, [leads, searchTerm, statusFilter, isCallingAll, checkMinutesAvailability])
 
+  const proceedWithCallAll = useCallback(async (newLeads: Lead[]) => {
     setIsCallingAll(true)
     setIsPaused(false)
     setShowCallModal(true)
@@ -535,7 +615,7 @@ export default function LeadsPage() {
     } finally {
       // Note: Don't set isCallingAll to false here, let pollCallAllProgress handle it
     }
-  }, [leads.length, isCallingAll, statusFilter, searchTerm, token, checkMinutesAvailability])
+  }, [token])
 
   const pollCallAllProgress = useCallback(async () => {
     if (!token) return
@@ -1501,6 +1581,51 @@ export default function LeadsPage() {
         onClose={() => setShowMinutesModal(false)}
         minutesRemaining={0}
         message="Your organization has exhausted all allocated call minutes. Contact our sales team to purchase additional minutes."
+      />
+
+      {/* Negative Balance Warning Modal */}
+      <NegativeBalanceWarningModal
+        isOpen={showNegativeBalanceModal}
+        onClose={() => {
+          setShowNegativeBalanceModal(false)
+          setNegativeBalanceData({
+            minutesRemaining: 0,
+            extraMinutesDeficit: 0,
+            message: '',
+            pendingCall: null
+          })
+        }}
+        onProceed={() => {
+          setShowNegativeBalanceModal(false)
+          if (negativeBalanceData.pendingCall) {
+            negativeBalanceData.pendingCall()
+          }
+          setNegativeBalanceData({
+            minutesRemaining: 0,
+            extraMinutesDeficit: 0,
+            message: '',
+            pendingCall: null
+          })
+        }}
+        minutesRemaining={negativeBalanceData.minutesRemaining}
+        extraMinutesDeficit={negativeBalanceData.extraMinutesDeficit}
+        message={negativeBalanceData.message}
+      />
+
+      {/* Credit Limit Exceeded Modal */}
+      <CreditLimitExceededModal
+        isOpen={showCreditLimitModal}
+        onClose={() => {
+          setShowCreditLimitModal(false)
+          setCreditLimitData({
+            minutesRemaining: 0,
+            extraMinutesDeficit: 0,
+            message: ''
+          })
+        }}
+        minutesRemaining={creditLimitData.minutesRemaining}
+        extraMinutesDeficit={creditLimitData.extraMinutesDeficit}
+        message={creditLimitData.message}
       />
     </div>
   )

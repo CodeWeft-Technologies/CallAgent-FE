@@ -8,6 +8,9 @@ interface MinutesAvailability {
   minutes_remaining: number;
   message: string;
   organization_id: number;
+  warning_type?: 'negative_balance' | 'low_balance' | 'normal' | 'no_allocation' | 'credit_limit_exceeded';
+  extra_minutes_deficit?: number;
+  credit_limit_reached?: boolean;
 }
 
 interface UseCallMinutesReturn {
