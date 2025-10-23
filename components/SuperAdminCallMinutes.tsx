@@ -246,10 +246,26 @@ const SuperAdminCallMinutes = () => {
                       <Button 
                         variant="outlined" 
                         size="small" 
-                        onClick={() => handleOpenAllocateDialog(org)}
+                        onClick={() => {
+                          setAllocationType('add');
+                          handleOpenAllocateDialog(org);
+                        }}
                         sx={{ mr: 1 }}
                       >
                         Add Minutes
+                      </Button>
+                      
+                      <Button 
+                        variant="contained" 
+                        size="small" 
+                        color="warning"
+                        onClick={() => {
+                          setAllocationType('reset');
+                          handleOpenAllocateDialog(org);
+                        }}
+                        sx={{ mr: 1, fontWeight: 'bold' }}
+                      >
+                        Reset Minutes
                       </Button>
                       
                       {minutesData.total_minutes_allocated > 0 && (
