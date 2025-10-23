@@ -432,7 +432,7 @@ export default function AdminDashboard() {
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:ring-red-500 focus:outline-none font-medium"
             >
               <LogOut className="w-4 h-4" />
               <span>Logout</span>
@@ -451,11 +451,11 @@ export default function AdminDashboard() {
                 Auto-refresh call minutes every 5 seconds
               </span>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-4">
               {isPollingEnabled && (
-                <div className="flex items-center space-x-1 text-green-400 text-sm">
+                <div className="flex items-center space-x-2 text-green-400 text-sm font-medium">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span>Live</span>
+                  <span>Live Updates</span>
                 </div>
               )}
               <button
@@ -465,38 +465,28 @@ export default function AdminDashboard() {
                     console.log('Manual refresh completed')
                   }
                 }}
-                className="px-3 py-1 rounded text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
               >
-                Refresh Now
+                <Clock className="w-4 h-4" />
+                <span>Refresh Now</span>
               </button>
               <button
                 onClick={() => setIsPollingEnabled(!isPollingEnabled)}
-                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:outline-none font-medium ${
                   isPollingEnabled 
-                    ? 'bg-green-600 hover:bg-green-700 text-white' 
-                    : 'bg-slate-600 hover:bg-slate-500 text-slate-300'
+                    ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white focus:ring-green-500' 
+                    : 'bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-slate-300 focus:ring-slate-500'
                 }`}
               >
-                {isPollingEnabled ? 'Enabled' : 'Disabled'}
+                <div className={`w-2 h-2 rounded-full ${isPollingEnabled ? 'bg-white' : 'bg-slate-400'}`}></div>
+                <span>{isPollingEnabled ? 'Auto-Update On' : 'Auto-Update Off'}</span>
               </button>
             </div>
           </div>
         </div>
 
         {/* Admin Functions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {/* Call Minutes Management */}
-          <a href="/admin/call-minutes" className="bg-slate-800 hover:bg-slate-700 rounded-lg p-6 transition-colors cursor-pointer">
-            <div className="flex items-center mb-4">
-              <Timer className="w-12 h-12 text-blue-400 mr-4" />
-              <div>
-                <h3 className="text-xl font-semibold text-white">Call Minutes Management</h3>
-                <p className="text-slate-400 text-sm">Allocate and manage call minutes for organizations</p>
-              </div>
-            </div>
-            <div className="mt-2 text-blue-400 text-sm">Click to manage call minutes →</div>
-          </a>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* API Key Management */}
           <div className="bg-slate-800 rounded-lg p-6">
             <div className="flex items-center mb-4">
@@ -634,7 +624,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-3">
                       {/* Call Minutes Allocation Button */}
                       <button
                         type="button"
@@ -643,10 +633,11 @@ export default function AdminDashboard() {
                           e.stopPropagation()
                           openAllocateDialog(org)
                         }}
-                        className="p-2 text-slate-400 hover:text-green-400 hover:bg-slate-700 rounded-lg transition-colors"
+                        className="flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         title="Allocate Call Minutes"
                       >
-                        <Timer className="w-5 h-5" />
+                        <Timer className="w-4 h-4" />
+                        <span className="text-sm font-medium">Allocate</span>
                       </button>
                       
                       {/* Toggle Minutes Status Button */}
@@ -658,14 +649,15 @@ export default function AdminDashboard() {
                             e.stopPropagation()
                             toggleMinutesStatus(org.id, organizationMinutes[org.id].is_active)
                           }}
-                          className={`p-2 hover:bg-slate-700 rounded-lg transition-colors ${
+                          className={`flex items-center space-x-2 px-3 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:outline-none text-sm font-medium ${
                             organizationMinutes[org.id].is_active 
-                              ? 'text-green-400 hover:text-red-400' 
-                              : 'text-red-400 hover:text-green-400'
+                              ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white focus:ring-green-500' 
+                              : 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white focus:ring-red-500'
                           }`}
                           title={organizationMinutes[org.id].is_active ? "Deactivate Minutes" : "Activate Minutes"}
                         >
-                          <Clock className="w-5 h-5" />
+                          <Clock className="w-4 h-4" />
+                          <span>{organizationMinutes[org.id].is_active ? 'Active' : 'Inactive'}</span>
                         </button>
                       )}
                       
@@ -678,10 +670,11 @@ export default function AdminDashboard() {
                             e.stopPropagation()
                             openResetDialog(org)
                           }}
-                          className="p-2 text-slate-400 hover:text-yellow-400 hover:bg-slate-700 rounded-lg transition-colors"
+                          className="flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
                           title="Reset Minutes to Specific Amount"
                         >
-                          <Settings className="w-5 h-5" />
+                          <Settings className="w-4 h-4" />
+                          <span className="text-sm font-medium">Reset</span>
                         </button>
                       )}
                       
@@ -694,10 +687,11 @@ export default function AdminDashboard() {
                             e.stopPropagation()
                             quickResetToZero(org)
                           }}
-                          className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-700 rounded-lg transition-colors"
+                          className="flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:ring-red-500 focus:outline-none"
                           title="Complete Reset - Clear All Minutes and Usage"
                         >
-                          <X className="w-5 h-5" />
+                          <X className="w-4 h-4" />
+                          <span className="text-sm font-medium">Clear All</span>
                         </button>
                       )}
                       
@@ -708,10 +702,15 @@ export default function AdminDashboard() {
                           e.stopPropagation()
                           toggleAPIKeyVisibility(org.id)
                         }}
-                        className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:outline-none font-medium ${
+                          showAPIKeys[org.id] 
+                            ? 'bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white focus:ring-orange-500' 
+                            : 'bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-slate-300 focus:ring-slate-500'
+                        }`}
                         title="Toggle API Keys"
                       >
-                        {showAPIKeys[org.id] ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        {showAPIKeys[org.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        <span className="text-sm">{showAPIKeys[org.id] ? 'Hide' : 'Show'}</span>
                       </button>
                       
                       {!editingKeys[org.id] ? (
@@ -722,13 +721,14 @@ export default function AdminDashboard() {
                             e.stopPropagation()
                             startEditingKeys(org)
                           }}
-                          className="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-700 rounded-lg transition-colors"
+                          className="flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
                           title="Edit API Keys"
                         >
-                          <Edit className="w-5 h-5" />
+                          <Edit className="w-4 h-4" />
+                          <span className="text-sm">Edit</span>
                         </button>
                       ) : (
-                        <div className="flex space-x-1">
+                        <div className="flex space-x-2">
                           <button
                             type="button"
                             onClick={(e) => {
@@ -736,10 +736,11 @@ export default function AdminDashboard() {
                               e.stopPropagation()
                               saveAPIKeys(org.id)
                             }}
-                            className="p-2 text-green-400 hover:bg-slate-700 rounded-lg transition-colors"
+                            className="flex items-center space-x-1 px-3 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:ring-green-500 focus:outline-none font-medium"
                             title="Save Changes"
                           >
-                            <Check className="w-5 h-5" />
+                            <Check className="w-4 h-4" />
+                            <span className="text-sm">Save</span>
                           </button>
                           <button
                             type="button"
@@ -748,10 +749,11 @@ export default function AdminDashboard() {
                               e.stopPropagation()
                               cancelEditing(org.id)
                             }}
-                            className="p-2 text-red-400 hover:bg-slate-700 rounded-lg transition-colors"
+                            className="flex items-center space-x-1 px-3 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:ring-red-500 focus:outline-none font-medium"
                             title="Cancel"
                           >
-                            <X className="w-5 h-5" />
+                            <X className="w-4 h-4" />
+                            <span className="text-sm">Cancel</span>
                           </button>
                         </div>
                       )}
@@ -1056,24 +1058,25 @@ export default function AdminDashboard() {
                 </div>
               </div>
               
-              <div className="flex justify-end space-x-3 pt-4 border-t border-slate-700">
+              <div className="flex justify-end space-x-4 pt-4 border-t border-slate-700">
                 <button
                   type="button"
                   onClick={closeAllocateDialog}
-                  className="px-4 py-2 border border-slate-600 rounded-lg text-slate-300 hover:bg-slate-700 transition-colors"
+                  className="flex items-center px-6 py-3 border-2 border-slate-600 rounded-lg text-slate-300 hover:bg-slate-700 hover:border-slate-500 transition-all duration-200 font-medium focus:ring-2 focus:ring-slate-500 focus:outline-none"
                 >
+                  <X className="w-4 h-4 mr-2" />
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={allocateMinutes}
                   disabled={loadingMinutes || minutesAllocation.minutes_to_allocate <= 0}
-                  className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex items-center px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:ring-green-500 focus:outline-none font-medium"
                 >
                   {loadingMinutes ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Allocating...
+                      Processing...
                     </>
                   ) : (
                     <>
