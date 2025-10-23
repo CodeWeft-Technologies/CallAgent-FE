@@ -37,6 +37,7 @@ interface Organization {
 interface CallMinutesAllocation {
   minutes_to_allocate: number
   allocation_reason?: string
+  allocation_type?: 'add' | 'reset'
 }
 
 interface APIKeyConfig {
@@ -65,7 +66,8 @@ export default function AdminDashboard() {
   const [selectedOrgForMinutes, setSelectedOrgForMinutes] = useState<Organization | null>(null)
   const [minutesAllocation, setMinutesAllocation] = useState<CallMinutesAllocation>({
     minutes_to_allocate: 60,
-    allocation_reason: ''
+    allocation_reason: '',
+    allocation_type: 'add'
   })
   const [organizationMinutes, setOrganizationMinutes] = useState<{[key: number]: any}>({})
   
@@ -166,7 +168,19 @@ export default function AdminDashboard() {
     setShowAllocateDialog(true)
     setMinutesAllocation({
       minutes_to_allocate: 60,
-      allocation_reason: ''
+      allocation_reason: '',
+      allocation_type: 'add'
+    })
+  }
+
+  // Open reset dialog
+  const openResetDialog = (org: Organization) => {
+    setSelectedOrgForMinutes(org)
+    setShowAllocateDialog(true)
+    setMinutesAllocation({
+      minutes_to_allocate: 0,
+      allocation_reason: '',
+      allocation_type: 'reset'
     })
   }
 
@@ -176,7 +190,8 @@ export default function AdminDashboard() {
     setSelectedOrgForMinutes(null)
     setMinutesAllocation({
       minutes_to_allocate: 60,
-      allocation_reason: ''
+      allocation_reason: '',
+      allocation_type: 'add'
     })
   }
 
@@ -195,7 +210,8 @@ export default function AdminDashboard() {
         body: JSON.stringify({
           organization_id: selectedOrgForMinutes.id,
           minutes_to_allocate: minutesAllocation.minutes_to_allocate,
-          allocation_reason: minutesAllocation.allocation_reason
+          allocation_reason: minutesAllocation.allocation_reason,
+          allocation_type: minutesAllocation.allocation_type
         })
       })
 
@@ -211,6 +227,44 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error('Error allocating minutes:', error)
       toast.error('Error allocating minutes')
+    } finally {
+      setLoadingMinutes(false)
+    }
+  }
+
+  // Quick reset to zero
+  const quickResetToZero = async (org: Organization) => {
+    if (!confirm(`Are you sure you want to reset ${org.name}'s minutes to 0? This action cannot be undone.`)) {
+      return
+    }
+
+    setLoadingMinutes(true)
+    try {
+      const response = await fetch(`${API_BASE}/call-minutes/allocate`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          organization_id: org.id,
+          minutes_to_allocate: 0,
+          allocation_reason: 'Quick reset to zero minutes by super admin',
+          allocation_type: 'reset'
+        })
+      })
+
+      if (response.ok) {
+        toast.success(`Successfully reset ${org.name}'s minutes to 0`)
+        // Refresh data
+        await fetchCallMinutesData(organizations)
+      } else {
+        const errorData = await response.json()
+        toast.error(errorData.detail || 'Failed to reset minutes')
+      }
+    } catch (error) {
+      console.error('Error resetting minutes:', error)
+      toast.error('Error resetting minutes')
     } finally {
       setLoadingMinutes(false)
     }
@@ -615,6 +669,38 @@ export default function AdminDashboard() {
                         </button>
                       )}
                       
+                      {/* Reset Minutes Button */}
+                      {organizationMinutes[org.id]?.total_minutes_allocated > 0 && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            openResetDialog(org)
+                          }}
+                          className="p-2 text-slate-400 hover:text-yellow-400 hover:bg-slate-700 rounded-lg transition-colors"
+                          title="Reset Minutes to Specific Amount"
+                        >
+                          <Settings className="w-5 h-5" />
+                        </button>
+                      )}
+                      
+                      {/* Quick Reset to Zero Button */}
+                      {organizationMinutes[org.id]?.total_minutes_allocated > 0 && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            quickResetToZero(org)
+                          }}
+                          className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-700 rounded-lg transition-colors"
+                          title="Quick Reset to Zero Minutes"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      )}
+                      
                       <button
                         type="button"
                         onClick={(e) => {
@@ -841,7 +927,7 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between p-6 border-b border-slate-700">
               <h2 className="text-xl font-semibold text-white flex items-center">
                 <Timer className="w-5 h-5 mr-2 text-green-400" />
-                Allocate Call Minutes
+                {minutesAllocation.allocation_type === 'reset' ? 'Reset Call Minutes' : 'Allocate Call Minutes'}
               </h2>
               <button
                 type="button"
@@ -891,9 +977,52 @@ export default function AdminDashboard() {
                   </div>
                 )}
                 
+                {/* Allocation Type Selection */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-slate-300 mb-3">
+                    Allocation Type
+                  </label>
+                  <div className="space-y-2">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="allocation_type"
+                        value="add"
+                        checked={minutesAllocation.allocation_type === 'add'}
+                        onChange={(e) => setMinutesAllocation(prev => ({
+                          ...prev,
+                          allocation_type: e.target.value as 'add' | 'reset'
+                        }))}
+                        className="text-blue-600 bg-slate-700 border-slate-600 focus:ring-blue-500"
+                      />
+                      <span className="ml-2 text-slate-300">Add Minutes</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="allocation_type"
+                        value="reset"
+                        checked={minutesAllocation.allocation_type === 'reset'}
+                        onChange={(e) => setMinutesAllocation(prev => ({
+                          ...prev,
+                          allocation_type: e.target.value as 'add' | 'reset'
+                        }))}
+                        className="text-blue-600 bg-slate-700 border-slate-600 focus:ring-blue-500"
+                      />
+                      <span className="ml-2 text-slate-300">Reset to Amount</span>
+                    </label>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-2">
+                    {minutesAllocation.allocation_type === 'add' 
+                      ? 'Add the specified minutes to the current allocation'
+                      : 'Reset the available balance to exactly the specified amount'
+                    }
+                  </p>
+                </div>
+                
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Minutes to Allocate
+                    {minutesAllocation.allocation_type === 'add' ? 'Minutes to Add' : 'Reset Available Balance To'}
                   </label>
                   <input
                     type="number"
@@ -947,7 +1076,7 @@ export default function AdminDashboard() {
                   ) : (
                     <>
                       <Timer className="w-4 h-4 mr-2" />
-                      Allocate Minutes
+                      {minutesAllocation.allocation_type === 'reset' ? 'Reset Minutes' : 'Allocate Minutes'}
                     </>
                   )}
                 </button>
