@@ -45,7 +45,7 @@ const CallMinutesTracker = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/call-minutes/summary/${user.organization_id}`,
+          `${process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'}/call-minutes/organization/${user.organization_id}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setMinutesData(response.data);

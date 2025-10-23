@@ -10,7 +10,7 @@ import {
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000';
 
 interface Organization {
   id: number;

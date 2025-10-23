@@ -19,7 +19,7 @@ interface ResourceUsageMinutesProps {
   organizationId: number | null;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000';
 
 const ResourceUsageMinutes: React.FC<ResourceUsageMinutesProps> = ({ token, organizationId }) => {
   const [minutesData, setMinutesData] = useState<MinutesData | null>(null);
@@ -37,7 +37,7 @@ const ResourceUsageMinutes: React.FC<ResourceUsageMinutesProps> = ({ token, orga
       setLoading(true);
       // Updated endpoint to match the backend route structure
       const response = await fetch(
-        `${API_URL}/call-minutes/summary/${organizationId}`,
+        `${API_URL}/call-minutes/organization/${organizationId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       

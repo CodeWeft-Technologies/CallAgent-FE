@@ -116,7 +116,7 @@ export default function AdminDashboard() {
       
       for (const org of orgs) {
         try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/call-minutes/organization/${org.id}`, {
+          const response = await fetch(`${API_BASE}/call-minutes/organization/${org.id}`, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
@@ -178,7 +178,7 @@ export default function AdminDashboard() {
     
     setLoadingMinutes(true)
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/call-minutes/allocate`, {
+      const response = await fetch(`${API_BASE}/call-minutes/allocate`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -215,7 +215,7 @@ export default function AdminDashboard() {
         ? `/call-minutes/organization/${orgId}/deactivate`
         : `/call-minutes/organization/${orgId}/activate`
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

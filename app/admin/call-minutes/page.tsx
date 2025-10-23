@@ -65,7 +65,7 @@ export default function CallMinutesAdmin() {
         
         // Fetch organizations
         const orgsResponse = await axios.get<Organization[]>(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/organizations`,
+          `${process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'}/admin/organizations`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         
@@ -73,7 +73,7 @@ export default function CallMinutesAdmin() {
         
         // Fetch call minutes summary
         const minutesResponse = await axios.get<MinutesSummary[]>(
-          `${process.env.NEXT_PUBLIC_API_URL}/call-minutes/summary`,
+          `${process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'}/call-minutes/summary`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         
@@ -112,7 +112,7 @@ export default function CallMinutesAdmin() {
     
     try {
       await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/call-minutes/allocate`,
+        `${process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'}/call-minutes/allocate`,
         {
           organization_id: selectedOrg.id,
           minutes_to_allocate: minutesToAllocate,
@@ -152,7 +152,7 @@ export default function CallMinutesAdmin() {
         : `/call-minutes/organization/${orgId}/activate`;
       
       await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`,
+        `${process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'}${endpoint}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
