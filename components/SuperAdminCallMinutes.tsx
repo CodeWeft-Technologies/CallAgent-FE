@@ -5,7 +5,8 @@ import {
   Box, Typography, Paper, Table, TableBody, TableCell, 
   TableContainer, TableHead, TableRow, Button, TextField, 
   Dialog, DialogTitle, DialogContent, DialogActions, Alert,
-  LinearProgress
+  LinearProgress, FormControl, FormLabel, RadioGroup, 
+  FormControlLabel, Radio, Chip
 } from '@mui/material';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
@@ -39,6 +40,7 @@ const SuperAdminCallMinutes = () => {
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [minutesToAllocate, setMinutesToAllocate] = useState(60);
   const [allocationReason, setAllocationReason] = useState('');
+  const [allocationType, setAllocationType] = useState<'add' | 'reset'>('add');
 
   useEffect(() => {
     if (!token || user?.role !== 'super_admin') return;
@@ -98,7 +100,8 @@ const SuperAdminCallMinutes = () => {
         {
           organization_id: selectedOrg.id,
           minutes_to_allocate: minutesToAllocate,
-          allocation_reason: allocationReason
+          allocation_reason: allocationReason,
+          allocation_type: allocationType
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -274,10 +277,75 @@ const SuperAdminCallMinutes = () => {
           Allocate Call Minutes - {selectedOrg?.name}
         </DialogTitle>
         <DialogContent>
+          {/* Current Balance Display */}
+          {selectedOrg && (
+            <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+              <Typography variant="h6" gutterBottom>Current Balance</Typography>
+              {(() => {
+                const orgMinutes = minutesSummary.find(m => m.organization_id === selectedOrg.id);
+                if (orgMinutes) {
+                  const remaining = orgMinutes.minutes_remaining;
+                  return (
+                    <Box>
+                      <Typography>
+                        Allocated: <strong>{orgMinutes.total_minutes_allocated}</strong> minutes
+                      </Typography>
+                      <Typography>
+                        Used: <strong>{orgMinutes.minutes_used}</strong> minutes
+                      </Typography>
+                      <Typography>
+                        Remaining: <strong>
+                          <Chip 
+                            label={`${remaining} minutes`}
+                            color={remaining < 0 ? 'error' : remaining < 10 ? 'warning' : 'success'}
+                            size="small"
+                          />
+                        </strong>
+                      </Typography>
+                      {remaining < 0 && (
+                        <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+                          ⚠️ Organization is in negative balance ({remaining} minutes)
+                        </Typography>
+                      )}
+                    </Box>
+                  );
+                }
+                return <Typography>No minutes data available</Typography>;
+              })()}
+            </Box>
+          )}
+
+          {/* Allocation Type Selection */}
+          <FormControl component="fieldset" fullWidth sx={{ mb: 2 }}>
+            <FormLabel component="legend">Allocation Type</FormLabel>
+            <RadioGroup
+              value={allocationType}
+              onChange={(e) => setAllocationType(e.target.value as 'add' | 'reset')}
+              row
+            >
+              <FormControlLabel 
+                value="add" 
+                control={<Radio />} 
+                label="Add Minutes" 
+              />
+              <FormControlLabel 
+                value="reset" 
+                control={<Radio />} 
+                label="Reset to Amount" 
+              />
+            </RadioGroup>
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+              {allocationType === 'add' 
+                ? 'Add the specified minutes to the current allocation'
+                : 'Reset the available balance to exactly the specified amount'
+              }
+            </Typography>
+          </FormControl>
+
           <TextField
             autoFocus
             margin="dense"
-            label="Minutes to Allocate"
+            label={allocationType === 'add' ? 'Minutes to Add' : 'Reset Available Balance To'}
             type="number"
             fullWidth
             variant="outlined"
@@ -301,7 +369,7 @@ const SuperAdminCallMinutes = () => {
         <DialogActions>
           <Button onClick={handleCloseAllocateDialog}>Cancel</Button>
           <Button onClick={handleAllocateMinutes} variant="contained" color="primary">
-            Allocate Minutes
+            {allocationType === 'add' ? 'Add Minutes' : 'Reset Minutes'}
           </Button>
         </DialogActions>
       </Dialog>
