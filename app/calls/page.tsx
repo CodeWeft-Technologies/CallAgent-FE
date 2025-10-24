@@ -15,6 +15,86 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
+// CSV Export utility function
+const exportToCSV = (data: Call[], filename: string) => {
+  // Define CSV headers
+  const headers = [
+    'Call ID',
+    'Phone Number',
+    'Direction',
+    'Date & Time',
+    'Lead Name',
+    'Lead Company',
+    'Lead Email', 
+    'Status',
+    'Duration (seconds)',
+    'Duration (formatted)',
+    'Interest Status',
+    'Interest Confidence',
+    'Sentiment',
+    'Call Summary',
+    'User Messages Count',
+    'AI Messages Count',
+    'Total Transcription Length'
+  ]
+
+  // Convert data to CSV rows
+  const csvData = data.map(call => {
+    const formatDuration = (seconds: number) => {
+      const minutes = Math.floor(seconds / 60)
+      const remainingSeconds = Math.floor(seconds % 60)
+      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+    }
+
+    const userMessagesCount = call.transcription?.filter(t => t.type === 'user').length || 0
+    const aiMessagesCount = call.ai_responses?.length || 0
+    const totalTranscriptionLength = call.transcription?.reduce((acc, t) => {
+      const content = typeof t.content === 'string' ? t.content : 
+                     t.content?.transcript || t.content?.text || ''
+      return acc + content.length
+    }, 0) || 0
+
+    return [
+      call._id,
+      call.phone_number,
+      call.direction?.toUpperCase() || 'UNKNOWN',
+      new Date(call.call_date).toLocaleString(),
+      call.lead?.name || 'No Lead',
+      call.lead?.company || 'N/A',
+      call.lead?.email || 'N/A',
+      call.status?.toUpperCase() || 'UNKNOWN',
+      call.duration,
+      formatDuration(call.duration),
+      call.interest_analysis?.interest_status?.replace('_', ' ').toUpperCase() || 'NO ANALYSIS',
+      call.interest_analysis?.confidence ? `${Math.round(call.interest_analysis.confidence * 100)}%` : 'N/A',
+      call.sentiment?.toUpperCase() || 'UNKNOWN',
+      `"${call.call_summary?.replace(/"/g, '""') || 'No summary'}"`, // Escape quotes in CSV
+      userMessagesCount,
+      aiMessagesCount,
+      totalTranscriptionLength
+    ]
+  })
+
+  // Combine headers and data
+  const csvContent = [headers, ...csvData]
+    .map(row => row.join(','))
+    .join('\n')
+
+  // Create and trigger download
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  
+  if (link.download !== undefined) {
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', filename)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+}
+
 interface Call {
   _id: string
   phone_number: string | number
@@ -195,6 +275,75 @@ export default function EnhancedCallsPage() {
     setSelectedCall(null)
   }, [])
 
+  const handleExportCSV = useCallback(async () => {
+    if (total === 0) {
+      toast.error('No calls to export')
+      return
+    }
+
+    try {
+      toast.loading('Preparing CSV export...', { id: 'export-loading' })
+
+      const API_BASE = process.env.NEXT_PUBLIC_CALL_API_URL || 'https://callagent-be-2.onrender.com'
+      
+      // Build query parameters from current filters
+      const queryParams = new URLSearchParams()
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '' && value !== 'all') {
+          queryParams.append(key, String(value))
+        }
+      })
+
+      // Use the backend CSV export endpoint
+      const exportUrl = `${API_BASE}/api/calls/export/csv?${queryParams}`
+      
+      const response = await fetch(exportUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.status} ${response.statusText}`)
+      }
+
+      // Get the CSV content as blob
+      const blob = await response.blob()
+      
+      // Extract filename from response headers or generate one
+      let filename = 'calls-export.csv'
+      const contentDisposition = response.headers.get('Content-Disposition')
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename=(.+)/)
+        if (filenameMatch) {
+          filename = filenameMatch[1].replace(/['"]/g, '') // Remove quotes
+        }
+      }
+
+      // Create download link and trigger download
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      link.style.display = 'none'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      
+      toast.dismiss('export-loading')
+      toast.success(`Exported ${total} calls to CSV`, { 
+        duration: 3000,
+        icon: '📊'
+      })
+      
+    } catch (error) {
+      console.error('Export failed:', error)
+      toast.dismiss('export-loading')
+      toast.error('Failed to export calls. Please try again.')
+    }
+  }, [filters, total, token])
+
   if (callsError) {
     return (
       <div className="space-y-8">
@@ -225,14 +374,30 @@ export default function EnhancedCallsPage() {
             {total > 0 ? `${total} calls found` : 'View call details, transcriptions, and analytics'}
           </p>
         </div>
-        <button
-          onClick={handleRefresh}
-          disabled={loading}
-          className="flex items-center space-x-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors disabled:opacity-50"
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          <span>Refresh</span>
-        </button>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={handleExportCSV}
+            disabled={loading || total === 0}
+            className="flex items-center space-x-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title={`Export ${total > 0 ? `all ${total}` : '0'} ${Object.keys(filters).length > 0 ? 'filtered ' : ''}calls to CSV`}
+          >
+            <Download className="w-4 h-4" />
+            <span>Export CSV</span>
+            {total > 0 && (
+              <span className="text-xs bg-emerald-800 px-2 py-0.5 rounded-full">
+                {total}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={handleRefresh}
+            disabled={loading}
+            className="flex items-center space-x-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </button>
+        </div>
       </div>
 
       {/* Enhanced Filters */}
@@ -256,11 +421,19 @@ export default function EnhancedCallsPage() {
                 </span>
               )}
             </div>
-            {totalPages > 1 && (
-              <div className="text-sm text-slate-400">
-                Page {currentPage} of {totalPages}
-              </div>
-            )}
+            <div className="flex items-center space-x-4">
+              {Object.keys(filters).length > 0 && (
+                <div className="text-xs text-emerald-400 flex items-center">
+                  <Download className="w-3 h-3 mr-1" />
+                  Export will include all {total} filtered results
+                </div>
+              )}
+              {totalPages > 1 && (
+                <div className="text-sm text-slate-400">
+                  Page {currentPage} of {totalPages}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
