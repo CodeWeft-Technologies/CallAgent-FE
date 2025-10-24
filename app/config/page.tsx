@@ -393,9 +393,22 @@ export default function ConfigPage() {
   const [jsonEditMode, setJsonEditMode] = useState(false)
   const [jsonEditValue, setJsonEditValue] = useState('')
   const [jsonError, setJsonError] = useState('')
+  const [availableTtsProviders, setAvailableTtsProviders] = useState<Array<{
+    provider: string,
+    name: string,
+    description: string,
+    source?: string,
+    requires_own_key?: boolean,
+    requires_configuration?: boolean
+  }>>([])
+  const [hasSuperAdminTtsConfig, setHasSuperAdminTtsConfig] = useState(false)
+  const [canSelectTtsProvider, setCanSelectTtsProvider] = useState(false)
+  const [contactSalesRequired, setContactSalesRequired] = useState(false)
+  const [singleProviderOnly, setSingleProviderOnly] = useState(false)
 
   useEffect(() => {
     loadConfig()
+    loadAvailableTtsProviders()
   }, [])
 
   const loadConfig = useCallback(async () => {
@@ -448,6 +461,39 @@ export default function ConfigPage() {
       toast.error('Failed to load configuration')
     }
   }, [user?.organization_id, token])
+
+  const loadAvailableTtsProviders = useCallback(async () => {
+    if (!token) return
+
+    try {
+      const response = await fetch(`${API_BASE}/api/org-config/available-tts-providers`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setAvailableTtsProviders(data.available_providers || [])
+        setHasSuperAdminTtsConfig(data.has_super_admin_config || false)
+        setCanSelectTtsProvider(data.can_select_provider || false)
+        setContactSalesRequired(data.contact_sales_required || false)
+        setSingleProviderOnly(data.single_provider_only || false)
+        console.log('✅ Available TTS providers loaded:', data)
+      } else {
+        console.error('Failed to load TTS providers:', response.status)
+        // Set fallback state
+        setContactSalesRequired(true)
+        setAvailableTtsProviders([])
+      }
+    } catch (error) {
+      console.error('❌ Error loading TTS providers:', error)
+      // Set error fallback state
+      setContactSalesRequired(true)
+      setAvailableTtsProviders([])
+    }
+  }, [token])
 
   const saveConfig = useCallback(async () => {
     if (!user?.organization_id) {
@@ -543,74 +589,29 @@ export default function ConfigPage() {
     setConfig(prev => ({ ...prev, tts_provider: provider }))
     
     try {
-      // Try WebSocket command first for real-time switching
-      const wsMessage = {
-        type: "switch_service",
-        service_type: "tts",
-        provider: provider
+      const response = await fetch(`${API_BASE}/api/org-config/tts-provider-preference`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ provider })
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        toast.success(`TTS provider preference updated to ${data.provider === 'google' ? 'Google TTS' : 'Cartesia TTS'}`)
+        console.log('✅ TTS provider preference updated:', data)
+      } else {
+        const errorData = await response.json()
+        toast.error(errorData.detail || 'Failed to update TTS provider preference')
+        console.error('❌ TTS provider update failed:', errorData)
       }
-      
-      // Create a temporary WebSocket connection for service switching
-      const ws = new WebSocket(`ws://localhost:8000/ws`)
-      
-      ws.onopen = () => {
-        ws.send(JSON.stringify(wsMessage))
-        console.log(`📤 Sent TTS switch command: ${provider}`)
-      }
-      
-      ws.onmessage = (event) => {
-        try {
-          const response = JSON.parse(event.data)
-          if (response.type === "service_switched" && response.service_type === "tts") {
-            toast.success(`TTS provider switched to ${provider} (real-time)`)
-            ws.close()
-          } else if (response.type === "service_switch_error") {
-            toast.error(`Failed to switch TTS: ${response.message}`)
-            ws.close()
-          }
-        } catch (e) {
-          console.error('Error parsing WebSocket response:', e)
-        }
-      }
-      
-      ws.onerror = async () => {
-        console.log('WebSocket failed, falling back to API call')
-        ws.close()
-        
-        // Fallback to API call if WebSocket fails
-        try {
-          const response = await fetch(`${API_BASE}/api/org-config/`, {
-            method: 'PUT',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ ...config, tts_provider: provider })
-          })
-          
-          if (response.ok) {
-            toast.success(`TTS provider updated to ${provider} (API)`)
-          } else {
-            toast.error('Failed to update TTS provider')
-          }
-        } catch (error) {
-          console.error('Error updating TTS provider via API:', error)
-          toast.error('Failed to update TTS provider')
-        }
-      }
-      
-      // Close WebSocket after 5 seconds if no response
-      setTimeout(() => {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.close()
-        }
-      }, 5000)
-      
     } catch (error) {
-      console.error('Error updating TTS provider:', error)
+      console.error('❌ Error updating TTS provider:', error)
       toast.error('Failed to update TTS provider')
     }
-  }, [])
+  }, [token])
 
   const handleSTTProviderChange = useCallback(async (provider: string) => {
     setConfig(prev => ({ ...prev, stt_provider: provider }))
@@ -1183,11 +1184,13 @@ export default function ConfigPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium text-green-400">
-                          {config.tts_provider === 'cartesia' ? 'Cartesia TTS' : 'Google TTS'}
+                          {availableTtsProviders.find(p => p.provider === config.tts_provider)?.name || 
+                           (config.tts_provider === 'cartesia' ? 'Cartesia TTS' : 'Google TTS')}
                         </p>
                         <div className="flex items-center text-xs text-green-400">
                           <div className="w-1.5 h-1.5 bg-green-400 rounded-full mr-1"></div>
                           Active
+                          {hasSuperAdminTtsConfig && ' (Admin Configured)'}
                         </div>
                       </div>
                     </div>
@@ -1209,86 +1212,164 @@ export default function ConfigPage() {
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* TTS Provider */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-200 mb-2">
-                      Text-to-Speech Provider
-                    </label>
-                    <select
-                      value={config.tts_provider || 'cartesia'}
-                      onChange={(e) => handleTTSProviderChange(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
-                    >
-                      <option value="google">Google TTS</option>
-                      <option value="cartesia">Cartesia TTS</option>
-                    </select>
-                    <p className="text-sm text-slate-500 mt-2">
-                      {config.tts_provider === 'cartesia' 
-                        ? 'Cartesia provides high-quality, low-latency voice synthesis'
-                        : 'Google TTS offers reliable voice synthesis with multiple language support'
-                      }
-                    </p>
-                  </div>
+                <div className="space-y-6">
+                  {/* Contact Sales Message */}
+                  {contactSalesRequired && (
+                    <div className="p-4 bg-blue-900/20 border border-blue-600 rounded-xl">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <span className="text-white text-sm">💬</span>
+                        </div>
+                        <div>
+                          <h4 className="text-blue-200 font-medium mb-2">Contact Sales Team for Voice Access</h4>
+                          <p className="text-blue-100 text-sm mb-3">
+                            No TTS (Text-to-Speech) providers have been configured for your organization. 
+                            To enable voice capabilities for your AI agent, please contact our sales team.
+                          </p>
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors">
+                              Contact Sales Team
+                            </button>
+                            <button className="px-4 py-2 bg-blue-900/50 hover:bg-blue-800/50 text-blue-200 rounded-lg text-sm transition-colors">
+                              Learn More About Voice Features
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
-                  {/* STT Provider */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-200 mb-2">
-                      Speech-to-Text Provider
-                    </label>
-                    <select
-                      value={config.stt_provider || 'assemblyai'}
-                      onChange={(e) => handleSTTProviderChange(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
-                    >
-                      <option value="assemblyai">AssemblyAI STT</option>
-                      <option value="cartesia">Cartesia STT</option>
-                    </select>
-                    <p className="text-sm text-slate-500 mt-2">
-                      {config.stt_provider === 'cartesia' 
-                        ? 'Cartesia provides ultra-low latency speech recognition'
-                        : 'AssemblyAI offers industry-leading speech recognition accuracy'
-                      }
-                    </p>
-                  </div>
+                  {/* Single Provider Message */}
+                  {singleProviderOnly && availableTtsProviders.length === 1 && (
+                    <div className="p-4 bg-green-900/20 border border-green-600 rounded-xl">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <span className="text-white text-sm">✓</span>
+                        </div>
+                        <div>
+                          <h4 className="text-green-200 font-medium mb-2">Voice Provider Configured</h4>
+                          <p className="text-green-100 text-sm mb-3">
+                            Your organization has access to <strong>{availableTtsProviders[0]?.name}</strong> for voice synthesis.
+                            For additional voice options, contact our sales team to upgrade your plan.
+                          </p>
+                          <button className="px-4 py-2 bg-green-900/50 hover:bg-green-800/50 text-green-200 rounded-lg text-sm transition-colors">
+                            Contact Sales for More Options
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TTS Provider Selection (only when multiple providers available) */}
+                  {canSelectTtsProvider && availableTtsProviders.length > 1 && (
+                    <div>
+                      <label className="block text-sm font-medium text-slate-200 mb-2">
+                        Choose Your Voice Provider
+                        <span className="ml-2 px-2 py-1 text-xs bg-green-600 text-white rounded-full">
+                          Super Admin Configured
+                        </span>
+                      </label>
+                      <select
+                        value={config.tts_provider || availableTtsProviders[0]?.provider || ''}
+                        onChange={(e) => handleTTSProviderChange(e.target.value)}
+                        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                      >
+                        {availableTtsProviders.map((provider) => (
+                          <option key={provider.provider} value={provider.provider}>
+                            {provider.name}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="mt-2 space-y-1">
+                        {availableTtsProviders.find(p => p.provider === config.tts_provider) && (
+                          <p className="text-sm text-slate-500">
+                            {availableTtsProviders.find(p => p.provider === config.tts_provider)?.description}
+                          </p>
+                        )}
+                        <p className="text-sm text-green-400">
+                          ✅ Both providers configured by super admin - choose your preference
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Current Provider Display (when only one option) */}
+                  {!canSelectTtsProvider && availableTtsProviders.length === 1 && (
+                    <div>
+                      <label className="block text-sm font-medium text-slate-200 mb-2">
+                        Current Voice Provider
+                      </label>
+                      <div className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white">
+                        {availableTtsProviders[0]?.name}
+                      </div>
+                      <div className="mt-2 space-y-1">
+                        <p className="text-sm text-slate-500">
+                          {availableTtsProviders[0]?.description}
+                        </p>
+                        <p className="text-sm text-green-400">
+                          ✅ Configured and ready to use
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Provider Information */}
                 <div className="mt-8 p-4 bg-slate-800/50 rounded-xl border border-slate-700">
-                  <h4 className="text-md font-medium text-white mb-3">Provider Information</h4>
+                  <h4 className="text-md font-medium text-white mb-3">Available Provider Information</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <h5 className="font-medium text-slate-300 mb-2">Google TTS</h5>
-                      <ul className="text-slate-400 space-y-1">
-                        <li>• Multiple language support</li>
-                        <li>• High-quality voices</li>
-                        <li>• Reliable and stable</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h5 className="font-medium text-slate-300 mb-2">Cartesia TTS</h5>
-                      <ul className="text-slate-400 space-y-1">
-                        <li>• Ultra-low latency</li>
-                        <li>• Natural-sounding voices</li>
-                        <li>• Real-time streaming</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h5 className="font-medium text-slate-300 mb-2">AssemblyAI STT</h5>
-                      <ul className="text-slate-400 space-y-1">
-                        <li>• Industry-leading accuracy</li>
-                        <li>• Multi-language support</li>
-                        <li>• Real-time transcription</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h5 className="font-medium text-slate-300 mb-2">Cartesia STT</h5>
-                      <ul className="text-slate-400 space-y-1">
-                        <li>• Ultra-low latency</li>
-                        <li>• Real-time streaming</li>
-                        <li>• High-quality recognition</li>
-                      </ul>
-                    </div>
+                    {/* TTS Providers */}
+                    {availableTtsProviders.map((provider) => (
+                      <div key={provider.provider}>
+                        <h5 className="font-medium text-slate-300 mb-2 flex items-center flex-wrap gap-1">
+                          {provider.name}
+                          {provider.provider === config.tts_provider && (
+                            <span className="px-2 py-1 text-xs bg-green-600 text-white rounded-full">
+                              Active
+                            </span>
+                          )}
+                          {provider.source === 'super_admin' && (
+                            <span className="px-2 py-1 text-xs bg-blue-600 text-white rounded-full">
+                              Admin Configured
+                            </span>
+                          )}
+                          {provider.source === 'organization' && (
+                            <span className="px-2 py-1 text-xs bg-purple-600 text-white rounded-full">
+                              Own Key
+                            </span>
+                          )}
+                          {provider.requires_configuration && (
+                            <span className="px-2 py-1 text-xs bg-amber-600 text-white rounded-full">
+                              Needs Setup
+                            </span>
+                          )}
+                        </h5>
+                        <ul className="text-slate-400 space-y-1">
+                          {provider.provider === 'google' && (
+                            <>
+                              <li>• Multiple language support</li>
+                              <li>• High-quality voices</li>
+                              <li>• Reliable and stable</li>
+                            </>
+                          )}
+                          {provider.provider === 'cartesia' && (
+                            <>
+                              <li>• Ultra-low latency</li>
+                              <li>• Natural-sounding voices</li>
+                              <li>• Real-time streaming</li>
+                            </>
+                          )}
+                          <li>• {provider.description}</li>
+                          {provider.source === 'super_admin' && (
+                            <li>• ✅ Ready to use (super admin configured)</li>
+                          )}
+                          {provider.source === 'organization' && (
+                            <li>• 🔑 Using your organization's API key</li>
+                          )}
+                        </ul>
+                      </div>
+                    ))}
+
                   </div>
                 </div>
               </div>

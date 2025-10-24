@@ -858,45 +858,76 @@ export default function AdminDashboard() {
                         </div>
 
                         {/* TTS Configuration */}
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                           <div className="flex items-center space-x-2 text-sm font-medium text-slate-300">
                             <Volume2 className="w-4 h-4" />
-                            <span>Text-to-Speech (TTS)</span>
+                            <span>Text-to-Speech (TTS) Providers</span>
                           </div>
                           
-                          <div>
-                            <label className="block text-xs text-slate-400 mb-1">Provider</label>
-                            {editingKeys[org.id] ? (
-                              <select
-                                value={apiKeyConfigs[org.id]?.tts_provider || ''}
-                                onChange={(e) => updateAPIKeyConfig(org.id, 'tts_provider', e.target.value)}
-                                className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              >
-                                <option value="">Select Provider</option>
-                                <option value="elevenlabs">ElevenLabs</option>
-                                <option value="openai">OpenAI TTS</option>
-                                <option value="cartesia">Cartesia</option>
-                                <option value="google">Google TTS</option>
-                                <option value="azure">Azure Speech</option>
-                              </select>
-                            ) : (
-                              <p className="text-white text-sm">{org.api_keys?.tts_provider || 'Not configured'}</p>
-                            )}
-                          </div>
-                          
-                          <div>
-                            <label className="block text-xs text-slate-400 mb-1">API Key</label>
+                          {/* Google TTS */}
+                          <div className="bg-slate-800/50 p-3 rounded-lg space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm font-medium text-slate-200">Google TTS</span>
+                              {org.api_keys?.google_tts_api_key && (
+                                <span className="px-2 py-0.5 text-xs bg-green-600 text-white rounded-full">
+                                  Configured
+                                </span>
+                              )}
+                            </div>
                             {editingKeys[org.id] ? (
                               <input
                                 type="password"
-                                value={apiKeyConfigs[org.id]?.tts_api_key || ''}
-                                onChange={(e) => updateAPIKeyConfig(org.id, 'tts_api_key', e.target.value)}
-                                placeholder="Enter TTS API key"
-                                className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={apiKeyConfigs[org.id]?.google_tts_api_key || ''}
+                                onChange={(e) => updateAPIKeyConfig(org.id, 'google_tts_api_key', e.target.value)}
+                                placeholder="Enter Google TTS API key"
+                                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                               />
                             ) : (
                               <p className="text-white text-sm font-mono">
-                                {org.api_keys?.tts_api_key ? '••••••••••••••••' : 'Not configured'}
+                                {org.api_keys?.google_tts_api_key ? '••••••••••••••••' : 'Not configured'}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Cartesia TTS */}
+                          <div className="bg-slate-800/50 p-3 rounded-lg space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm font-medium text-slate-200">Cartesia TTS</span>
+                              {org.api_keys?.cartesia_tts_api_key && (
+                                <span className="px-2 py-0.5 text-xs bg-green-600 text-white rounded-full">
+                                  Configured
+                                </span>
+                              )}
+                            </div>
+                            {editingKeys[org.id] ? (
+                              <input
+                                type="password"
+                                value={apiKeyConfigs[org.id]?.cartesia_tts_api_key || ''}
+                                onChange={(e) => updateAPIKeyConfig(org.id, 'cartesia_tts_api_key', e.target.value)}
+                                placeholder="Enter Cartesia TTS API key"
+                                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+                            ) : (
+                              <p className="text-white text-sm font-mono">
+                                {org.api_keys?.cartesia_tts_api_key ? '••••••••••••••••' : 'Not configured'}
+                              </p>
+                            )}
+                          </div>
+                          
+                          {/* Organization's Preferred Provider (for when both are available) */}
+                          <div className="bg-blue-900/20 p-3 rounded-lg space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm font-medium text-blue-200">Organization's Current Preference</span>
+                            </div>
+                            <p className="text-blue-100 text-sm">
+                              {org.api_keys?.tts_provider ? 
+                                `Organization prefers: ${org.api_keys.tts_provider === 'google' ? 'Google TTS' : 'Cartesia TTS'}` : 
+                                'No preference set - will use first available provider'
+                              }
+                            </p>
+                            {(org.api_keys?.google_tts_api_key && org.api_keys?.cartesia_tts_api_key) && (
+                              <p className="text-blue-300 text-xs">
+                                ✅ Both providers available - organization can choose their preference
                               </p>
                             )}
                           </div>
