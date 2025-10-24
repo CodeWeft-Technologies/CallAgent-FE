@@ -32,10 +32,7 @@ const exportToCSV = (data: Call[], filename: string) => {
     'Interest Status',
     'Interest Confidence',
     'Sentiment',
-    'Call Summary',
-    'User Messages Count',
-    'AI Messages Count',
-    'Total Transcription Length'
+    'Call Summary'
   ]
 
   // Convert data to CSV rows
@@ -45,14 +42,6 @@ const exportToCSV = (data: Call[], filename: string) => {
       const remainingSeconds = Math.floor(seconds % 60)
       return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
     }
-
-    const userMessagesCount = call.transcription?.filter(t => t.type === 'user').length || 0
-    const aiMessagesCount = call.ai_responses?.length || 0
-    const totalTranscriptionLength = call.transcription?.reduce((acc, t) => {
-      const content = typeof t.content === 'string' ? t.content : 
-                     t.content?.transcript || t.content?.text || ''
-      return acc + content.length
-    }, 0) || 0
 
     return [
       call._id,
@@ -68,10 +57,7 @@ const exportToCSV = (data: Call[], filename: string) => {
       call.interest_analysis?.interest_status?.replace('_', ' ').toUpperCase() || 'NO ANALYSIS',
       call.interest_analysis?.confidence ? `${Math.round(call.interest_analysis.confidence * 100)}%` : 'N/A',
       call.sentiment?.toUpperCase() || 'UNKNOWN',
-      `"${call.call_summary?.replace(/"/g, '""') || 'No summary'}"`, // Escape quotes in CSV
-      userMessagesCount,
-      aiMessagesCount,
-      totalTranscriptionLength
+      `"${call.call_summary?.replace(/"/g, '""') || 'No summary'}"` // Escape quotes in CSV
     ]
   })
 
