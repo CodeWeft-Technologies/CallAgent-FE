@@ -25,6 +25,8 @@ interface Organization {
     llm_api_key?: string
     tts_provider?: string
     tts_api_key?: string
+    google_tts_api_key?: string
+    cartesia_tts_api_key?: string
   }
   call_minutes?: {
     total_minutes_allocated: number
@@ -47,6 +49,8 @@ interface APIKeyConfig {
   llm_api_key: string
   tts_provider: string
   tts_api_key: string
+  google_tts_api_key: string
+  cartesia_tts_api_key: string
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'
@@ -355,7 +359,9 @@ export default function AdminDashboard() {
         llm_provider: org.api_keys?.llm_provider || '',
         llm_api_key: org.api_keys?.llm_api_key || '',
         tts_provider: org.api_keys?.tts_provider || '',
-        tts_api_key: org.api_keys?.tts_api_key || ''
+        tts_api_key: org.api_keys?.tts_api_key || '',
+        google_tts_api_key: org.api_keys?.google_tts_api_key || '',
+        cartesia_tts_api_key: org.api_keys?.cartesia_tts_api_key || ''
       }
     }))
   }
