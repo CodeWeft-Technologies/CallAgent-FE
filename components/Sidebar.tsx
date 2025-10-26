@@ -15,7 +15,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Menu,
-  Clock
+  Clock,
+  Megaphone
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -25,6 +26,7 @@ const navigation = [
   { name: 'Calls', href: '/calls', icon: PhoneCall },
   { name: 'Leads', href: '/leads', icon: Users },
   { name: 'Appointments', href: '/appointments', icon: Calendar },
+  { name: 'Announcements', href: '/announcements', icon: Megaphone },
 ]
 
 const Sidebar = React.memo(() => {
