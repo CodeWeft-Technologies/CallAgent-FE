@@ -53,13 +53,20 @@ const AnnouncementsPage = () => {
       }
 
       const data = await response.json()
-      if (data.success) {
-        setAnnouncements(data.data || [])
+      if (data.success && data.data) {
+        // Combine announcements and feedback into one array
+        const allContent = [
+          ...(data.data.announcements || []),
+          ...(data.data.feedback || [])
+        ].filter(item => item && typeof item === 'object') // Filter out any invalid items
+        setAnnouncements(allContent)
       } else {
         setError(data.message || 'Failed to load announcements')
+        setAnnouncements([]) // Ensure we always have an array
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error occurred')
+      setAnnouncements([]) // Ensure we always have an array even on error
       console.error('Error fetching announcements:', err)
     } finally {
       setLoading(false)
@@ -73,8 +80,8 @@ const AnnouncementsPage = () => {
   // Filter and search logic
   const filteredAnnouncements = announcements.filter(item => {
     const matchesFilter = filter === 'all' || item.content_type === filter
-    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.content.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = (item.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (item.content || '').toLowerCase().includes(searchTerm.toLowerCase())
     return matchesFilter && matchesSearch
   })
 
@@ -83,7 +90,7 @@ const AnnouncementsPage = () => {
     if (!confirm('Are you sure you want to delete this item?')) return
 
     try {
-      const response = await fetch(`${API_BASE_URL}/announcements/${user?.organization_id}/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/announcements/${id}/${user?.organization_id}`, {
         method: 'DELETE'
       })
 
@@ -103,7 +110,7 @@ const AnnouncementsPage = () => {
       const item = announcements.find(a => a.id === id)
       if (!item) return
 
-      const response = await fetch(`${API_BASE_URL}/announcements/${user?.organization_id}/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/announcements/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -132,7 +139,7 @@ const AnnouncementsPage = () => {
   const handleSave = async (data: AnnouncementContent) => {
     try {
       const url = editingItem 
-        ? `${API_BASE_URL}/announcements/${user?.organization_id}/${editingItem.id}`
+        ? `${API_BASE_URL}/announcements/${editingItem.id}`
         : `${API_BASE_URL}/announcements/`
       
       const method = editingItem ? 'PUT' : 'POST'
