@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { Settings, RotateCcw, Save, MessageSquare, ArrowRight, FileText, Database, RefreshCw, Languages, Mic } from 'lucide-react'
+import { Settings, RotateCcw, Save, MessageSquare, ArrowRight, FileText, Database, RefreshCw, Languages, Mic, Volume2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -16,6 +16,12 @@ interface AgentConfig {
   stt_provider?: string
   active_template?: string
   agent_number?: string
+}
+
+interface OrganizationConfig {
+  announcement_system_enabled: boolean
+  feedback_system_enabled: boolean
+  announcement_fallback_message: string
 }
 
 const PROMPT_TEMPLATES = {
@@ -405,9 +411,17 @@ export default function ConfigPage() {
   const [canSelectTtsProvider, setCanSelectTtsProvider] = useState(false)
   const [contactSalesRequired, setContactSalesRequired] = useState(false)
   const [singleProviderOnly, setSingleProviderOnly] = useState(false)
+  
+  // Organization configuration state
+  const [orgConfig, setOrgConfig] = useState<OrganizationConfig>({
+    announcement_system_enabled: false,
+    feedback_system_enabled: false,
+    announcement_fallback_message: 'Thank you for calling. This is an automated announcement.'
+  })
 
   useEffect(() => {
     loadConfig()
+    loadOrgConfig()
     loadAvailableTtsProviders()
   }, [])
 
@@ -495,6 +509,33 @@ export default function ConfigPage() {
     }
   }, [token])
 
+  const loadOrgConfig = useCallback(async () => {
+    if (!user?.organization_id || !token) return
+
+    try {
+      const response = await fetch(`${API_BASE}/api/org-config/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setOrgConfig({
+          announcement_system_enabled: data.announcement_system_enabled ?? false,
+          feedback_system_enabled: data.feedback_system_enabled ?? false,
+          announcement_fallback_message: data.announcement_fallback_message || 'Thank you for calling. This is an automated announcement.'
+        })
+        console.log('✅ Organization config loaded:', data)
+      } else {
+        console.error('Failed to load organization config:', response.status)
+      }
+    } catch (error) {
+      console.error('❌ Error loading organization config:', error)
+    }
+  }, [user?.organization_id, token])
+
   const saveConfig = useCallback(async () => {
     if (!user?.organization_id) {
       console.error('No organization ID available')
@@ -551,6 +592,34 @@ export default function ConfigPage() {
       setLoading(false)
     }
   }, [config, selectedTemplate, user?.organization_id, token])
+
+  const saveOrgConfig = useCallback(async () => {
+    if (!user?.organization_id || !token) {
+      toast.error('Authentication required')
+      return
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/api/org-config/`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(orgConfig)
+      })
+      
+      if (response.ok) {
+        toast.success('Announcement system settings saved!')
+      } else {
+        console.error('Failed to save organization config:', response.status)
+        toast.error('Failed to save settings')
+      }
+    } catch (error) {
+      console.error('Error saving organization config:', error)
+      toast.error('Failed to save settings')
+    }
+  }, [orgConfig, user?.organization_id, token])
 
   const resetConfig = useCallback(() => {
     setConfig({
@@ -822,6 +891,7 @@ export default function ConfigPage() {
     { id: 'behavior', name: 'Agent Behavior', icon: FileText },
     { id: 'knowledge', name: 'Knowledge Base', icon: Database },
     { id: 'voice', name: 'Voice Settings', icon: Mic },
+    { id: 'announcements', name: 'Announcements', icon: Volume2 },
     { id: 'retry', name: 'Call Retry', icon: RefreshCw },
     { id: 'forwarding', name: 'Call Forwarding', icon: ArrowRight }
   ]
@@ -1474,6 +1544,84 @@ export default function ConfigPage() {
                         }
                       </p>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'announcements' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-2">Announcement System</h3>
+                <p className="text-slate-400 mb-4">Configure announcement system to play messages when callers connect</p>
+                
+                <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4 mb-6">
+                  <h4 className="text-blue-300 font-medium mb-2">📢 How Announcement System Works</h4>
+                  <div className="space-y-2 text-blue-200 text-sm">
+                    <p>• When enabled, plays configured announcement content immediately when calls connect</p>
+                    <p>• Bypasses normal AI conversation - caller hears announcement directly</p>
+                    <p>• Use the Announcements page to configure the message content</p>
+                    <p>• Fallback message is used when no announcement content is configured</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Enable Announcement System */}
+                  <div className="bg-slate-800/50 p-4 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-200 mb-1">
+                          Enable Announcement System
+                        </label>
+                        <p className="text-sm text-slate-400">
+                          When enabled, calls will play announcement content instead of normal AI conversation
+                        </p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={orgConfig.announcement_system_enabled}
+                          onChange={(e) => setOrgConfig(prev => ({ 
+                            ...prev, 
+                            announcement_system_enabled: e.target.checked 
+                          }))}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Fallback Message */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-200 mb-2">
+                      Fallback Message
+                    </label>
+                    <textarea
+                      value={orgConfig.announcement_fallback_message}
+                      onChange={(e) => setOrgConfig(prev => ({ 
+                        ...prev, 
+                        announcement_fallback_message: e.target.value 
+                      }))}
+                      rows={3}
+                      placeholder="Enter fallback message to use when no announcement content is configured..."
+                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
+                    />
+                    <p className="text-sm text-slate-500 mt-2">
+                      This message will be played if announcement system is enabled but no content is configured in the Announcements page.
+                    </p>
+                  </div>
+
+                  {/* Save Button */}
+                  <div className="flex justify-end pt-4">
+                    <button
+                      onClick={saveOrgConfig}
+                      className="flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-all shadow-lg hover:shadow-xl"
+                    >
+                      <Save className="w-4 h-4" />
+                      <span>Save Announcement Settings</span>
+                    </button>
                   </div>
                 </div>
               </div>
