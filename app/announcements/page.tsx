@@ -37,13 +37,16 @@ const AnnouncementsPage = () => {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingItem, setEditingItem] = useState<AnnouncementContent | null>(null)
 
+  // Get API base URL from environment
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+
   // Fetch announcements from backend
   const fetchAnnouncements = async () => {
     if (!user?.organization_id) return
 
     try {
       setLoading(true)
-      const response = await fetch(`/api/announcements/${user.organization_id}`)
+      const response = await fetch(`${API_BASE_URL}/announcements/${user.organization_id}`)
       
       if (!response.ok) {
         throw new Error('Failed to fetch announcements')
@@ -80,7 +83,7 @@ const AnnouncementsPage = () => {
     if (!confirm('Are you sure you want to delete this item?')) return
 
     try {
-      const response = await fetch(`/api/announcements/${user?.organization_id}/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/announcements/${user?.organization_id}/${id}`, {
         method: 'DELETE'
       })
 
@@ -100,7 +103,7 @@ const AnnouncementsPage = () => {
       const item = announcements.find(a => a.id === id)
       if (!item) return
 
-      const response = await fetch(`/api/announcements/${user?.organization_id}/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/announcements/${user?.organization_id}/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -129,8 +132,8 @@ const AnnouncementsPage = () => {
   const handleSave = async (data: AnnouncementContent) => {
     try {
       const url = editingItem 
-        ? `/api/announcements/${user?.organization_id}/${editingItem.id}`
-        : `/api/announcements/`
+        ? `${API_BASE_URL}/announcements/${user?.organization_id}/${editingItem.id}`
+        : `${API_BASE_URL}/announcements/`
       
       const method = editingItem ? 'PUT' : 'POST'
       
@@ -180,17 +183,17 @@ const AnnouncementsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <Megaphone className="h-8 w-8 text-blue-600" />
+              <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                <Megaphone className="h-8 w-8 text-blue-400" />
                 Announcements & Feedback
               </h1>
-              <p className="mt-2 text-gray-600">
+              <p className="mt-2 text-gray-300">
                 Manage your announcement messages and feedback responses for automated call handling
               </p>
             </div>
@@ -211,7 +214,7 @@ const AnnouncementsPage = () => {
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value as typeof filter)}
-              className="border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-600 rounded-lg px-3 py-2 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">All Types</option>
               <option value="announcement">Announcements</option>
@@ -226,16 +229,16 @@ const AnnouncementsPage = () => {
               placeholder="Search announcements..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-600 bg-gray-800 text-white placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-red-500" />
-            <span className="text-red-700">{error}</span>
+          <div className="mb-6 bg-red-900 border border-red-700 rounded-lg p-4 flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-red-400" />
+            <span className="text-red-200">{error}</span>
             <button
               onClick={() => setError(null)}
               className="ml-auto text-red-500 hover:text-red-700"
@@ -276,7 +279,7 @@ const AnnouncementsPage = () => {
               filteredAnnouncements.map((item) => (
                 <div
                   key={item.id}
-                  className={`bg-white rounded-lg shadow-sm border-l-4 p-6 hover:shadow-md transition-shadow ${
+                  className={`bg-gray-800 rounded-lg shadow-sm border-l-4 p-6 hover:shadow-md transition-shadow ${
                     item.content_type === 'announcement' ? 'border-l-blue-500' : 'border-l-green-500'
                   } ${!item.is_active ? 'opacity-60' : ''}`}
                 >
@@ -290,8 +293,8 @@ const AnnouncementsPage = () => {
                       )}
                       <span className={`text-xs font-medium px-2 py-1 rounded-full ${
                         item.content_type === 'announcement' 
-                          ? 'bg-blue-100 text-blue-700' 
-                          : 'bg-green-100 text-green-700'
+                          ? 'bg-blue-900 text-blue-200' 
+                          : 'bg-green-900 text-green-200'
                       }`}>
                         {item.content_type.toUpperCase()}
                       </span>
@@ -301,8 +304,8 @@ const AnnouncementsPage = () => {
                         onClick={() => item.id && toggleActive(item.id, item.is_active)}
                         className={`p-1 rounded ${
                           item.is_active 
-                            ? 'text-green-600 hover:bg-green-50' 
-                            : 'text-gray-400 hover:bg-gray-50'
+                            ? 'text-green-400 hover:bg-green-900' 
+                            : 'text-gray-500 hover:bg-gray-700'
                         }`}
                         title={item.is_active ? 'Active' : 'Inactive'}
                       >
@@ -310,13 +313,13 @@ const AnnouncementsPage = () => {
                       </button>
                       <button
                         onClick={() => setEditingItem(item)}
-                        className="p-1 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded"
+                        className="p-1 text-gray-400 hover:text-blue-400 hover:bg-blue-900 rounded"
                       >
                         <Edit className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => item.id && handleDelete(item.id)}
-                        className="p-1 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded"
+                        className="p-1 text-gray-400 hover:text-red-400 hover:bg-red-900 rounded"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -324,30 +327,30 @@ const AnnouncementsPage = () => {
                   </div>
 
                   {/* Title */}
-                  <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                  <h3 className="font-semibold text-white mb-2 line-clamp-2">
                     {item.title}
                   </h3>
 
                   {/* Content Preview */}
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-3">
+                  <p className="text-gray-300 text-sm mb-3 line-clamp-3">
                     {item.content}
                   </p>
 
                   {/* Keywords for Feedback */}
                   {item.content_type === 'feedback' && item.keywords?.length > 0 && (
                     <div className="mb-3">
-                      <p className="text-xs text-gray-500 mb-1">Trigger Keywords:</p>
+                      <p className="text-xs text-gray-400 mb-1">Trigger Keywords:</p>
                       <div className="flex flex-wrap gap-1">
                         {item.keywords.slice(0, 3).map((keyword, index) => (
                           <span
                             key={index}
-                            className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded"
+                            className="text-xs bg-gray-700 text-gray-200 px-2 py-1 rounded"
                           >
                             {keyword}
                           </span>
                         ))}
                         {item.keywords.length > 3 && (
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-gray-400">
                             +{item.keywords.length - 3} more
                           </span>
                         )}
