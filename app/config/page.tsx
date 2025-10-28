@@ -1557,12 +1557,14 @@ export default function ConfigPage() {
                 <p className="text-slate-400 mb-4">Configure announcement system to play messages when callers connect</p>
                 
                 <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4 mb-6">
-                  <h4 className="text-blue-300 font-medium mb-2">📢 How Announcement System Works</h4>
+                  <h4 className="text-blue-300 font-medium mb-2">📢 How Announcement & Feedback Systems Work</h4>
                   <div className="space-y-2 text-blue-200 text-sm">
-                    <p>• When enabled, plays configured announcement content immediately when calls connect</p>
-                    <p>• Bypasses normal AI conversation - caller hears announcement directly</p>
+                    <p><strong>Announcement System:</strong> Plays configured announcement content immediately when calls connect</p>
+                    <p><strong>Feedback System:</strong> Plays feedback content instead of normal AI conversation</p>
+                    <p>• Both systems bypass normal AI conversation - callers hear pre-configured messages</p>
                     <p>• Use the Announcements page to configure the message content</p>
                     <p>• Fallback message is used when no announcement content is configured</p>
+                    <p>• <span className="text-yellow-300">⚠️ Only one system can be active at a time</span></p>
                   </div>
                 </div>
 
@@ -1585,6 +1587,32 @@ export default function ConfigPage() {
                           onChange={(e) => setOrgConfig(prev => ({ 
                             ...prev, 
                             announcement_system_enabled: e.target.checked 
+                          }))}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Enable Feedback System */}
+                  <div className="bg-slate-800/50 p-4 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-200 mb-1">
+                          Enable Feedback System
+                        </label>
+                        <p className="text-sm text-slate-400">
+                          When enabled, calls will play feedback content instead of normal AI conversation
+                        </p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={orgConfig.feedback_system_enabled}
+                          onChange={(e) => setOrgConfig(prev => ({ 
+                            ...prev, 
+                            feedback_system_enabled: e.target.checked 
                           }))}
                           className="sr-only peer"
                         />
