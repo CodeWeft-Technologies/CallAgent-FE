@@ -21,7 +21,6 @@ interface AgentConfig {
 interface OrganizationConfig {
   llm_tts_enabled: boolean
   feedback_system_enabled: boolean
-  greeting_only_message: string
 }
 
 const PROMPT_TEMPLATES = {
@@ -415,8 +414,7 @@ export default function ConfigPage() {
   // Organization configuration state
   const [orgConfig, setOrgConfig] = useState<OrganizationConfig>({
     llm_tts_enabled: true,
-    feedback_system_enabled: false,
-    greeting_only_message: 'Thank you for calling. This is an automated message. Please call back during business hours. Goodbye.'
+    feedback_system_enabled: false
   })
 
   useEffect(() => {
@@ -524,8 +522,7 @@ export default function ConfigPage() {
         const data = await response.json()
         setOrgConfig({
           llm_tts_enabled: data.llm_tts_enabled ?? true,
-          feedback_system_enabled: data.feedback_system_enabled ?? false,
-          greeting_only_message: data.greeting_only_message || 'Thank you for calling. This is an automated message. Please call back during business hours. Goodbye.'
+          feedback_system_enabled: data.feedback_system_enabled ?? false
         })
         console.log('✅ Organization config loaded:', data)
       } else {
@@ -1620,24 +1617,20 @@ export default function ConfigPage() {
                     </div>
                   </div>
 
-                  {/* Greeting Only Message */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-200 mb-2">
-                      Greeting Only Message
-                    </label>
-                    <textarea
-                      value={orgConfig.greeting_only_message}
-                      onChange={(e) => setOrgConfig(prev => ({ 
-                        ...prev, 
-                        greeting_only_message: e.target.value 
-                      }))}
-                      rows={3}
-                      placeholder="Enter message to play when LLM+TTS is disabled..."
-                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
-                    />
-                    <p className="text-sm text-slate-500 mt-2">
-                      This message will be played when LLM+TTS is disabled, after which the call will end.
-                    </p>
+                  {/* Note about greeting message */}
+                  <div className="bg-slate-800/30 p-4 rounded-xl border border-slate-600/50">
+                    <div className="flex items-start space-x-3">
+                      <div className="text-blue-400 mt-0.5">ℹ️</div>
+                      <div>
+                        <h4 className="text-slate-200 font-medium mb-1">Greeting Message Configuration</h4>
+                        <p className="text-sm text-slate-400">
+                          When LLM+TTS is disabled, the system will play the <strong>Greeting Message</strong> configured in the AI Configuration tab, then automatically end the call.
+                        </p>
+                        <p className="text-sm text-slate-500 mt-1">
+                          To customize this message, go to the "AI Configuration" tab and update the "Greeting Message" field.
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Save Button */}
