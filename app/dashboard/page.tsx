@@ -416,7 +416,9 @@ export default function DashboardPage() {
                     </div>
                     <span className="text-slate-200 font-medium">Average Duration</span>
                   </div>
-                  <span className="text-2xl font-bold text-white">{Math.floor((stats.calls.average_duration || 0) / 60)}m {(stats.calls.average_duration || 0) % 60}s</span>
+                  <span className="text-2xl font-bold text-white">
+                    {Math.floor((stats.calls.average_duration || 0) / 60).toString().padStart(2, '0')}:{((stats.calls.average_duration || 0) % 60).toString().padStart(2, '0')}
+                  </span>
                 </div>
                 <div className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-800/50 transition-all">
                   <div className="flex items-center space-x-3">
@@ -469,7 +471,9 @@ export default function DashboardPage() {
         ) : (
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-purple-600/10 to-blue-600/10 rounded-2xl blur-xl"></div>
-            <ResourceUsageMinutes token={token} organizationId={user?.organization_id || null} />
+            <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6">
+              <ResourceUsageMinutes token={token} organizationId={user?.organization_id || null} />
+            </div>
           </div>
         )}
       </div>

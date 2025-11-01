@@ -93,7 +93,7 @@ const ResourceUsageMinutes: React.FC<ResourceUsageMinutesProps> = ({ token, orga
 
   if (loading) {
     return (
-      <div className="bg-slate-700 rounded-lg p-6">
+      <div>
         <div className="flex items-center space-x-3 mb-4">
           <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center">
             <Phone className="w-5 h-5 text-blue-400" />
@@ -108,7 +108,7 @@ const ResourceUsageMinutes: React.FC<ResourceUsageMinutesProps> = ({ token, orga
 
   if (error) {
     return (
-      <div className="bg-slate-700 rounded-lg p-6">
+      <div>
         <Alert severity="error">{error}</Alert>
       </div>
     );
@@ -116,7 +116,7 @@ const ResourceUsageMinutes: React.FC<ResourceUsageMinutesProps> = ({ token, orga
 
   if (!minutesData) {
     return (
-      <div className="bg-slate-700 rounded-lg p-6">
+      <div>
         <div className="flex items-center space-x-3 mb-4">
           <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center">
             <Phone className="w-5 h-5 text-blue-400" />
@@ -132,7 +132,7 @@ const ResourceUsageMinutes: React.FC<ResourceUsageMinutesProps> = ({ token, orga
   const statusColor = getStatusColor();
 
   return (
-    <div className="bg-slate-700 rounded-lg p-6">
+    <div>
       <div className="flex items-center space-x-3 mb-4">
         <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center">
           <Phone className="w-5 h-5 text-blue-400" />
