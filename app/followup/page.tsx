@@ -55,9 +55,13 @@ export default function FollowupPage() {
     const start = new Date()
     start.setDate(end.getDate() - 7)
     
+    const startDate = start.toISOString().split('T')[0]
+    const endDate = end.toISOString().split('T')[0]
+    
+    console.log('Initializing date range:', { startDate, endDate })
     setDateRange({
-      start: start.toISOString().split('T')[0],
-      end: end.toISOString().split('T')[0]
+      start: startDate,
+      end: endDate
     })
   }, [])
 
@@ -77,6 +81,9 @@ export default function FollowupPage() {
         ...(dateRange.start && { start_date: dateRange.start }),
         ...(dateRange.end && { end_date: dateRange.end })
       })
+
+      console.log('Fetching missed calls with params:', Object.fromEntries(params))
+      console.log('Date range:', dateRange)
 
       const response = await fetch(`${API_URL}/api/calls?${params}`, {
         headers: {
@@ -131,13 +138,27 @@ export default function FollowupPage() {
     }
   }
 
-  // Initial fetch and refetch when dependencies change
+  // Initial fetch when component mounts and user/token are available
   useEffect(() => {
-    if (token && user && dateRange.start && dateRange.end) {
+    if (token && user) {
       fetchMissedCalls(1)
       setCurrentPage(1)
     }
-  }, [token, user, dateRange.start, dateRange.end])
+  }, [token, user])
+
+  // Refetch when date range changes (debounced)
+  useEffect(() => {
+    console.log('Date range changed:', dateRange, 'Token:', !!token, 'User:', !!user)
+    if (token && user) {
+      const timer = setTimeout(() => {
+        console.log('Triggering fetchMissedCalls due to date change')
+        fetchMissedCalls(1)
+        setCurrentPage(1)
+      }, 300) // Debounce to avoid too many API calls
+      
+      return () => clearTimeout(timer)
+    }
+  }, [dateRange.start, dateRange.end])
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -282,7 +303,67 @@ export default function FollowupPage() {
         {/* Filters */}
         <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-800/50 p-6">
           <h3 className="text-lg font-semibold text-white mb-4">Date Range Filter</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          
+          {/* Quick Filter Buttons */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <button
+              onClick={() => {
+                const end = new Date()
+                const start = new Date()
+                setDateRange({
+                  start: start.toISOString().split('T')[0],
+                  end: end.toISOString().split('T')[0]
+                })
+              }}
+              className="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-md transition-colors"
+            >
+              Today
+            </button>
+            <button
+              onClick={() => {
+                const end = new Date()
+                const start = new Date()
+                start.setDate(end.getDate() - 7)
+                setDateRange({
+                  start: start.toISOString().split('T')[0],
+                  end: end.toISOString().split('T')[0]
+                })
+              }}
+              className="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-md transition-colors"
+            >
+              Last 7 Days
+            </button>
+            <button
+              onClick={() => {
+                const end = new Date()
+                const start = new Date()
+                start.setDate(end.getDate() - 30)
+                setDateRange({
+                  start: start.toISOString().split('T')[0],
+                  end: end.toISOString().split('T')[0]
+                })
+              }}
+              className="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-md transition-colors"
+            >
+              Last 30 Days
+            </button>
+            <button
+              onClick={() => {
+                const end = new Date()
+                const start = new Date()
+                start.setMonth(start.getMonth() - 3)
+                setDateRange({
+                  start: start.toISOString().split('T')[0],
+                  end: end.toISOString().split('T')[0]
+                })
+              }}
+              className="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-md transition-colors"
+            >
+              Last 3 Months
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm text-slate-400 mb-2">Start Date</label>
               <input
@@ -304,9 +385,20 @@ export default function FollowupPage() {
             <div className="flex items-end">
               <button
                 onClick={() => fetchMissedCalls(1)}
-                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                disabled={loading}
+                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
               >
-                Apply Filter
+                {loading ? 'Loading...' : 'Apply Filter'}
+              </button>
+            </div>
+            <div className="flex items-end">
+              <button
+                onClick={() => {
+                  setDateRange({ start: '', end: '' })
+                }}
+                className="w-full px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+              >
+                Clear Filter
               </button>
             </div>
           </div>
