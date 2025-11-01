@@ -60,6 +60,12 @@ export default function AdminDashboard() {
   const [organizations, setOrganizations] = useState<Organization[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+
+  // Debug search term changes
+  const setSearchTermDebug = (value: string) => {
+    console.log('🔍 Search term changing:', { from: searchTerm, to: value, stack: new Error().stack })
+    setSearchTerm(value)
+  }
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null)
   const [showAPIKeys, setShowAPIKeys] = useState<{[key: number]: boolean}>({})
   const [editingKeys, setEditingKeys] = useState<{[key: number]: boolean}>({})
@@ -478,9 +484,18 @@ export default function AdminDashboard() {
                 id="org-search-input"
                 placeholder="Search organizations..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={(e) => setSearchTermDebug(e.target.value)}
+                className="w-full pl-10 pr-12 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTermDebug('')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
           
@@ -656,7 +671,18 @@ export default function AdminDashboard() {
                       
                       <button
                         type="button"
-                        onClick={() => toggleAPIKeyVisibility(org.id)}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          console.log('🔥 Show button clicked:', { 
+                            orgId: org.id, 
+                            orgName: org.name, 
+                            currentSearchTerm: searchTerm,
+                            showState: showAPIKeys[org.id],
+                            target: e.target
+                          })
+                          toggleAPIKeyVisibility(org.id)
+                        }}
                         className={`flex items-center space-x-2 px-3 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:outline-none font-medium ${
                           showAPIKeys[org.id] 
                             ? 'bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white focus:ring-orange-500' 
