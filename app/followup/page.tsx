@@ -55,13 +55,9 @@ export default function FollowupPage() {
     const start = new Date()
     start.setDate(end.getDate() - 7)
     
-    const startDate = start.toISOString().split('T')[0]
-    const endDate = end.toISOString().split('T')[0]
-    
-    console.log('Initializing date range:', { startDate, endDate })
     setDateRange({
-      start: startDate,
-      end: endDate
+      start: start.toISOString().split('T')[0],
+      end: end.toISOString().split('T')[0]
     })
   }, [])
 
@@ -73,17 +69,17 @@ export default function FollowupPage() {
     setError(null)
 
     try {
+      const skip = (page - 1) * itemsPerPage
       const params = new URLSearchParams({
         status: 'missed',
-        page: page.toString(),
+        skip: skip.toString(),
         limit: itemsPerPage.toString(),
         organization_id: user.organization_id?.toString() || '',
-        ...(dateRange.start && { start_date: dateRange.start }),
-        ...(dateRange.end && { end_date: dateRange.end })
+        ...(dateRange.start && { date_from: dateRange.start }),
+        ...(dateRange.end && { date_to: dateRange.end })
       })
 
-      console.log('Fetching missed calls with params:', Object.fromEntries(params))
-      console.log('Date range:', dateRange)
+
 
       const response = await fetch(`${API_URL}/api/calls?${params}`, {
         headers: {
@@ -148,10 +144,8 @@ export default function FollowupPage() {
 
   // Refetch when date range changes (debounced)
   useEffect(() => {
-    console.log('Date range changed:', dateRange, 'Token:', !!token, 'User:', !!user)
     if (token && user) {
       const timer = setTimeout(() => {
-        console.log('Triggering fetchMissedCalls due to date change')
         fetchMissedCalls(1)
         setCurrentPage(1)
       }, 300) // Debounce to avoid too many API calls
