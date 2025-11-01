@@ -76,7 +76,7 @@ export default function AdminDashboard() {
   const [organizationMinutes, setOrganizationMinutes] = useState<{[key: number]: any}>({})
   
   // Real-time polling state
-  const [isPollingEnabled, setIsPollingEnabled] = useState(true)
+  const [isPollingEnabled, setIsPollingEnabled] = useState(false)
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
   const [loadingMinutes, setLoadingMinutes] = useState(false)
 
@@ -460,7 +460,7 @@ export default function AdminDashboard() {
               <Clock className="w-5 h-5 text-blue-400" />
               <span className="text-white font-medium">Real-time Updates</span>
               <span className="text-slate-400 text-sm">
-                Auto-refresh call minutes every 5 seconds
+                Manual refresh to prevent log flooding
               </span>
             </div>
             <div className="flex items-center space-x-4">
