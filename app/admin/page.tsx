@@ -63,7 +63,19 @@ export default function AdminDashboard() {
 
   // Debug search term changes
   const setSearchTermDebug = (value: string) => {
-    console.log('🔍 Search term changing:', { from: searchTerm, to: value, stack: new Error().stack })
+    const error = new Error()
+    console.log('🔍 Search term changing:', { 
+      from: searchTerm, 
+      to: value, 
+      stack: error.stack?.split('\n').slice(0, 5).join('\n')
+    })
+    
+    // If "superadmin" is being set unexpectedly, block it
+    if (value === 'superadmin' && searchTerm !== 'superadmin') {
+      console.error('🚫 BLOCKING superadmin search term - this appears to be a bug!')
+      return // Don't set the search term
+    }
+    
     setSearchTerm(value)
   }
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null)
@@ -321,6 +333,13 @@ export default function AdminDashboard() {
 
   // Toggle API key visibility
   const toggleAPIKeyVisibility = (orgId: number) => {
+    console.log('🔑 Toggle API visibility called:', { 
+      orgId, 
+      currentShow: showAPIKeys[orgId], 
+      isEditing: editingKeys[orgId],
+      searchTerm: searchTerm 
+    })
+    
     setShowAPIKeys(prev => {
       const newState = { ...prev, [orgId]: !prev[orgId] }
       
@@ -598,7 +617,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-3" onClick={(e) => e.stopPropagation()}>
                       {/* Call Minutes Allocation Button */}
                       <button
                         type="button"
@@ -671,16 +690,35 @@ export default function AdminDashboard() {
                       
                       <button
                         type="button"
+                        tabIndex={0}
+
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
+                          e.nativeEvent.stopImmediatePropagation()
+                          
+                          // Prevent any form interactions
+                          const searchInput = document.getElementById('org-search-input') as HTMLInputElement
+                          if (searchInput) {
+                            searchInput.blur()
+                          }
+                          
+                          // Prevent any auto-fill or suggestion behavior
+                          if (e.target !== e.currentTarget) {
+                            console.warn('⚠️ Click target mismatch:', { target: e.target, currentTarget: e.currentTarget })
+                          }
+                          
                           console.log('🔥 Show button clicked:', { 
                             orgId: org.id, 
                             orgName: org.name, 
                             currentSearchTerm: searchTerm,
                             showState: showAPIKeys[org.id],
-                            target: e.target
+                            isEditing: editingKeys[org.id],
+                            activeElement: document.activeElement?.tagName,
+                            clickTarget: (e.target as HTMLElement)?.tagName
                           })
+                          
+                          // Execute toggle immediately instead of setTimeout
                           toggleAPIKeyVisibility(org.id)
                         }}
                         className={`flex items-center space-x-2 px-3 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:outline-none font-medium ${
@@ -689,9 +727,10 @@ export default function AdminDashboard() {
                             : 'bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-slate-300 focus:ring-slate-500'
                         }`}
                         title="Toggle API Keys"
+                        style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
                       >
-                        {showAPIKeys[org.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        <span className="text-sm">{showAPIKeys[org.id] ? 'Hide' : 'Show'}</span>
+                        {showAPIKeys[org.id] ? <EyeOff className="w-4 h-4 pointer-events-none" /> : <Eye className="w-4 h-4 pointer-events-none" />}
+                        <span className="text-sm pointer-events-none select-none">{showAPIKeys[org.id] ? 'Hide' : 'Show'}</span>
                       </button>
                       
                       {!editingKeys[org.id] ? (
