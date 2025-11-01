@@ -10,6 +10,7 @@ interface MissedCall {
   direction?: 'inbound' | 'outbound'
   lead_id?: string
   lead?: {
+    id?: string
     name: string
     company?: string
     email?: string
@@ -47,6 +48,7 @@ export default function FollowupPage() {
   })
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [callingNumbers, setCallingNumbers] = useState<Set<string>>(new Set())
   const itemsPerPage = 20
 
   // Initialize date range to last 7 days
@@ -153,6 +155,74 @@ export default function FollowupPage() {
       return () => clearTimeout(timer)
     }
   }, [dateRange.start, dateRange.end])
+
+  // Make call through pipeline - simplified version following leads page pattern
+  const makeCall = async (call: MissedCall) => {
+    if (!token || !user) return
+
+    const phoneNumber = String(call.phone_number)
+    setCallingNumbers(prev => new Set(prev).add(phoneNumber))
+    setError(null)
+
+    try {
+      // Use the lead_id from the missed call
+      const leadId = call.lead_id
+      if (!leadId) {
+        throw new Error('No lead ID available for this call')
+      }
+
+      // Make the call using the same API as the leads page
+      const response = await fetch(`${API_URL}/api/leads/${leadId}/call`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          max_retries: 3
+        })
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        // Show success notification
+        const notification = document.createElement('div')
+        notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50'
+        notification.textContent = `Call initiated to ${phoneNumber}`
+        document.body.appendChild(notification)
+        
+        setTimeout(() => {
+          document.body.removeChild(notification)
+        }, 3000)
+
+        // Refresh the missed calls list
+        fetchMissedCalls(currentPage)
+      } else {
+        throw new Error(data.error || 'Failed to initiate call')
+      }
+    } catch (error) {
+      console.error('Error making call:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to initiate call'
+      setError(errorMessage)
+      
+      // Show error notification
+      const notification = document.createElement('div')
+      notification.className = 'fixed top-4 right-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg z-50'
+      notification.textContent = errorMessage
+      document.body.appendChild(notification)
+      
+      setTimeout(() => {
+        document.body.removeChild(notification)
+      }, 3000)
+    } finally {
+      setCallingNumbers(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(phoneNumber)
+        return newSet
+      })
+    }
+  }
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -485,11 +555,16 @@ export default function FollowupPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <button
-                            onClick={() => window.open(`tel:${call.phone_number}`, '_blank')}
-                            className="flex items-center space-x-1 px-3 py-1 bg-green-600/20 hover:bg-green-600/30 text-green-400 text-xs rounded-lg transition-colors"
+                            onClick={() => makeCall(call)}
+                            disabled={callingNumbers.has(String(call.phone_number))}
+                            className="flex items-center space-x-1 px-3 py-1 bg-green-600/20 hover:bg-green-600/30 disabled:bg-green-600/10 disabled:cursor-not-allowed text-green-400 text-xs rounded-lg transition-colors"
                           >
-                            <Phone className="w-3 h-3" />
-                            <span>Call Back</span>
+                            {callingNumbers.has(String(call.phone_number)) ? (
+                              <div className="animate-spin rounded-full h-3 w-3 border border-green-400 border-t-transparent" />
+                            ) : (
+                              <Phone className="w-3 h-3" />
+                            )}
+                            <span>{callingNumbers.has(String(call.phone_number)) ? 'Calling...' : 'Call Back'}</span>
                           </button>
                         </td>
                       </tr>
@@ -529,11 +604,16 @@ export default function FollowupPage() {
                     </div>
                     
                     <button
-                      onClick={() => window.open(`tel:${call.phone_number}`, '_self')}
-                      className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-lg transition-all text-sm"
+                      onClick={() => makeCall(call)}
+                      disabled={callingNumbers.has(String(call.phone_number))}
+                      className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-emerald-600/50 disabled:to-emerald-700/50 disabled:cursor-not-allowed text-white rounded-lg transition-all text-sm"
                     >
-                      <Phone className="w-4 h-4" />
-                      <span>Call Back</span>
+                      {callingNumbers.has(String(call.phone_number)) ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                      ) : (
+                        <Phone className="w-4 h-4" />
+                      )}
+                      <span>{callingNumbers.has(String(call.phone_number)) ? 'Calling...' : 'Call Back'}</span>
                     </button>
                   </div>
                 ))}
