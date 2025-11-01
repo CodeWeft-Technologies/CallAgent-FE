@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { PhoneMissed, Download, RefreshCw, Calendar, Clock, User, Phone, AlertCircle } from 'lucide-react'
 
@@ -49,6 +49,10 @@ export default function FollowupPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [callingNumbers, setCallingNumbers] = useState<Set<string>>(new Set())
+  const [retryConfig, setRetryConfig] = useState({
+    max_retries: 3,
+    retry_delay: 10
+  })
   const itemsPerPage = 20
 
   // Initialize date range to last 7 days
@@ -136,13 +140,36 @@ export default function FollowupPage() {
     }
   }
 
+  // Load retry configuration from org config
+  const loadRetryConfig = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/config`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setRetryConfig({
+          max_retries: data.max_retries || 3,
+          retry_delay: data.retry_delay || 10
+        })
+      }
+    } catch (error) {
+      console.error('❌ Error loading retry config:', error)
+      // Keep default values on error
+    }
+  }, [token])
+
   // Initial fetch when component mounts and user/token are available
   useEffect(() => {
     if (token && user) {
       fetchMissedCalls(1)
       setCurrentPage(1)
+      loadRetryConfig()
     }
-  }, [token, user])
+  }, [token, user, loadRetryConfig])
 
   // Refetch when date range changes (debounced)
   useEffect(() => {
@@ -179,7 +206,7 @@ export default function FollowupPage() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          max_retries: 3
+          max_retries: retryConfig.max_retries
         })
       })
 
