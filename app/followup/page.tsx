@@ -5,14 +5,20 @@ import { useAuth } from '../../contexts/AuthContext'
 import { PhoneMissed, Download, RefreshCw, Calendar, Clock, User, Phone, AlertCircle } from 'lucide-react'
 
 interface MissedCall {
-  id: number
-  lead_phone: string
-  lead_name?: string
-  status: string
+  _id: string
+  phone_number: string | number
+  direction?: 'inbound' | 'outbound'
+  lead_id?: string
+  lead?: {
+    name: string
+    company?: string
+    email?: string
+  }
+  call_date: string
+  status: 'completed' | 'failed' | 'missed' | 'initiated'
   duration: number
-  created_at: string
-  updated_at: string
-  organization_id: number
+  call_summary?: string
+  sentiment?: string
 }
 
 interface MissedCallsStats {
@@ -72,7 +78,7 @@ export default function FollowupPage() {
         ...(dateRange.end && { end_date: dateRange.end })
       })
 
-      const response = await fetch(`${API_URL}/calls?${params}`, {
+      const response = await fetch(`${API_URL}/api/calls?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -84,32 +90,38 @@ export default function FollowupPage() {
       }
 
       const data = await response.json()
-      setMissedCalls(data.calls || [])
-      setTotalPages(Math.ceil((data.total || 0) / itemsPerPage))
       
-      // Calculate stats
-      const total = data.total || 0
-      const today = data.calls?.filter((call: MissedCall) => {
-        const callDate = new Date(call.created_at).toDateString()
-        const todayDate = new Date().toDateString()
-        return callDate === todayDate
-      }).length || 0
+      if (data.success) {
+        setMissedCalls(data.data || [])
+        setTotalPages(Math.ceil((data.total || 0) / itemsPerPage))
+        
+        // Calculate stats
+        const total = data.total || 0
+        const calls = data.data || []
+        const today = calls.filter((call: MissedCall) => {
+          const callDate = new Date(call.call_date).toDateString()
+          const todayDate = new Date().toDateString()
+          return callDate === todayDate
+        }).length
 
-      const thisWeek = data.calls?.filter((call: MissedCall) => {
-        const callDate = new Date(call.created_at)
-        const weekAgo = new Date()
-        weekAgo.setDate(weekAgo.getDate() - 7)
-        return callDate >= weekAgo
-      }).length || 0
+        const thisWeek = calls.filter((call: MissedCall) => {
+          const callDate = new Date(call.call_date)
+          const weekAgo = new Date()
+          weekAgo.setDate(weekAgo.getDate() - 7)
+          return callDate >= weekAgo
+        }).length
 
-      const thisMonth = data.calls?.filter((call: MissedCall) => {
-        const callDate = new Date(call.created_at)
-        const monthAgo = new Date()
-        monthAgo.setMonth(monthAgo.getMonth() - 1)
-        return callDate >= monthAgo
-      }).length || 0
+        const thisMonth = calls.filter((call: MissedCall) => {
+          const callDate = new Date(call.call_date)
+          const monthAgo = new Date()
+          monthAgo.setMonth(monthAgo.getMonth() - 1)
+          return callDate >= monthAgo
+        }).length
 
-      setStats({ total, today, this_week: thisWeek, this_month: thisMonth })
+        setStats({ total, today, this_week: thisWeek, this_month: thisMonth })
+      } else {
+        throw new Error('API returned success: false')
+      }
 
     } catch (err) {
       console.error('Error fetching missed calls:', err)
@@ -151,9 +163,9 @@ export default function FollowupPage() {
     const csvContent = [
       headers.join(','),
       ...missedCalls.map(call => [
-        `"${formatDate(call.created_at)}"`,
-        `"${call.lead_phone}"`,
-        `"${call.lead_name || 'Unknown'}"`,
+        `"${formatDate(call.call_date)}"`,
+        `"${call.phone_number}"`,
+        `"${call.lead?.name || 'Unknown'}"`,
         `"${formatDuration(call.duration)}"`,
         `"${call.status}"`
       ].join(','))
@@ -353,23 +365,23 @@ export default function FollowupPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-800/50">
                     {missedCalls.map((call) => (
-                      <tr key={call.id} className="hover:bg-slate-800/30 transition-colors">
+                      <tr key={call._id} className="hover:bg-slate-800/30 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center space-x-2">
                             <Calendar className="w-4 h-4 text-slate-400" />
-                            <span className="text-sm text-white">{formatDate(call.created_at)}</span>
+                            <span className="text-sm text-white">{formatDate(call.call_date)}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center space-x-2">
                             <Phone className="w-4 h-4 text-slate-400" />
-                            <span className="text-sm text-white">{call.lead_phone}</span>
+                            <span className="text-sm text-white">{call.phone_number}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center space-x-2">
                             <User className="w-4 h-4 text-slate-400" />
-                            <span className="text-sm text-white">{call.lead_name || 'Unknown'}</span>
+                            <span className="text-sm text-white">{call.lead?.name || 'Unknown'}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -385,7 +397,7 @@ export default function FollowupPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <button
-                            onClick={() => window.open(`tel:${call.lead_phone}`, '_blank')}
+                            onClick={() => window.open(`tel:${call.phone_number}`, '_blank')}
                             className="flex items-center space-x-1 px-3 py-1 bg-green-600/20 hover:bg-green-600/30 text-green-400 text-xs rounded-lg transition-colors"
                           >
                             <Phone className="w-3 h-3" />
