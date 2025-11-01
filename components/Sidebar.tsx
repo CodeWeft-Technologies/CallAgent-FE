@@ -15,7 +15,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Menu,
-  Clock
+  Clock,
+  PhoneMissed
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -23,6 +24,7 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Configuration', href: '/config', icon: Settings },
   { name: 'Calls', href: '/calls', icon: PhoneCall },
+  { name: 'Follow-up', href: '/followup', icon: PhoneMissed },
   { name: 'Leads', href: '/leads', icon: Users },
   { name: 'Appointments', href: '/appointments', icon: Calendar },
 ]
