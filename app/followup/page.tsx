@@ -208,95 +208,96 @@ export default function FollowupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-slate-950 p-3 sm:p-6">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center">
               <PhoneMissed className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Follow-up Center</h1>
-              <p className="text-slate-400">Manage missed calls and follow-up activities</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-white">Follow-up Center</h1>
+              <p className="text-slate-400 text-sm sm:text-base">Manage missed calls and follow-up activities</p>
             </div>
           </div>
           
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3">
             <button
               onClick={() => fetchMissedCalls(currentPage)}
               disabled={loading}
-              className="flex items-center space-x-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors disabled:opacity-50 text-sm sm:text-base"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              <span>Refresh</span>
+              <span className="hidden sm:inline">Refresh</span>
             </button>
             
             <button
               onClick={exportToCSV}
               disabled={missedCalls.length === 0}
-              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-lg transition-all disabled:opacity-50"
+              className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-lg transition-all disabled:opacity-50 text-sm sm:text-base"
             >
               <Download className="w-4 h-4" />
-              <span>Export CSV</span>
+              <span className="hidden sm:inline">Export CSV</span>
+              <span className="sm:hidden">CSV</span>
             </button>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-800/50 p-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-red-600/20 rounded-lg flex items-center justify-center">
-                <PhoneMissed className="w-4 h-4 text-red-400" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-800/50 p-4 sm:p-6">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-red-600/20 rounded-lg flex items-center justify-center">
+                <PhoneMissed className="w-3 h-3 sm:w-4 sm:h-4 text-red-400" />
               </div>
               <div>
-                <p className="text-slate-400 text-sm">Total Missed</p>
-                <p className="text-2xl font-bold text-white">{stats.total}</p>
+                <p className="text-slate-400 text-xs sm:text-sm">Total Missed</p>
+                <p className="text-lg sm:text-2xl font-bold text-white">{stats.total}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-800/50 p-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-orange-600/20 rounded-lg flex items-center justify-center">
-                <Calendar className="w-4 h-4 text-orange-400" />
+          <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-800/50 p-4 sm:p-6">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-orange-600/20 rounded-lg flex items-center justify-center">
+                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-orange-400" />
               </div>
               <div>
-                <p className="text-slate-400 text-sm">Today</p>
-                <p className="text-2xl font-bold text-white">{stats.today}</p>
+                <p className="text-slate-400 text-xs sm:text-sm">Today</p>
+                <p className="text-lg sm:text-2xl font-bold text-white">{stats.today}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-800/50 p-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-600/20 rounded-lg flex items-center justify-center">
-                <Clock className="w-4 h-4 text-blue-400" />
+          <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-800/50 p-4 sm:p-6">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600/20 rounded-lg flex items-center justify-center">
+                <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-blue-400" />
               </div>
               <div>
-                <p className="text-slate-400 text-sm">This Week</p>
-                <p className="text-2xl font-bold text-white">{stats.this_week}</p>
+                <p className="text-slate-400 text-xs sm:text-sm">This Week</p>
+                <p className="text-lg sm:text-2xl font-bold text-white">{stats.this_week}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-800/50 p-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-purple-600/20 rounded-lg flex items-center justify-center">
-                <Calendar className="w-4 h-4 text-purple-400" />
+          <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-800/50 p-4 sm:p-6">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-purple-600/20 rounded-lg flex items-center justify-center">
+                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-purple-400" />
               </div>
               <div>
-                <p className="text-slate-400 text-sm">This Month</p>
-                <p className="text-2xl font-bold text-white">{stats.this_month}</p>
+                <p className="text-slate-400 text-xs sm:text-sm">This Month</p>
+                <p className="text-lg sm:text-2xl font-bold text-white">{stats.this_month}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-800/50 p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Date Range Filter</h3>
+        <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-800/50 p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold text-white mb-4">Date Range Filter</h3>
           
           {/* Quick Filter Buttons */}
           <div className="flex flex-wrap gap-2 mb-4">
@@ -357,30 +358,30 @@ export default function FollowupPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm text-slate-400 mb-2">Start Date</label>
+              <label className="block text-xs sm:text-sm text-slate-400 mb-2">Start Date</label>
               <input
                 type="date"
                 value={dateRange.start}
                 onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               />
             </div>
             <div>
-              <label className="block text-sm text-slate-400 mb-2">End Date</label>
+              <label className="block text-xs sm:text-sm text-slate-400 mb-2">End Date</label>
               <input
                 type="date"
                 value={dateRange.end}
                 onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               />
             </div>
             <div className="flex items-end">
               <button
                 onClick={() => fetchMissedCalls(1)}
                 disabled={loading}
-                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm"
               >
                 {loading ? 'Loading...' : 'Apply Filter'}
               </button>
@@ -390,7 +391,7 @@ export default function FollowupPage() {
                 onClick={() => {
                   setDateRange({ start: '', end: '' })
                 }}
-                className="w-full px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                className="w-full px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors text-sm"
               >
                 Clear Filter
               </button>
@@ -400,32 +401,33 @@ export default function FollowupPage() {
 
         {/* Missed Calls Table */}
         <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-800/50 overflow-hidden">
-          <div className="p-6 border-b border-slate-800/50">
-            <h3 className="text-lg font-semibold text-white">Missed Calls ({missedCalls.length})</h3>
+          <div className="p-4 sm:p-6 border-b border-slate-800/50">
+            <h3 className="text-base sm:text-lg font-semibold text-white">Missed Calls ({missedCalls.length})</h3>
           </div>
 
           {error && (
-            <div className="p-6 border-b border-slate-800/50">
+            <div className="p-4 sm:p-6 border-b border-slate-800/50">
               <div className="flex items-center space-x-2 text-red-400">
                 <AlertCircle className="w-4 h-4" />
-                <span>{error}</span>
+                <span className="text-sm sm:text-base">{error}</span>
               </div>
             </div>
           )}
 
           {loading ? (
-            <div className="p-12 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto"></div>
-              <p className="text-slate-400 mt-2">Loading missed calls...</p>
+            <div className="p-8 sm:p-12 text-center">
+              <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-400 mx-auto"></div>
+              <p className="text-slate-400 mt-2 text-sm sm:text-base">Loading missed calls...</p>
             </div>
           ) : missedCalls.length === 0 ? (
-            <div className="p-12 text-center">
-              <PhoneMissed className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-400">No missed calls found for the selected date range</p>
+            <div className="p-8 sm:p-12 text-center">
+              <PhoneMissed className="w-8 h-8 sm:w-12 sm:h-12 text-slate-600 mx-auto mb-4" />
+              <p className="text-slate-400 text-sm sm:text-base">No missed calls found for the selected date range</p>
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              {/* Desktop Table View - Hidden on Mobile */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-slate-800/50">
                     <tr>
@@ -496,24 +498,65 @@ export default function FollowupPage() {
                 </table>
               </div>
 
+              {/* Mobile Card View - Visible on Mobile Only */}
+              <div className="md:hidden space-y-4 p-4">
+                {missedCalls.map((call) => (
+                  <div key={call._id} className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-red-600/20 rounded-lg flex items-center justify-center">
+                          <PhoneMissed className="w-4 h-4 text-red-400" />
+                        </div>
+                        <div>
+                          <p className="text-white font-medium text-sm">{call.lead?.name || 'Unknown'}</p>
+                          <p className="text-slate-400 text-xs">{call.phone_number}</p>
+                        </div>
+                      </div>
+                      <span className="px-2 py-1 bg-red-600/20 text-red-400 text-xs rounded-full">
+                        {call.status}
+                      </span>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <div>
+                        <p className="text-slate-400 text-xs">Date & Time</p>
+                        <p className="text-white text-sm">{formatDate(call.call_date)}</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400 text-xs">Duration</p>
+                        <p className="text-white text-sm">{formatDuration(call.duration)}</p>
+                      </div>
+                    </div>
+                    
+                    <button
+                      onClick={() => window.open(`tel:${call.phone_number}`, '_self')}
+                      className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-lg transition-all text-sm"
+                    >
+                      <Phone className="w-4 h-4" />
+                      <span>Call Back</span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="p-6 border-t border-slate-800/50 flex items-center justify-between">
-                  <p className="text-sm text-slate-400">
+                <div className="p-4 sm:p-6 border-t border-slate-800/50 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <p className="text-xs sm:text-sm text-slate-400">
                     Page {currentPage} of {totalPages}
                   </p>
                   <div className="flex space-x-2">
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded disabled:opacity-50"
+                      className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded disabled:opacity-50 text-sm"
                     >
                       Previous
                     </button>
                     <button
                       onClick={() => handlePageChange(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded disabled:opacity-50"
+                      className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded disabled:opacity-50 text-sm"
                     >
                       Next
                     </button>
