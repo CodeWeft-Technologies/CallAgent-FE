@@ -6,7 +6,7 @@ import {
   Building2, Key, Settings, Users, Plus, Edit, Trash2, 
   Eye, EyeOff, Save, X, Check, AlertCircle, Search,
   Shield, Database, Mic, MessageSquare, Volume2, LogOut,
-  Clock, Timer
+  Timer
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import APIKeyManager from '../../components/APIKeyManager'
@@ -75,9 +75,6 @@ export default function AdminDashboard() {
   })
   const [organizationMinutes, setOrganizationMinutes] = useState<{[key: number]: any}>({})
   
-  // Real-time polling state
-  const [isPollingEnabled, setIsPollingEnabled] = useState(false)
-  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
   const [loadingMinutes, setLoadingMinutes] = useState(false)
 
   // Handle logout
@@ -314,42 +311,33 @@ export default function AdminDashboard() {
     }
   }, [token, user])
 
-  // Real-time polling for call minutes updates
-  useEffect(() => {
-    if (!isPollingEnabled || !token || !(user?.role === 'super_admin' || user?.is_super_admin)) {
-      return
-    }
 
-    const startPolling = () => {
-      const interval = setInterval(async () => {
-        if (organizations.length > 0) {
-          await fetchCallMinutesData(organizations)
-        }
-      }, 5000) // Poll every 5 seconds for testing (was 30000)
-      
-      setPollingInterval(interval)
-    }
-
-    startPolling()
-
-    return () => {
-      if (pollingInterval) {
-        clearInterval(pollingInterval)
-        setPollingInterval(null)
-      }
-    }
-  }, [token, user, organizations, isPollingEnabled])
 
   // Toggle API key visibility
   const toggleAPIKeyVisibility = (orgId: number) => {
-    console.log(`Toggling API key visibility for org ${orgId}`)
-    console.log('Previous state:', showAPIKeys[orgId])
     setShowAPIKeys(prev => {
-      const newState = {
-        ...prev,
-        [orgId]: !prev[orgId]
+      const newState = { ...prev, [orgId]: !prev[orgId] }
+      
+      // If we're showing API keys and config doesn't exist, initialize it
+      if (newState[orgId] && !apiKeyConfigs[orgId]) {
+        const org = organizations.find(o => o.id === orgId)
+        if (org) {
+          setApiKeyConfigs(prevConfigs => ({
+            ...prevConfigs,
+            [orgId]: {
+              stt_provider: org.api_keys?.stt_provider || '',
+              stt_api_key: org.api_keys?.stt_api_key || '',
+              llm_provider: org.api_keys?.llm_provider || '',
+              llm_api_key: org.api_keys?.llm_api_key || '',
+              tts_provider: org.api_keys?.tts_provider || '',
+              tts_api_key: org.api_keys?.tts_api_key || '',
+              google_tts_api_key: org.api_keys?.google_tts_api_key || '',
+              cartesia_tts_api_key: org.api_keys?.cartesia_tts_api_key || ''
+            }
+          }))
+        }
       }
-      console.log('New state will be:', newState[orgId])
+      
       return newState
     })
   }
@@ -453,49 +441,7 @@ export default function AdminDashboard() {
           <p className="text-slate-400">Manage organizations and their API key configurations</p>
         </div>
 
-        {/* Real-time Polling Controls */}
-        <div className="bg-slate-800 rounded-lg p-4 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Clock className="w-5 h-5 text-blue-400" />
-              <span className="text-white font-medium">Real-time Updates</span>
-              <span className="text-slate-400 text-sm">
-                Manual refresh to prevent log flooding
-              </span>
-            </div>
-            <div className="flex items-center space-x-4">
-              {isPollingEnabled && (
-                <div className="flex items-center space-x-2 text-green-400 text-sm font-medium">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span>Live Updates</span>
-                </div>
-              )}
-              <button
-                onClick={async () => {
-                  if (organizations.length > 0) {
-                    await fetchCallMinutesData(organizations)
-                    console.log('Manual refresh completed')
-                  }
-                }}
-                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
-              >
-                <Clock className="w-4 h-4" />
-                <span>Refresh Now</span>
-              </button>
-              <button
-                onClick={() => setIsPollingEnabled(!isPollingEnabled)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:outline-none font-medium ${
-                  isPollingEnabled 
-                    ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white focus:ring-green-500' 
-                    : 'bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-slate-300 focus:ring-slate-500'
-                }`}
-              >
-                <div className={`w-2 h-2 rounded-full ${isPollingEnabled ? 'bg-white' : 'bg-slate-400'}`}></div>
-                <span>{isPollingEnabled ? 'Auto-Update On' : 'Auto-Update Off'}</span>
-              </button>
-            </div>
-          </div>
-        </div>
+
 
         {/* Admin Functions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -529,6 +475,7 @@ export default function AdminDashboard() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
               <input
                 type="text"
+                id="org-search-input"
                 placeholder="Search organizations..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -603,7 +550,7 @@ export default function AdminDashboard() {
                         {organizationMinutes[org.id] && (
                           <div className="flex items-center space-x-4 text-sm mt-2">
                             <div className="flex items-center space-x-2">
-                              <Clock className="w-4 h-4 text-blue-400" />
+                              <Timer className="w-4 h-4 text-blue-400" />
                               <span className="text-slate-300">
                                 {organizationMinutes[org.id].minutes_remaining || 0} / {organizationMinutes[org.id].total_minutes_allocated || 0} mins
                               </span>
@@ -668,7 +615,7 @@ export default function AdminDashboard() {
                           }`}
                           title={organizationMinutes[org.id].is_active ? "Deactivate Minutes" : "Activate Minutes"}
                         >
-                          <Clock className="w-4 h-4" />
+                          <Timer className="w-4 h-4" />
                           <span>{organizationMinutes[org.id].is_active ? 'Active' : 'Inactive'}</span>
                         </button>
                       )}
@@ -709,13 +656,7 @@ export default function AdminDashboard() {
                       
                       <button
                         type="button"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          console.log(`Show button clicked for org ${org.id} (${org.name})`)
-                          console.log('Current showAPIKeys state:', showAPIKeys)
-                          toggleAPIKeyVisibility(org.id)
-                        }}
+                        onClick={() => toggleAPIKeyVisibility(org.id)}
                         className={`flex items-center space-x-2 px-3 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:outline-none font-medium ${
                           showAPIKeys[org.id] 
                             ? 'bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white focus:ring-orange-500' 
