@@ -342,10 +342,16 @@ export default function AdminDashboard() {
 
   // Toggle API key visibility
   const toggleAPIKeyVisibility = (orgId: number) => {
-    setShowAPIKeys(prev => ({
-      ...prev,
-      [orgId]: !prev[orgId]
-    }))
+    console.log(`Toggling API key visibility for org ${orgId}`)
+    console.log('Previous state:', showAPIKeys[orgId])
+    setShowAPIKeys(prev => {
+      const newState = {
+        ...prev,
+        [orgId]: !prev[orgId]
+      }
+      console.log('New state will be:', newState[orgId])
+      return newState
+    })
   }
 
   // Start editing API keys
@@ -706,6 +712,8 @@ export default function AdminDashboard() {
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
+                          console.log(`Show button clicked for org ${org.id} (${org.name})`)
+                          console.log('Current showAPIKeys state:', showAPIKeys)
                           toggleAPIKeyVisibility(org.id)
                         }}
                         className={`flex items-center space-x-2 px-3 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:outline-none font-medium ${
