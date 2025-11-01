@@ -417,7 +417,7 @@ export default function DashboardPage() {
                     <span className="text-slate-200 font-medium">Average Duration</span>
                   </div>
                   <span className="text-2xl font-bold text-white">
-                    {Math.floor((stats.calls.average_duration || 0) / 60).toString().padStart(2, '0')}:{((stats.calls.average_duration || 0) % 60).toString().padStart(2, '0')}
+                    {Math.floor((stats.calls.average_duration || 0) / 60).toString().padStart(2, '0')}:{Math.floor((stats.calls.average_duration || 0) % 60).toString().padStart(2, '0')}
                   </span>
                 </div>
                 <div className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-800/50 transition-all">
