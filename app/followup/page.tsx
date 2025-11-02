@@ -611,7 +611,7 @@ export default function FollowupPage() {
       {/* Header */}
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-r from-orange-600/10 via-red-600/10 to-yellow-600/10 rounded-3xl blur-xl"></div>
-        <div className="relative bg-slate-900/80 backdrop-blur-sm rounded-3xl border border-slate-800/50 p-8">
+        <div className="relative bg-slate-900/80 backdrop-blur-sm rounded-3xl border border-slate-800/50 p-6 sm:p-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <div className="space-y-2">
               <div className="flex items-center space-x-3">
@@ -627,11 +627,11 @@ export default function FollowupPage() {
               </div>
               <p className="text-slate-300 max-w-2xl">Systematically follow up on missed leads to improve conversion rates and maximize opportunities</p>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:space-x-4 sm:gap-0">
               <button
                 onClick={handleExportCSV}
                 disabled={loading || leads.length === 0}
-                className="group flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-xl transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="group flex items-center justify-center sm:justify-start space-x-2 px-4 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-xl transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl sm:transform sm:hover:scale-105 touch-manipulation"
                 title={`Export ${leads.length > 0 ? `all ${leads.length}` : '0'} filtered leads to CSV`}
               >
                 <Download className="w-4 h-4" />
@@ -649,7 +649,7 @@ export default function FollowupPage() {
                   fetchFollowupStats()
                 }}
                 disabled={loading}
-                className="group flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-slate-800 to-slate-700 hover:from-slate-700 hover:to-slate-600 text-white rounded-xl transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="group flex items-center justify-center sm:justify-start space-x-2 px-4 py-3 bg-gradient-to-r from-slate-800 to-slate-700 hover:from-slate-700 hover:to-slate-600 text-white rounded-xl transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl sm:transform sm:hover:scale-105 touch-manipulation"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-300`} />
                 <span className="text-sm font-medium">Refresh Data</span>
@@ -659,7 +659,7 @@ export default function FollowupPage() {
                 <button
                   onClick={handleStartCalling}
                   disabled={loading || leads.length === 0}
-                  className="group flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white rounded-xl transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="group flex items-center justify-center sm:justify-start space-x-2 px-4 py-3 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white rounded-xl transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl sm:transform sm:hover:scale-105 touch-manipulation"
                 >
                   <PhoneCall className="w-4 h-4" />
                   <span className="text-sm font-medium">Call All Filtered</span>
@@ -667,7 +667,7 @@ export default function FollowupPage() {
               ) : (
                 <button
                   onClick={handleStopCalling}
-                  className="group flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="group flex items-center justify-center sm:justify-start space-x-2 px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl sm:transform sm:hover:scale-105 touch-manipulation"
                 >
                   <Square className="w-4 h-4" />
                   <span className="text-sm font-medium">Stop Calling</span>
@@ -772,10 +772,10 @@ export default function FollowupPage() {
       {/* Filters */}
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-r from-slate-600/10 via-slate-700/10 to-slate-800/10 rounded-2xl blur-xl"></div>
-        <div className="relative bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+        <div className="relative bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-4 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
               {/* Search */}
-              <div className="lg:col-span-2">
+              <div className="sm:col-span-2 lg:col-span-2">
                 <label className="block text-sm font-medium text-slate-300 mb-2">
                   Search
                 </label>
@@ -786,7 +786,7 @@ export default function FollowupPage() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search by name, phone, or email..."
-                    className="pl-10 block w-full bg-slate-800/50 border border-slate-700 rounded-xl shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-white placeholder-slate-400 sm:text-sm"
+                    className="pl-10 block w-full bg-slate-800/50 border border-slate-700 rounded-xl shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-white placeholder-slate-400 text-sm"
                   />
                 </div>
               </div>
@@ -853,7 +853,7 @@ export default function FollowupPage() {
               </div>
             </div>
 
-            <div className="mt-6 flex justify-between items-center">
+            <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
               <button
                 onClick={resetFilters}
                 className="text-sm text-slate-400 hover:text-slate-300 transition-colors"
@@ -895,8 +895,9 @@ export default function FollowupPage() {
             <>
               <ul className="divide-y divide-slate-800/50">
                 {leads.map((lead) => (
-                  <li key={lead.id} className="px-6 py-4 hover:bg-slate-800/30 transition-colors duration-200">
-                    <div className="flex items-center justify-between">
+                  <li key={lead.id} className="px-4 sm:px-6 py-4 hover:bg-slate-800/30 transition-colors duration-200">
+                    {/* Desktop/Tablet Layout */}
+                    <div className="hidden sm:flex items-center justify-between">
                       <div className="flex items-center min-w-0 flex-1">
                         <div className="flex-shrink-0">
                           <div className="w-10 h-10 bg-gradient-to-br from-slate-700 to-slate-800 rounded-full flex items-center justify-center">
@@ -951,30 +952,95 @@ export default function FollowupPage() {
                         )}
                       </div>
                     </div>
+
+                    {/* Mobile Layout */}
+                    <div className="sm:hidden space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-gradient-to-br from-slate-700 to-slate-800 rounded-full flex items-center justify-center">
+                            <User className="w-4 h-4 text-slate-300" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-white">
+                              {lead.name}
+                            </p>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(lead.status)}`}>
+                              {lead.status}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-white">
+                            {lead.call_attempts} attempts
+                          </p>
+                          <p className="text-xs text-slate-400">
+                            {formatTimeAgo(lead.last_call)}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 gap-2 text-sm">
+                        <div className="flex items-center text-slate-400">
+                          <PhoneIcon className="flex-shrink-0 mr-2 h-4 w-4" />
+                          <span className="truncate">{lead.phone}</span>
+                        </div>
+                        {lead.email && (
+                          <div className="flex items-center text-slate-400">
+                            <Mail className="flex-shrink-0 mr-2 h-4 w-4" />
+                            <span className="truncate">{lead.email}</span>
+                          </div>
+                        )}
+                        {lead.company && (
+                          <div className="flex items-center text-slate-400">
+                            <Building className="flex-shrink-0 mr-2 h-4 w-4" />
+                            <span className="truncate">{lead.company}</span>
+                          </div>
+                        )}
+                        {lead.latest_call_duration && (
+                          <div className="flex items-center justify-between text-slate-400">
+                            <span>Last Call Duration:</span>
+                            <span className="text-white">{Math.round(lead.latest_call_duration)}s</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </li>
                 ))}
               </ul>
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="bg-slate-900/50 px-6 py-4 flex items-center justify-between border-t border-slate-800/50">
-                  <div className="flex-1 flex justify-between sm:hidden">
-                    <button
-                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                      disabled={currentPage === 1}
-                      className="relative inline-flex items-center px-4 py-2 border border-slate-700 text-sm font-medium rounded-xl text-slate-300 bg-slate-800/50 hover:bg-slate-700/50 disabled:opacity-50 transition-colors"
-                    >
-                      Previous
-                    </button>
-                    <button
-                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                      disabled={currentPage === totalPages}
-                      className="ml-3 relative inline-flex items-center px-4 py-2 border border-slate-700 text-sm font-medium rounded-xl text-slate-300 bg-slate-800/50 hover:bg-slate-700/50 disabled:opacity-50 transition-colors"
-                    >
-                      Next
-                    </button>
+                <div className="bg-slate-900/50 px-4 sm:px-6 py-4 border-t border-slate-800/50">
+                  {/* Mobile Pagination */}
+                  <div className="sm:hidden">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-xs text-slate-400">
+                        Page {currentPage} of {totalPages}
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        {totalCount} total results
+                      </p>
+                    </div>
+                    <div className="flex justify-between">
+                      <button
+                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                        disabled={currentPage === 1}
+                        className="flex-1 mr-2 inline-flex items-center justify-center px-4 py-3 border border-slate-700 text-sm font-medium rounded-xl text-slate-300 bg-slate-800/50 hover:bg-slate-700/50 disabled:opacity-50 transition-colors touch-manipulation"
+                      >
+                        Previous
+                      </button>
+                      <button
+                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                        disabled={currentPage === totalPages}
+                        className="flex-1 ml-2 inline-flex items-center justify-center px-4 py-3 border border-slate-700 text-sm font-medium rounded-xl text-slate-300 bg-slate-800/50 hover:bg-slate-700/50 disabled:opacity-50 transition-colors touch-manipulation"
+                      >
+                        Next
+                      </button>
+                    </div>
                   </div>
-                  <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  
+                  {/* Desktop Pagination */}
+                  <div className="hidden sm:flex items-center justify-between">
                     <div>
                       <p className="text-sm text-slate-400">
                         Showing{' '}
@@ -1016,8 +1082,8 @@ export default function FollowupPage() {
 
       {/* Calling Progress Modal */}
       {showCallModal && callingStatus && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-6 w-96 shadow-2xl rounded-2xl bg-slate-900/95 backdrop-blur-sm border border-slate-800/50">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50 p-4">
+          <div className="relative top-4 sm:top-20 mx-auto p-4 sm:p-6 w-full max-w-md sm:w-96 shadow-2xl rounded-2xl bg-slate-900/95 backdrop-blur-sm border border-slate-800/50">
             <div className="mt-3">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-medium text-white">
