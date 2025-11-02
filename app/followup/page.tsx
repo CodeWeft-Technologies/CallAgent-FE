@@ -1,672 +1,885 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { 
+  Users, Phone, RefreshCw, Filter, Search, 
+  PhoneCall, Calendar, CheckCircle, AlertCircle,
+  FileText, User, Mail, Building, PhoneIcon, X,
+  Clock, TrendingUp, BarChart3, Play, Pause, Square
+} from 'lucide-react'
+import toast from 'react-hot-toast'
 import { useAuth } from '../../contexts/AuthContext'
-import { PhoneMissed, Download, RefreshCw, Calendar, Clock, User, Phone, AlertCircle } from 'lucide-react'
+import { useCallMinutes } from '../../hooks/useCallMinutes'
+import MinutesExhaustedModal from '../../components/MinutesExhaustedModal'
+import NegativeBalanceWarningModal from '../../components/NegativeBalanceWarningModal'
+import CreditLimitExceededModal from '../../components/CreditLimitExceededModal'
 
-interface MissedCall {
-  _id: string
-  phone_number: string | number
-  direction?: 'inbound' | 'outbound'
-  lead_id?: string
-  lead?: {
-    id?: string
-    name: string
-    company?: string
-    email?: string
+interface FollowupLead {
+  id: string
+  name: string
+  phone: string
+  email: string
+  company: string
+  status: 'missed' | 'called' | 'contacted' | 'converted'
+  call_attempts: number
+  last_call: string | null
+  created_at: string
+  updated_at: string
+  latest_call_status?: string
+  latest_call_duration?: number
+  latest_call_time?: string
+}
+
+interface FollowupStats {
+  missed_leads: {
+    total: number
+    never_called: number
+    called_but_missed: number
+    high_attempts: number
+    recent_missed: number
+    old_missed: number
   }
-  call_date: string
-  status: 'completed' | 'failed' | 'missed' | 'initiated'
-  duration: number
-  call_summary?: string
-  sentiment?: string
+  call_performance: {
+    total_calls_30d: number
+    successful_calls_30d: number
+    success_rate: number
+  }
 }
 
-interface MissedCallsStats {
-  total: number
-  today: number
-  this_week: number
-  this_month: number
+interface CallingStatus {
+  active: boolean
+  is_running: boolean
+  paused: boolean
+  is_paused: boolean
+  queue_size: number
+  current_call: any
+  progress: {
+    current_index: number
+    current_lead: any
+    total_calls: number
+    completed_calls: number
+    remaining_calls: number
+  }
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://callagent-be-production.up.railway.app'
+const API_BASE = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'
+const FOLLOWUP_API_BASE = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'
 
 export default function FollowupPage() {
-  const { user, token } = useAuth()
-  const [missedCalls, setMissedCalls] = useState<MissedCall[]>([])
-  const [stats, setStats] = useState<MissedCallsStats>({
-    total: 0,
-    today: 0,
-    this_week: 0,
-    this_month: 0
+  const { token } = useAuth()
+  
+  // Call minutes management hooks
+  const { checkMinutesAvailability, consumeMinutes, isChecking } = useCallMinutes()
+  const [showMinutesModal, setShowMinutesModal] = useState(false)
+  const [showNegativeBalanceModal, setShowNegativeBalanceModal] = useState(false)
+  const [showCreditLimitModal, setShowCreditLimitModal] = useState(false)
+  const [negativeBalanceData, setNegativeBalanceData] = useState({
+    minutesRemaining: 0,
+    extraMinutesDeficit: 0,
+    message: '',
+    pendingCall: null as (() => void) | null
   })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [dateRange, setDateRange] = useState({
-    start: '',
-    end: ''
+  const [creditLimitData, setCreditLimitData] = useState({
+    minutesRemaining: 0,
+    extraMinutesDeficit: 0,
+    message: ''
   })
+  
+  const [leads, setLeads] = useState<FollowupLead[]>([])
+  const [stats, setStats] = useState<FollowupStats>({
+    missed_leads: {
+      total: 0,
+      never_called: 0,
+      called_but_missed: 0,
+      high_attempts: 0,
+      recent_missed: 0,
+      old_missed: 0
+    },
+    call_performance: {
+      total_calls_30d: 0,
+      successful_calls_30d: 0,
+      success_rate: 0
+    }
+  })
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('missed')
+  const [attemptsFilter, setAttemptsFilter] = useState<string>('all')
+  const [dateFromFilter, setDateFromFilter] = useState('')
+  const [dateToFilter, setDateToFilter] = useState('')
+  
+  // Sequential calling state
+  const [isCallingAll, setIsCallingAll] = useState(false)
+  const [callingStatus, setCallingStatus] = useState<CallingStatus | null>(null)
+  const [showCallModal, setShowCallModal] = useState(false)
+  
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [callingNumbers, setCallingNumbers] = useState<Set<string>>(new Set())
-  const [retryConfig, setRetryConfig] = useState({
-    max_retries: 3,
-    retry_delay: 10
-  })
-  const itemsPerPage = 20
+  const [totalCount, setTotalCount] = useState(0)
+  const itemsPerPage = 50
 
-  // Initialize date range to last 7 days
-  useEffect(() => {
-    const end = new Date()
-    const start = new Date()
-    start.setDate(end.getDate() - 7)
+  // Fetch followup leads
+  const fetchFollowupLeads = useCallback(async () => {
+    if (!token) return
     
-    setDateRange({
-      start: start.toISOString().split('T')[0],
-      end: end.toISOString().split('T')[0]
-    })
-  }, [])
-
-  // Fetch missed calls data
-  const fetchMissedCalls = async (page = 1) => {
-    if (!token || !user) return
-
-    setLoading(true)
-    setError(null)
-
     try {
-      const skip = (page - 1) * itemsPerPage
+      setLoading(true)
+      
       const params = new URLSearchParams({
-        status: 'missed',
-        skip: skip.toString(),
-        limit: itemsPerPage.toString(),
-        organization_id: user.organization_id?.toString() || '',
-        ...(dateRange.start && { date_from: dateRange.start }),
-        ...(dateRange.end && { date_to: dateRange.end })
+        page: currentPage.toString(),
+        limit: itemsPerPage.toString()
       })
-
-
-
-      const response = await fetch(`${API_URL}/api/calls?${params}`, {
+      
+      if (statusFilter && statusFilter !== 'all') {
+        params.append('status', statusFilter)
+      }
+      
+      if (searchTerm.trim()) {
+        params.append('search', searchTerm.trim())
+      }
+      
+      if (attemptsFilter !== 'all') {
+        if (attemptsFilter === 'never_called') {
+          params.append('max_attempts', '0')
+        } else if (attemptsFilter === 'low_attempts') {
+          params.append('min_attempts', '1')
+          params.append('max_attempts', '2')
+        } else if (attemptsFilter === 'high_attempts') {
+          params.append('min_attempts', '3')
+        }
+      }
+      
+      if (dateFromFilter) {
+        params.append('date_from', dateFromFilter)
+      }
+      
+      if (dateToFilter) {
+        params.append('date_to', dateToFilter)
+      }
+      
+      const response = await fetch(`${FOLLOWUP_API_BASE}/api/followup/leads?${params}`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Authorization': `Bearer ${token}`
         }
       })
-
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch missed calls')
+        throw new Error('Failed to fetch followup leads')
       }
-
+      
       const data = await response.json()
       
       if (data.success) {
-        setMissedCalls(data.data || [])
-        setTotalPages(Math.ceil((data.total || 0) / itemsPerPage))
-        
-        // Calculate stats
-        const total = data.total || 0
-        const calls = data.data || []
-        const today = calls.filter((call: MissedCall) => {
-          const callDate = new Date(call.call_date).toDateString()
-          const todayDate = new Date().toDateString()
-          return callDate === todayDate
-        }).length
-
-        const thisWeek = calls.filter((call: MissedCall) => {
-          const callDate = new Date(call.call_date)
-          const weekAgo = new Date()
-          weekAgo.setDate(weekAgo.getDate() - 7)
-          return callDate >= weekAgo
-        }).length
-
-        const thisMonth = calls.filter((call: MissedCall) => {
-          const callDate = new Date(call.call_date)
-          const monthAgo = new Date()
-          monthAgo.setMonth(monthAgo.getMonth() - 1)
-          return callDate >= monthAgo
-        }).length
-
-        setStats({ total, today, this_week: thisWeek, this_month: thisMonth })
+        setLeads(data.data.leads)
+        setCurrentPage(data.data.pagination.page)
+        setTotalPages(data.data.pagination.total_pages)
+        setTotalCount(data.data.pagination.total_count)
       } else {
-        throw new Error('API returned success: false')
+        throw new Error(data.message || 'Failed to fetch followup leads')
       }
-
-    } catch (err) {
-      console.error('Error fetching missed calls:', err)
-      setError('Failed to fetch missed calls data')
+    } catch (error) {
+      console.error('Error fetching followup leads:', error)
+      toast.error('Failed to load followup leads')
     } finally {
       setLoading(false)
     }
-  }
+  }, [token, currentPage, statusFilter, searchTerm, attemptsFilter, dateFromFilter, dateToFilter])
 
-  // Load retry configuration from org config
-  const loadRetryConfig = useCallback(async () => {
+  // Fetch followup stats
+  const fetchFollowupStats = useCallback(async () => {
+    if (!token) return
+    
     try {
-      const response = await fetch(`${API_URL}/api/config`, {
+      const response = await fetch(`${FOLLOWUP_API_BASE}/api/followup/stats`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Authorization': `Bearer ${token}`
         }
       })
-      if (response.ok) {
-        const data = await response.json()
-        setRetryConfig({
-          max_retries: data.max_retries || 3,
-          retry_delay: data.retry_delay || 10
-        })
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch followup stats')
+      }
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setStats(data.data)
       }
     } catch (error) {
-      console.error('❌ Error loading retry config:', error)
-      // Keep default values on error
+      console.error('Error fetching followup stats:', error)
     }
   }, [token])
 
-  // Initial fetch when component mounts and user/token are available
-  useEffect(() => {
-    if (token && user) {
-      fetchMissedCalls(1)
-      setCurrentPage(1)
-      loadRetryConfig()
-    }
-  }, [token, user, loadRetryConfig])
-
-  // Refetch when date range changes (debounced)
-  useEffect(() => {
-    if (token && user) {
-      const timer = setTimeout(() => {
-        fetchMissedCalls(1)
-        setCurrentPage(1)
-      }, 300) // Debounce to avoid too many API calls
+  // Fetch calling status
+  const fetchCallingStatus = useCallback(async () => {
+    if (!token) return
+    
+    try {
+      const response = await fetch(`${FOLLOWUP_API_BASE}/api/followup/calling-status`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
       
-      return () => clearTimeout(timer)
+      if (!response.ok) {
+        return // Don't throw error for status check
+      }
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setCallingStatus(data.data)
+        setIsCallingAll(data.data.is_running)
+        
+        if (data.data.is_running && !showCallModal) {
+          setShowCallModal(true)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching calling status:', error)
     }
-  }, [dateRange.start, dateRange.end])
+  }, [token, showCallModal])
 
-  // Make call through pipeline - simplified version following leads page pattern
-  const makeCall = async (call: MissedCall) => {
-    if (!token || !user) return
+  // Initial data fetch
+  useEffect(() => {
+    fetchFollowupLeads()
+    fetchFollowupStats()
+    fetchCallingStatus()
+  }, [fetchFollowupLeads, fetchFollowupStats, fetchCallingStatus])
 
-    const phoneNumber = String(call.phone_number)
-    setCallingNumbers(prev => new Set(prev).add(phoneNumber))
-    setError(null)
+  // Poll calling status when active
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null
+    
+    if (isCallingAll) {
+      interval = setInterval(() => {
+        fetchCallingStatus()
+      }, 2000) // Poll every 2 seconds
+    }
+    
+    return () => {
+      if (interval) {
+        clearInterval(interval)
+      }
+    }
+  }, [isCallingAll, fetchCallingStatus])
+
+  // Start followup calling
+  const handleStartCalling = useCallback(async () => {
+    if (isCallingAll) {
+      toast.error('Followup calling is already in progress')
+      return
+    }
+
+    const filteredLeads = leads.filter(lead => {
+      const matchesSearch = !searchTerm.trim() || 
+        lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.phone.includes(searchTerm) ||
+        lead.email.toLowerCase().includes(searchTerm.toLowerCase())
+      
+      const matchesStatus = statusFilter === 'all' || lead.status === statusFilter
+      
+      let matchesAttempts = true
+      if (attemptsFilter === 'never_called') {
+        matchesAttempts = lead.call_attempts === 0
+      } else if (attemptsFilter === 'low_attempts') {
+        matchesAttempts = lead.call_attempts >= 1 && lead.call_attempts <= 2
+      } else if (attemptsFilter === 'high_attempts') {
+        matchesAttempts = lead.call_attempts >= 3
+      }
+      
+      return matchesSearch && matchesStatus && matchesAttempts
+    })
+    
+    if (filteredLeads.length === 0) {
+      toast.error('No leads match the current filters for calling')
+      return
+    }
 
     try {
-      // Use the lead_id from the missed call
-      const leadId = call.lead_id
-      if (!leadId) {
-        throw new Error('No lead ID available for this call')
+      // Check minutes availability (estimate 3 minutes per lead)
+      const estimatedMinutes = filteredLeads.length * 3
+      const availability = await checkMinutesAvailability(estimatedMinutes)
+      
+      if (availability.warning_type === 'credit_limit_exceeded') {
+        setCreditLimitData({
+          minutesRemaining: availability.minutes_remaining,
+          extraMinutesDeficit: availability.extra_minutes_deficit || 0,
+          message: availability.message
+        })
+        setShowCreditLimitModal(true)
+        return
       }
+      
+      if (availability.warning_type === 'negative_balance') {
+        setNegativeBalanceData({
+          minutesRemaining: availability.minutes_remaining,
+          extraMinutesDeficit: availability.extra_minutes_deficit || 0,
+          message: availability.message,
+          pendingCall: () => proceedWithCalling()
+        })
+        setShowNegativeBalanceModal(true)
+        return
+      }
+      
+      if (!availability.available) {
+        setShowMinutesModal(true)
+        return
+      }
+      
+      await proceedWithCalling()
+      
+    } catch (error) {
+      console.error('Error checking minutes availability:', error)
+      toast.error('Unable to verify minute availability. Please try again.')
+    }
+  }, [leads, searchTerm, statusFilter, attemptsFilter, isCallingAll, checkMinutesAvailability])
 
-      // Make the call using the same API as the leads page
-      const response = await fetch(`${API_URL}/api/leads/${leadId}/call`, {
+  const proceedWithCalling = useCallback(async () => {
+    try {
+      // Build filters
+      const filters: any = {}
+      
+      if (statusFilter && statusFilter !== 'all') {
+        filters.status = statusFilter
+      }
+      
+      if (searchTerm.trim()) {
+        filters.search = searchTerm.trim()
+      }
+      
+      if (attemptsFilter !== 'all') {
+        if (attemptsFilter === 'never_called') {
+          filters.max_attempts = 0
+        } else if (attemptsFilter === 'low_attempts') {
+          filters.min_attempts = 1
+          filters.max_attempts = 2
+        } else if (attemptsFilter === 'high_attempts') {
+          filters.min_attempts = 3
+        }
+      }
+      
+      if (dateFromFilter) {
+        filters.date_from = dateFromFilter
+      }
+      
+      if (dateToFilter) {
+        filters.date_to = dateToFilter
+      }
+      
+      const response = await fetch(`${FOLLOWUP_API_BASE}/api/followup/start-calling`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          max_retries: retryConfig.max_retries
+          filters: filters
         })
       })
 
       const data = await response.json()
       
       if (data.success) {
-        // Show success notification
-        const notification = document.createElement('div')
-        notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50'
-        notification.textContent = `Call initiated to ${phoneNumber}`
-        document.body.appendChild(notification)
-        
-        setTimeout(() => {
-          document.body.removeChild(notification)
-        }, 3000)
-
-        // Refresh the missed calls list
-        fetchMissedCalls(currentPage)
+        toast.success(data.message)
+        setIsCallingAll(true)
+        setShowCallModal(true)
+        fetchCallingStatus()
       } else {
-        throw new Error(data.error || 'Failed to initiate call')
+        throw new Error(data.message || 'Failed to start followup calling')
       }
     } catch (error) {
-      console.error('Error making call:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Failed to initiate call'
-      setError(errorMessage)
-      
-      // Show error notification
-      const notification = document.createElement('div')
-      notification.className = 'fixed top-4 right-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg z-50'
-      notification.textContent = errorMessage
-      document.body.appendChild(notification)
-      
-      setTimeout(() => {
-        document.body.removeChild(notification)
-      }, 3000)
-    } finally {
-      setCallingNumbers(prev => {
-        const newSet = new Set(prev)
-        newSet.delete(phoneNumber)
-        return newSet
-      })
+      console.error('Error starting followup calling:', error)
+      toast.error('Failed to start followup calling')
     }
+  }, [token, statusFilter, searchTerm, attemptsFilter, dateFromFilter, dateToFilter, fetchCallingStatus])
+
+  // Stop calling
+  const handleStopCalling = useCallback(async () => {
+    try {
+      const response = await fetch(`${FOLLOWUP_API_BASE}/api/followup/stop-calling`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        toast('Followup calling stopped', { icon: 'ℹ️' })
+        setIsCallingAll(false)
+        setShowCallModal(false)
+        setCallingStatus(null)
+      } else {
+        toast.error(`Failed to stop: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Error stopping followup calling:', error)
+      toast.error('Failed to stop followup calling')
+    }
+  }, [token])
+
+  // Pause/Resume calling
+  const handlePauseResumeCalling = useCallback(async () => {
+    try {
+      const endpoint = callingStatus?.is_paused ? 'resume-calling' : 'pause-calling'
+      const response = await fetch(`${FOLLOWUP_API_BASE}/api/followup/${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        toast(data.message, { icon: callingStatus?.is_paused ? '▶️' : '⏸️' })
+        fetchCallingStatus()
+      } else {
+        toast.error(`Failed to ${callingStatus?.is_paused ? 'resume' : 'pause'}: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Error pausing/resuming followup calling:', error)
+      toast.error('Failed to pause/resume followup calling')
+    }
+  }, [token, callingStatus?.is_paused, fetchCallingStatus])
+
+  // Force next call
+  const handleForceNext = useCallback(async () => {
+    try {
+      const response = await fetch(`${FOLLOWUP_API_BASE}/api/followup/force-next`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        toast('Forced next call', { icon: '⏭️' })
+        fetchCallingStatus()
+      } else {
+        toast.error(`Failed to force next: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Error forcing next call:', error)
+      toast.error('Failed to force next call')
+    }
+  }, [token, fetchCallingStatus])
+
+  // Reset filters
+  const resetFilters = () => {
+    setSearchTerm('')
+    setStatusFilter('missed')
+    setAttemptsFilter('all')
+    setDateFromFilter('')
+    setDateToFilter('')
+    setCurrentPage(1)
   }
 
   // Format date for display
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Never'
+    return new Date(dateString).toLocaleDateString()
+  }
+
+  // Format time ago
+  const formatTimeAgo = (dateString: string | null) => {
+    if (!dateString) return 'Never'
     const date = new Date(dateString)
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+    
+    if (diffDays === 0) return 'Today'
+    if (diffDays === 1) return 'Yesterday'
+    if (diffDays < 7) return `${diffDays} days ago`
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
+    return `${Math.floor(diffDays / 30)} months ago`
   }
 
-  // Format duration
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
-
-  // Export to CSV
-  const exportToCSV = () => {
-    if (missedCalls.length === 0) {
-      alert('No data to export')
-      return
+  // Get status color
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'missed': return 'text-red-600 bg-red-50'
+      case 'called': return 'text-yellow-600 bg-yellow-50'
+      case 'contacted': return 'text-blue-600 bg-blue-50'
+      case 'converted': return 'text-green-600 bg-green-50'
+      default: return 'text-gray-600 bg-gray-50'
     }
-
-    const headers = ['Date & Time', 'Phone Number', 'Lead Name', 'Duration', 'Status']
-    const csvContent = [
-      headers.join(','),
-      ...missedCalls.map(call => [
-        `"${formatDate(call.call_date)}"`,
-        `"${call.phone_number}"`,
-        `"${call.lead?.name || 'Unknown'}"`,
-        `"${formatDuration(call.duration)}"`,
-        `"${call.status}"`
-      ].join(','))
-    ].join('\n')
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
-    const url = URL.createObjectURL(blob)
-    link.setAttribute('href', url)
-    link.setAttribute('download', `missed_calls_${dateRange.start}_to_${dateRange.end}.csv`)
-    link.style.visibility = 'hidden'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
-
-  // Handle page change
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-    fetchMissedCalls(page)
-  }
-
-  if (!user) {
-    return <div>Please log in to access this page.</div>
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 p-3 sm:p-6">
-      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center">
-              <PhoneMissed className="w-5 h-5 text-white" />
-            </div>
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-white">Follow-up Center</h1>
-              <p className="text-slate-400 text-sm sm:text-base">Manage missed calls and follow-up activities</p>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                <Clock className="w-8 h-8 text-orange-600" />
+                Followup Management
+              </h1>
+              <p className="mt-2 text-gray-600">
+                Manage and call leads with missed status to improve conversion rates
+              </p>
             </div>
-          </div>
-          
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            <button
-              onClick={() => fetchMissedCalls(currentPage)}
-              disabled={loading}
-              className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors disabled:opacity-50 text-sm sm:text-base"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
-            </button>
             
-            <button
-              onClick={exportToCSV}
-              disabled={missedCalls.length === 0}
-              className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-lg transition-all disabled:opacity-50 text-sm sm:text-base"
-            >
-              <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">Export CSV</span>
-              <span className="sm:hidden">CSV</span>
-            </button>
+            <div className="mt-4 sm:mt-0 flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => {
+                  fetchFollowupLeads()
+                  fetchFollowupStats()
+                }}
+                disabled={loading}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </button>
+              
+              {!isCallingAll ? (
+                <button
+                  onClick={handleStartCalling}
+                  disabled={loading || leads.length === 0}
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
+                >
+                  <PhoneCall className="w-4 h-4 mr-2" />
+                  Call All Filtered
+                </button>
+              ) : (
+                <button
+                  onClick={handleStopCalling}
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  <Square className="w-4 h-4 mr-2" />
+                  Stop Calling
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-          <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-800/50 p-4 sm:p-6">
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-red-600/20 rounded-lg flex items-center justify-center">
-                <PhoneMissed className="w-3 h-3 sm:w-4 sm:h-4 text-red-400" />
-              </div>
-              <div>
-                <p className="text-slate-400 text-xs sm:text-sm">Total Missed</p>
-                <p className="text-lg sm:text-2xl font-bold text-white">{stats.total}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-800/50 p-4 sm:p-6">
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-orange-600/20 rounded-lg flex items-center justify-center">
-                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-orange-400" />
-              </div>
-              <div>
-                <p className="text-slate-400 text-xs sm:text-sm">Today</p>
-                <p className="text-lg sm:text-2xl font-bold text-white">{stats.today}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <AlertCircle className="h-6 w-6 text-red-400" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      Total Missed
+                    </dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {stats.missed_leads.total}
+                    </dd>
+                  </dl>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-800/50 p-4 sm:p-6">
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600/20 rounded-lg flex items-center justify-center">
-                <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-blue-400" />
-              </div>
-              <div>
-                <p className="text-slate-400 text-xs sm:text-sm">This Week</p>
-                <p className="text-lg sm:text-2xl font-bold text-white">{stats.this_week}</p>
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <Phone className="h-6 w-6 text-yellow-400" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      Never Called
+                    </dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {stats.missed_leads.never_called}
+                    </dd>
+                  </dl>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-800/50 p-4 sm:p-6">
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-purple-600/20 rounded-lg flex items-center justify-center">
-                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-purple-400" />
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <TrendingUp className="h-6 w-6 text-blue-400" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      High Attempts (3+)
+                    </dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {stats.missed_leads.high_attempts}
+                    </dd>
+                  </dl>
+                </div>
               </div>
-              <div>
-                <p className="text-slate-400 text-xs sm:text-sm">This Month</p>
-                <p className="text-lg sm:text-2xl font-bold text-white">{stats.this_month}</p>
+            </div>
+          </div>
+
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <BarChart3 className="h-6 w-6 text-green-400" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      Success Rate (30d)
+                    </dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {stats.call_performance.success_rate}%
+                    </dd>
+                  </dl>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-800/50 p-4 sm:p-6">
-          <h3 className="text-base sm:text-lg font-semibold text-white mb-4">Date Range Filter</h3>
-          
-          {/* Quick Filter Buttons */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            <button
-              onClick={() => {
-                const end = new Date()
-                const start = new Date()
-                setDateRange({
-                  start: start.toISOString().split('T')[0],
-                  end: end.toISOString().split('T')[0]
-                })
-              }}
-              className="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-md transition-colors"
-            >
-              Today
-            </button>
-            <button
-              onClick={() => {
-                const end = new Date()
-                const start = new Date()
-                start.setDate(end.getDate() - 7)
-                setDateRange({
-                  start: start.toISOString().split('T')[0],
-                  end: end.toISOString().split('T')[0]
-                })
-              }}
-              className="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-md transition-colors"
-            >
-              Last 7 Days
-            </button>
-            <button
-              onClick={() => {
-                const end = new Date()
-                const start = new Date()
-                start.setDate(end.getDate() - 30)
-                setDateRange({
-                  start: start.toISOString().split('T')[0],
-                  end: end.toISOString().split('T')[0]
-                })
-              }}
-              className="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-md transition-colors"
-            >
-              Last 30 Days
-            </button>
-            <button
-              onClick={() => {
-                const end = new Date()
-                const start = new Date()
-                start.setMonth(start.getMonth() - 3)
-                setDateRange({
-                  start: start.toISOString().split('T')[0],
-                  end: end.toISOString().split('T')[0]
-                })
-              }}
-              className="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-md transition-colors"
-            >
-              Last 3 Months
-            </button>
-          </div>
+        <div className="bg-white shadow rounded-lg mb-6">
+          <div className="px-4 py-5 sm:p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+              {/* Search */}
+              <div className="lg:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Search
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search by name, phone, or email..."
+                    className="pl-10 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  />
+                </div>
+              </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-xs sm:text-sm text-slate-400 mb-2">Start Date</label>
-              <input
-                type="date"
-                value={dateRange.start}
-                onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-              />
+              {/* Status Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                  <option value="all">All Status</option>
+                  <option value="missed">Missed</option>
+                  <option value="called">Called</option>
+                  <option value="contacted">Contacted</option>
+                  <option value="converted">Converted</option>
+                </select>
+              </div>
+
+              {/* Attempts Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Attempts
+                </label>
+                <select
+                  value={attemptsFilter}
+                  onChange={(e) => setAttemptsFilter(e.target.value)}
+                  className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                  <option value="all">All Attempts</option>
+                  <option value="never_called">Never Called (0)</option>
+                  <option value="low_attempts">Low Attempts (1-2)</option>
+                  <option value="high_attempts">High Attempts (3+)</option>
+                </select>
+              </div>
+
+              {/* Date From */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  From Date
+                </label>
+                <input
+                  type="date"
+                  value={dateFromFilter}
+                  onChange={(e) => setDateFromFilter(e.target.value)}
+                  className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+
+              {/* Date To */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  To Date
+                </label>
+                <input
+                  type="date"
+                  value={dateToFilter}
+                  onChange={(e) => setDateToFilter(e.target.value)}
+                  className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-xs sm:text-sm text-slate-400 mb-2">End Date</label>
-              <input
-                type="date"
-                value={dateRange.end}
-                onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-              />
-            </div>
-            <div className="flex items-end">
+
+            <div className="mt-4 flex justify-between items-center">
               <button
-                onClick={() => fetchMissedCalls(1)}
-                disabled={loading}
-                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm"
+                onClick={resetFilters}
+                className="text-sm text-gray-500 hover:text-gray-700"
               >
-                {loading ? 'Loading...' : 'Apply Filter'}
+                Reset Filters
               </button>
-            </div>
-            <div className="flex items-end">
-              <button
-                onClick={() => {
-                  setDateRange({ start: '', end: '' })
-                }}
-                className="w-full px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors text-sm"
-              >
-                Clear Filter
-              </button>
+              <div className="text-sm text-gray-500">
+                Showing {leads.length} of {totalCount} leads
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Missed Calls Table */}
-        <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-800/50 overflow-hidden">
-          <div className="p-4 sm:p-6 border-b border-slate-800/50">
-            <h3 className="text-base sm:text-lg font-semibold text-white">Missed Calls ({missedCalls.length})</h3>
+        {/* Leads Table */}
+        <div className="bg-white shadow overflow-hidden sm:rounded-md">
+          <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              Followup Leads
+            </h3>
+            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+              Leads that require followup calls
+            </p>
           </div>
 
-          {error && (
-            <div className="p-4 sm:p-6 border-b border-slate-800/50">
-              <div className="flex items-center space-x-2 text-red-400">
-                <AlertCircle className="w-4 h-4" />
-                <span className="text-sm sm:text-base">{error}</span>
-              </div>
-            </div>
-          )}
-
           {loading ? (
-            <div className="p-8 sm:p-12 text-center">
-              <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-400 mx-auto"></div>
-              <p className="text-slate-400 mt-2 text-sm sm:text-base">Loading missed calls...</p>
+            <div className="p-8 text-center">
+              <RefreshCw className="w-8 h-8 animate-spin mx-auto text-gray-400" />
+              <p className="mt-2 text-gray-500">Loading followup leads...</p>
             </div>
-          ) : missedCalls.length === 0 ? (
-            <div className="p-8 sm:p-12 text-center">
-              <PhoneMissed className="w-8 h-8 sm:w-12 sm:h-12 text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-400 text-sm sm:text-base">No missed calls found for the selected date range</p>
+          ) : leads.length === 0 ? (
+            <div className="p-8 text-center">
+              <Users className="w-12 h-12 mx-auto text-gray-400" />
+              <p className="mt-2 text-gray-500">No followup leads found</p>
+              <p className="text-sm text-gray-400">Try adjusting your filters</p>
             </div>
           ) : (
             <>
-              {/* Desktop Table View - Hidden on Mobile */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-slate-800/50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                        Date & Time
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                        Phone Number
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                        Lead Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                        Duration
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/50">
-                    {missedCalls.map((call) => (
-                      <tr key={call._id} className="hover:bg-slate-800/30 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center space-x-2">
-                            <Calendar className="w-4 h-4 text-slate-400" />
-                            <span className="text-sm text-white">{formatDate(call.call_date)}</span>
+              <ul className="divide-y divide-gray-200">
+                {leads.map((lead) => (
+                  <li key={lead.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center min-w-0 flex-1">
+                        <div className="flex-shrink-0">
+                          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                            <User className="w-5 h-5 text-gray-500" />
                           </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center space-x-2">
-                            <Phone className="w-4 h-4 text-slate-400" />
-                            <span className="text-sm text-white">{call.phone_number}</span>
+                        </div>
+                        <div className="ml-4 min-w-0 flex-1">
+                          <div className="flex items-center">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {lead.name}
+                            </p>
+                            <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(lead.status)}`}>
+                              {lead.status}
+                            </span>
                           </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center space-x-2">
-                            <User className="w-4 h-4 text-slate-400" />
-                            <span className="text-sm text-white">{call.lead?.name || 'Unknown'}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center space-x-2">
-                            <Clock className="w-4 h-4 text-slate-400" />
-                            <span className="text-sm text-white">{formatDuration(call.duration)}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 py-1 bg-red-600/20 text-red-400 text-xs rounded-full">
-                            Missed
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <button
-                            onClick={() => makeCall(call)}
-                            disabled={callingNumbers.has(String(call.phone_number))}
-                            className="flex items-center space-x-1 px-3 py-1 bg-green-600/20 hover:bg-green-600/30 disabled:bg-green-600/10 disabled:cursor-not-allowed text-green-400 text-xs rounded-lg transition-colors"
-                          >
-                            {callingNumbers.has(String(call.phone_number)) ? (
-                              <div className="animate-spin rounded-full h-3 w-3 border border-green-400 border-t-transparent" />
-                            ) : (
-                              <Phone className="w-3 h-3" />
+                          <div className="mt-1 flex items-center text-sm text-gray-500">
+                            <PhoneIcon className="flex-shrink-0 mr-1.5 h-4 w-4" />
+                            <span className="truncate">{lead.phone}</span>
+                            {lead.email && (
+                              <>
+                                <Mail className="flex-shrink-0 ml-4 mr-1.5 h-4 w-4" />
+                                <span className="truncate">{lead.email}</span>
+                              </>
                             )}
-                            <span>{callingNumbers.has(String(call.phone_number)) ? 'Calling...' : 'Call Back'}</span>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Mobile Card View - Visible on Mobile Only */}
-              <div className="md:hidden space-y-4 p-4">
-                {missedCalls.map((call) => (
-                  <div key={call._id} className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-red-600/20 rounded-lg flex items-center justify-center">
-                          <PhoneMissed className="w-4 h-4 text-red-400" />
-                        </div>
-                        <div>
-                          <p className="text-white font-medium text-sm">{call.lead?.name || 'Unknown'}</p>
-                          <p className="text-slate-400 text-xs">{call.phone_number}</p>
+                            {lead.company && (
+                              <>
+                                <Building className="flex-shrink-0 ml-4 mr-1.5 h-4 w-4" />
+                                <span className="truncate">{lead.company}</span>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
-                      <span className="px-2 py-1 bg-red-600/20 text-red-400 text-xs rounded-full">
-                        {call.status}
-                      </span>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-3 mb-3">
-                      <div>
-                        <p className="text-slate-400 text-xs">Date & Time</p>
-                        <p className="text-white text-sm">{formatDate(call.call_date)}</p>
+                      <div className="flex items-center space-x-4">
+                        <div className="text-right">
+                          <p className="text-sm text-gray-900">
+                            {lead.call_attempts} attempts
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Last: {formatTimeAgo(lead.last_call)}
+                          </p>
+                        </div>
+                        {lead.latest_call_duration && (
+                          <div className="text-right">
+                            <p className="text-sm text-gray-900">
+                              {Math.round(lead.latest_call_duration)}s
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {lead.latest_call_status}
+                            </p>
+                          </div>
+                        )}
                       </div>
-                      <div>
-                        <p className="text-slate-400 text-xs">Duration</p>
-                        <p className="text-white text-sm">{formatDuration(call.duration)}</p>
-                      </div>
                     </div>
-                    
-                    <button
-                      onClick={() => makeCall(call)}
-                      disabled={callingNumbers.has(String(call.phone_number))}
-                      className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-emerald-600/50 disabled:to-emerald-700/50 disabled:cursor-not-allowed text-white rounded-lg transition-all text-sm"
-                    >
-                      {callingNumbers.has(String(call.phone_number)) ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                      ) : (
-                        <Phone className="w-4 h-4" />
-                      )}
-                      <span>{callingNumbers.has(String(call.phone_number)) ? 'Calling...' : 'Call Back'}</span>
-                    </button>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="p-4 sm:p-6 border-t border-slate-800/50 flex flex-col sm:flex-row items-center justify-between gap-3">
-                  <p className="text-xs sm:text-sm text-slate-400">
-                    Page {currentPage} of {totalPages}
-                  </p>
-                  <div className="flex space-x-2">
+                <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                  <div className="flex-1 flex justify-between sm:hidden">
                     <button
-                      onClick={() => handlePageChange(currentPage - 1)}
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                       disabled={currentPage === 1}
-                      className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded disabled:opacity-50 text-sm"
+                      className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                     >
                       Previous
                     </button>
                     <button
-                      onClick={() => handlePageChange(currentPage + 1)}
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                       disabled={currentPage === totalPages}
-                      className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded disabled:opacity-50 text-sm"
+                      className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                     >
                       Next
                     </button>
+                  </div>
+                  <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm text-gray-700">
+                        Showing{' '}
+                        <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span>
+                        {' '}to{' '}
+                        <span className="font-medium">
+                          {Math.min(currentPage * itemsPerPage, totalCount)}
+                        </span>
+                        {' '}of{' '}
+                        <span className="font-medium">{totalCount}</span>
+                        {' '}results
+                      </p>
+                    </div>
+                    <div>
+                      <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                        <button
+                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                          disabled={currentPage === 1}
+                          className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          Previous
+                        </button>
+                        <button
+                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                          disabled={currentPage === totalPages}
+                          className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          Next
+                        </button>
+                      </nav>
+                    </div>
                   </div>
                 </div>
               )}
@@ -674,6 +887,146 @@ export default function FollowupPage() {
           )}
         </div>
       </div>
+
+      {/* Calling Progress Modal */}
+      {showCallModal && callingStatus && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Followup Calling Progress
+                </h3>
+                <button
+                  onClick={() => setShowCallModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {/* Progress Bar */}
+                <div>
+                  <div className="flex justify-between text-sm text-gray-600 mb-1">
+                    <span>Progress</span>
+                    <span>
+                      {callingStatus.progress?.completed_calls || 0} / {callingStatus.progress?.total_calls || 0}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-orange-600 h-2 rounded-full transition-all duration-300"
+                      style={{
+                        width: `${callingStatus.progress?.total_calls ? 
+                          ((callingStatus.progress.completed_calls || 0) / callingStatus.progress.total_calls) * 100 : 0}%`
+                      }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Current Call */}
+                {callingStatus.current_call && (
+                  <div className="bg-blue-50 p-3 rounded-md">
+                    <p className="text-sm font-medium text-blue-900">
+                      Currently calling:
+                    </p>
+                    <p className="text-sm text-blue-700">
+                      {callingStatus.current_call.name} ({callingStatus.current_call.phone})
+                    </p>
+                  </div>
+                )}
+
+                {/* Status */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Status:</span>
+                  <span className={`text-sm font-medium ${
+                    callingStatus.is_paused ? 'text-yellow-600' : 'text-green-600'
+                  }`}>
+                    {callingStatus.is_paused ? 'Paused' : 'Running'}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Queue:</span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {callingStatus.queue_size} remaining
+                  </span>
+                </div>
+
+                {/* Controls */}
+                <div className="flex space-x-2 pt-4">
+                  <button
+                    onClick={handlePauseResumeCalling}
+                    className={`flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white ${
+                      callingStatus.is_paused 
+                        ? 'bg-green-600 hover:bg-green-700' 
+                        : 'bg-yellow-600 hover:bg-yellow-700'
+                    }`}
+                  >
+                    {callingStatus.is_paused ? (
+                      <>
+                        <Play className="w-4 h-4 mr-1" />
+                        Resume
+                      </>
+                    ) : (
+                      <>
+                        <Pause className="w-4 h-4 mr-1" />
+                        Pause
+                      </>
+                    )}
+                  </button>
+                  
+                  <button
+                    onClick={handleForceNext}
+                    className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    Skip Current
+                  </button>
+                  
+                  <button
+                    onClick={handleStopCalling}
+                    className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
+                  >
+                    <Square className="w-4 h-4 mr-1" />
+                    Stop
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modals */}
+      <MinutesExhaustedModal 
+        isOpen={showMinutesModal} 
+        onClose={() => setShowMinutesModal(false)}
+        minutesRemaining={0}
+        message="Insufficient call minutes to start followup calling"
+      />
+      
+      <NegativeBalanceWarningModal
+        isOpen={showNegativeBalanceModal}
+        onClose={() => setShowNegativeBalanceModal(false)}
+        minutesRemaining={negativeBalanceData.minutesRemaining}
+        extraMinutesDeficit={negativeBalanceData.extraMinutesDeficit}
+        message={negativeBalanceData.message}
+        onProceed={() => {
+          setShowNegativeBalanceModal(false)
+          if (negativeBalanceData.pendingCall) {
+            negativeBalanceData.pendingCall()
+          }
+        }}
+      />
+      
+      <CreditLimitExceededModal
+        isOpen={showCreditLimitModal}
+        onClose={() => setShowCreditLimitModal(false)}
+        minutesRemaining={creditLimitData.minutesRemaining}
+        extraMinutesDeficit={creditLimitData.extraMinutesDeficit}
+        message={creditLimitData.message}
+      />
     </div>
   )
 }
