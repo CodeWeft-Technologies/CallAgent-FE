@@ -64,7 +64,7 @@ export default function LeadsPage() {
   
   const [leads, setLeads] = useState<Lead[]>([])
   const [stats, setStats] = useState<LeadStats>({
-    total: 0, new: 0, called: 0, contacted: 0, converted: 0, total_calls: 0
+    total: 0, new: 0, missed: 0, called: 0, contacted: 0, converted: 0, total_calls: 0
   })
   const [loading, setLoading] = useState(true)
   const [showAddForm, setShowAddForm] = useState(false)
@@ -207,7 +207,10 @@ export default function LeadsPage() {
       const data = await response.json()
       
       if (data.success) {
-        setStats(data.data)
+        setStats({
+          ...data.data,
+          missed: data.data.missed || 0  // Provide default if backend doesn't return missed count yet
+        })
       }
     } catch (error) {
       console.error('❌ Error loading stats:', error)
