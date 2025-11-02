@@ -504,178 +504,193 @@ export default function FollowupPage() {
   // Get status color
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'missed': return 'text-red-600 bg-red-50'
-      case 'called': return 'text-yellow-600 bg-yellow-50'
-      case 'contacted': return 'text-blue-600 bg-blue-50'
-      case 'converted': return 'text-green-600 bg-green-50'
-      default: return 'text-gray-600 bg-gray-50'
+      case 'missed': return 'text-red-300 bg-red-500/20 border border-red-500/30'
+      case 'called': return 'text-yellow-300 bg-yellow-500/20 border border-yellow-500/30'
+      case 'contacted': return 'text-blue-300 bg-blue-500/20 border border-blue-500/30'
+      case 'converted': return 'text-emerald-300 bg-emerald-500/20 border border-emerald-500/30'
+      default: return 'text-slate-300 bg-slate-500/20 border border-slate-500/30'
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <Clock className="w-8 h-8 text-orange-600" />
-                Followup Management
-              </h1>
-              <p className="mt-2 text-gray-600">
-                Manage and call leads with missed status to improve conversion rates
-              </p>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-600/10 via-red-600/10 to-yellow-600/10 rounded-3xl blur-xl"></div>
+        <div className="relative bg-slate-900/80 backdrop-blur-sm rounded-3xl border border-slate-800/50 p-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+            <div className="space-y-2">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Clock className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-white via-orange-100 to-red-100 bg-clip-text text-transparent">
+                    Followup Management
+                  </h1>
+                  <p className="text-slate-400 text-lg">Missed Call Recovery System</p>
+                </div>
+              </div>
+              <p className="text-slate-300 max-w-2xl">Systematically follow up on missed leads to improve conversion rates and maximize opportunities</p>
             </div>
-            
-            <div className="mt-4 sm:mt-0 flex flex-col sm:flex-row gap-3">
+            <div className="flex items-center space-x-4">
               <button
                 onClick={() => {
                   fetchFollowupLeads()
                   fetchFollowupStats()
                 }}
                 disabled={loading}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                className="group flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-slate-800 to-slate-700 hover:from-slate-700 hover:to-slate-600 text-white rounded-xl transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-300`} />
+                <span className="text-sm font-medium">Refresh Data</span>
               </button>
               
               {!isCallingAll ? (
                 <button
                   onClick={handleStartCalling}
                   disabled={loading || leads.length === 0}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
+                  className="group flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white rounded-xl transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
-                  <PhoneCall className="w-4 h-4 mr-2" />
-                  Call All Filtered
+                  <PhoneCall className="w-4 h-4" />
+                  <span className="text-sm font-medium">Call All Filtered</span>
                 </button>
               ) : (
                 <button
                   onClick={handleStopCalling}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  className="group flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
-                  <Square className="w-4 h-4 mr-2" />
-                  Stop Calling
+                  <Square className="w-4 h-4" />
+                  <span className="text-sm font-medium">Stop Calling</span>
                 </button>
               )}
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <AlertCircle className="h-6 w-6 text-red-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Total Missed
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {stats.missed_leads.total}
-                    </dd>
-                  </dl>
-                </div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-red-600/20 to-red-800/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+          <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6 hover:border-red-500/30 transition-all duration-300 hover:transform hover:scale-105">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-400 mb-1">Total Missed</p>
+                <p className="text-3xl font-bold text-white">{loading ? '...' : stats.missed_leads.total.toLocaleString()}</p>
+              </div>
+              <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-red-500/25 transition-all duration-300">
+                <AlertCircle className="w-7 h-7 text-white" />
               </div>
             </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <Phone className="h-6 w-6 text-yellow-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Never Called
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {stats.missed_leads.never_called}
-                    </dd>
-                  </dl>
-                </div>
+            <div className="mt-4 flex items-center space-x-2">
+              <div className="flex items-center space-x-1 px-2 py-1 bg-red-500/10 rounded-lg">
+                <Clock className="w-4 h-4 text-red-400" />
+                <span className="text-sm text-red-300 font-medium">{stats.missed_leads.recent_missed}</span>
               </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <TrendingUp className="h-6 w-6 text-blue-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      High Attempts (3+)
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {stats.missed_leads.high_attempts}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <BarChart3 className="h-6 w-6 text-green-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Success Rate (30d)
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {stats.call_performance.success_rate}%
-                    </dd>
-                  </dl>
-                </div>
-              </div>
+              <span className="text-sm text-slate-400">recent</span>
             </div>
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white shadow rounded-lg mb-6">
-          <div className="px-4 py-5 sm:p-6">
+        <div className="group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-yellow-600/20 to-orange-800/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+          <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6 hover:border-yellow-500/30 transition-all duration-300 hover:transform hover:scale-105">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-400 mb-1">Never Called</p>
+                <p className="text-3xl font-bold text-white">{loading ? '...' : stats.missed_leads.never_called.toLocaleString()}</p>
+              </div>
+              <div className="w-14 h-14 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-yellow-500/25 transition-all duration-300">
+                <Phone className="w-7 h-7 text-white" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center space-x-2">
+              <div className="flex items-center space-x-1 px-2 py-1 bg-yellow-500/10 rounded-lg">
+                <AlertCircle className="w-4 h-4 text-yellow-400" />
+                <span className="text-sm text-yellow-300 font-medium">0</span>
+              </div>
+              <span className="text-sm text-slate-400">attempts</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-800/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+          <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6 hover:border-blue-500/30 transition-all duration-300 hover:transform hover:scale-105">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-400 mb-1">High Attempts</p>
+                <p className="text-3xl font-bold text-white">{loading ? '...' : stats.missed_leads.high_attempts.toLocaleString()}</p>
+              </div>
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-blue-500/25 transition-all duration-300">
+                <TrendingUp className="w-7 h-7 text-white" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center space-x-2">
+              <div className="flex items-center space-x-1 px-2 py-1 bg-blue-500/10 rounded-lg">
+                <PhoneCall className="w-4 h-4 text-blue-400" />
+                <span className="text-sm text-blue-300 font-medium">3+</span>
+              </div>
+              <span className="text-sm text-slate-400">attempts</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 to-green-800/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+          <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6 hover:border-emerald-500/30 transition-all duration-300 hover:transform hover:scale-105">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-400 mb-1">Success Rate</p>
+                <p className="text-3xl font-bold text-white">{loading ? '...' : `${stats.call_performance.success_rate}%`}</p>
+              </div>
+              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-emerald-500/25 transition-all duration-300">
+                <BarChart3 className="w-7 h-7 text-white" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center space-x-2">
+              <div className="flex items-center space-x-1 px-2 py-1 bg-emerald-500/10 rounded-lg">
+                <CheckCircle className="w-4 h-4 text-emerald-400" />
+                <span className="text-sm text-emerald-300 font-medium">{stats.call_performance.successful_calls_30d}</span>
+              </div>
+              <span className="text-sm text-slate-400">successful</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-600/10 via-slate-700/10 to-slate-800/10 rounded-2xl blur-xl"></div>
+        <div className="relative bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-slate-800/50 p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
               {/* Search */}
               <div className="lg:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   Search
                 </label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                   <input
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search by name, phone, or email..."
-                    className="pl-10 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="pl-10 block w-full bg-slate-800/50 border border-slate-700 rounded-xl shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-white placeholder-slate-400 sm:text-sm"
                   />
                 </div>
               </div>
 
               {/* Status Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   Status
                 </label>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="block w-full bg-slate-800/50 border border-slate-700 rounded-xl shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-white sm:text-sm"
                 >
                   <option value="all">All Status</option>
                   <option value="missed">Missed</option>
@@ -687,13 +702,13 @@ export default function FollowupPage() {
 
               {/* Attempts Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   Attempts
                 </label>
                 <select
                   value={attemptsFilter}
                   onChange={(e) => setAttemptsFilter(e.target.value)}
-                  className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="block w-full bg-slate-800/50 border border-slate-700 rounded-xl shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-white sm:text-sm"
                 >
                   <option value="all">All Attempts</option>
                   <option value="never_called">Never Called (0)</option>
@@ -704,89 +719,91 @@ export default function FollowupPage() {
 
               {/* Date From */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   From Date
                 </label>
                 <input
                   type="date"
                   value={dateFromFilter}
                   onChange={(e) => setDateFromFilter(e.target.value)}
-                  className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="block w-full bg-slate-800/50 border border-slate-700 rounded-xl shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-white sm:text-sm"
                 />
               </div>
 
               {/* Date To */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   To Date
                 </label>
                 <input
                   type="date"
                   value={dateToFilter}
                   onChange={(e) => setDateToFilter(e.target.value)}
-                  className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="block w-full bg-slate-800/50 border border-slate-700 rounded-xl shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-white sm:text-sm"
                 />
               </div>
             </div>
 
-            <div className="mt-4 flex justify-between items-center">
+            <div className="mt-6 flex justify-between items-center">
               <button
                 onClick={resetFilters}
-                className="text-sm text-gray-500 hover:text-gray-700"
+                className="text-sm text-slate-400 hover:text-slate-300 transition-colors"
               >
                 Reset Filters
               </button>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-slate-400">
                 Showing {leads.length} of {totalCount} leads
               </div>
             </div>
           </div>
         </div>
 
-        {/* Leads Table */}
-        <div className="bg-white shadow overflow-hidden sm:rounded-md">
-          <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+      {/* Leads Table */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-600/10 via-slate-700/10 to-slate-800/10 rounded-2xl blur-xl"></div>
+        <div className="relative bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-slate-800/50 overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-800/50">
+            <h3 className="text-lg leading-6 font-medium text-white">
               Followup Leads
             </h3>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+            <p className="mt-1 max-w-2xl text-sm text-slate-400">
               Leads that require followup calls
             </p>
           </div>
 
           {loading ? (
             <div className="p-8 text-center">
-              <RefreshCw className="w-8 h-8 animate-spin mx-auto text-gray-400" />
-              <p className="mt-2 text-gray-500">Loading followup leads...</p>
+              <RefreshCw className="w-8 h-8 animate-spin mx-auto text-slate-400" />
+              <p className="mt-2 text-slate-400">Loading followup leads...</p>
             </div>
           ) : leads.length === 0 ? (
             <div className="p-8 text-center">
-              <Users className="w-12 h-12 mx-auto text-gray-400" />
-              <p className="mt-2 text-gray-500">No followup leads found</p>
-              <p className="text-sm text-gray-400">Try adjusting your filters</p>
+              <Users className="w-12 h-12 mx-auto text-slate-400" />
+              <p className="mt-2 text-slate-400">No followup leads found</p>
+              <p className="text-sm text-slate-500">Try adjusting your filters</p>
             </div>
           ) : (
             <>
-              <ul className="divide-y divide-gray-200">
+              <ul className="divide-y divide-slate-800/50">
                 {leads.map((lead) => (
-                  <li key={lead.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50">
+                  <li key={lead.id} className="px-6 py-4 hover:bg-slate-800/30 transition-colors duration-200">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center min-w-0 flex-1">
                         <div className="flex-shrink-0">
-                          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                            <User className="w-5 h-5 text-gray-500" />
+                          <div className="w-10 h-10 bg-gradient-to-br from-slate-700 to-slate-800 rounded-full flex items-center justify-center">
+                            <User className="w-5 h-5 text-slate-300" />
                           </div>
                         </div>
                         <div className="ml-4 min-w-0 flex-1">
                           <div className="flex items-center">
-                            <p className="text-sm font-medium text-gray-900 truncate">
+                            <p className="text-sm font-medium text-white truncate">
                               {lead.name}
                             </p>
                             <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(lead.status)}`}>
                               {lead.status}
                             </span>
                           </div>
-                          <div className="mt-1 flex items-center text-sm text-gray-500">
+                          <div className="mt-1 flex items-center text-sm text-slate-400">
                             <PhoneIcon className="flex-shrink-0 mr-1.5 h-4 w-4" />
                             <span className="truncate">{lead.phone}</span>
                             {lead.email && (
@@ -806,19 +823,19 @@ export default function FollowupPage() {
                       </div>
                       <div className="flex items-center space-x-4">
                         <div className="text-right">
-                          <p className="text-sm text-gray-900">
+                          <p className="text-sm text-white">
                             {lead.call_attempts} attempts
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-slate-400">
                             Last: {formatTimeAgo(lead.last_call)}
                           </p>
                         </div>
                         {lead.latest_call_duration && (
                           <div className="text-right">
-                            <p className="text-sm text-gray-900">
+                            <p className="text-sm text-white">
                               {Math.round(lead.latest_call_duration)}s
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-slate-400">
                               {lead.latest_call_status}
                             </p>
                           </div>
@@ -831,50 +848,50 @@ export default function FollowupPage() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div className="bg-slate-900/50 px-6 py-4 flex items-center justify-between border-t border-slate-800/50">
                   <div className="flex-1 flex justify-between sm:hidden">
                     <button
                       onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                       disabled={currentPage === 1}
-                      className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                      className="relative inline-flex items-center px-4 py-2 border border-slate-700 text-sm font-medium rounded-xl text-slate-300 bg-slate-800/50 hover:bg-slate-700/50 disabled:opacity-50 transition-colors"
                     >
                       Previous
                     </button>
                     <button
                       onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                       disabled={currentPage === totalPages}
-                      className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                      className="ml-3 relative inline-flex items-center px-4 py-2 border border-slate-700 text-sm font-medium rounded-xl text-slate-300 bg-slate-800/50 hover:bg-slate-700/50 disabled:opacity-50 transition-colors"
                     >
                       Next
                     </button>
                   </div>
                   <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                     <div>
-                      <p className="text-sm text-gray-700">
+                      <p className="text-sm text-slate-400">
                         Showing{' '}
-                        <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span>
+                        <span className="font-medium text-white">{(currentPage - 1) * itemsPerPage + 1}</span>
                         {' '}to{' '}
-                        <span className="font-medium">
+                        <span className="font-medium text-white">
                           {Math.min(currentPage * itemsPerPage, totalCount)}
                         </span>
                         {' '}of{' '}
-                        <span className="font-medium">{totalCount}</span>
+                        <span className="font-medium text-white">{totalCount}</span>
                         {' '}results
                       </p>
                     </div>
                     <div>
-                      <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                      <nav className="relative z-0 inline-flex rounded-xl shadow-sm -space-x-px">
                         <button
                           onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                           disabled={currentPage === 1}
-                          className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                          className="relative inline-flex items-center px-4 py-2 rounded-l-xl border border-slate-700 bg-slate-800/50 text-sm font-medium text-slate-300 hover:bg-slate-700/50 disabled:opacity-50 transition-colors"
                         >
                           Previous
                         </button>
                         <button
                           onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                           disabled={currentPage === totalPages}
-                          className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                          className="relative inline-flex items-center px-4 py-2 rounded-r-xl border border-slate-700 bg-slate-800/50 text-sm font-medium text-slate-300 hover:bg-slate-700/50 disabled:opacity-50 transition-colors"
                         >
                           Next
                         </button>
@@ -890,16 +907,16 @@ export default function FollowupPage() {
 
       {/* Calling Progress Modal */}
       {showCallModal && callingStatus && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-6 w-96 shadow-2xl rounded-2xl bg-slate-900/95 backdrop-blur-sm border border-slate-800/50">
             <div className="mt-3">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-medium text-white">
                   Followup Calling Progress
                 </h3>
                 <button
                   onClick={() => setShowCallModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-slate-400 hover:text-slate-300 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -908,15 +925,15 @@ export default function FollowupPage() {
               <div className="space-y-4">
                 {/* Progress Bar */}
                 <div>
-                  <div className="flex justify-between text-sm text-gray-600 mb-1">
+                  <div className="flex justify-between text-sm text-slate-400 mb-2">
                     <span>Progress</span>
                     <span>
                       {callingStatus.progress?.completed_calls || 0} / {callingStatus.progress?.total_calls || 0}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-slate-700 rounded-full h-3">
                     <div
-                      className="bg-orange-600 h-2 rounded-full transition-all duration-300"
+                      className="bg-gradient-to-r from-orange-500 to-red-500 h-3 rounded-full transition-all duration-300"
                       style={{
                         width: `${callingStatus.progress?.total_calls ? 
                           ((callingStatus.progress.completed_calls || 0) / callingStatus.progress.total_calls) * 100 : 0}%`
@@ -927,11 +944,11 @@ export default function FollowupPage() {
 
                 {/* Current Call */}
                 {callingStatus.current_call && (
-                  <div className="bg-blue-50 p-3 rounded-md">
-                    <p className="text-sm font-medium text-blue-900">
+                  <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl">
+                    <p className="text-sm font-medium text-blue-300">
                       Currently calling:
                     </p>
-                    <p className="text-sm text-blue-700">
+                    <p className="text-sm text-blue-200">
                       {callingStatus.current_call.name} ({callingStatus.current_call.phone})
                     </p>
                   </div>
@@ -939,39 +956,39 @@ export default function FollowupPage() {
 
                 {/* Status */}
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Status:</span>
+                  <span className="text-sm text-slate-400">Status:</span>
                   <span className={`text-sm font-medium ${
-                    callingStatus.is_paused ? 'text-yellow-600' : 'text-green-600'
+                    callingStatus.is_paused ? 'text-yellow-400' : 'text-emerald-400'
                   }`}>
                     {callingStatus.is_paused ? 'Paused' : 'Running'}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Queue:</span>
-                  <span className="text-sm font-medium text-gray-900">
+                  <span className="text-sm text-slate-400">Queue:</span>
+                  <span className="text-sm font-medium text-white">
                     {callingStatus.queue_size} remaining
                   </span>
                 </div>
 
                 {/* Controls */}
-                <div className="flex space-x-2 pt-4">
+                <div className="flex space-x-3 pt-6">
                   <button
                     onClick={handlePauseResumeCalling}
-                    className={`flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white ${
+                    className={`flex-1 inline-flex items-center justify-center px-4 py-3 text-sm font-medium rounded-xl text-white transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 ${
                       callingStatus.is_paused 
-                        ? 'bg-green-600 hover:bg-green-700' 
-                        : 'bg-yellow-600 hover:bg-yellow-700'
+                        ? 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700' 
+                        : 'bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700'
                     }`}
                   >
                     {callingStatus.is_paused ? (
                       <>
-                        <Play className="w-4 h-4 mr-1" />
+                        <Play className="w-4 h-4 mr-2" />
                         Resume
                       </>
                     ) : (
                       <>
-                        <Pause className="w-4 h-4 mr-1" />
+                        <Pause className="w-4 h-4 mr-2" />
                         Pause
                       </>
                     )}
@@ -979,16 +996,16 @@ export default function FollowupPage() {
                   
                   <button
                     onClick={handleForceNext}
-                    className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                    className="flex-1 inline-flex items-center justify-center px-4 py-3 border border-slate-700 text-sm font-medium rounded-xl text-slate-300 bg-slate-800/50 hover:bg-slate-700/50 transition-all duration-300"
                   >
                     Skip Current
                   </button>
                   
                   <button
                     onClick={handleStopCalling}
-                    className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
+                    className="flex-1 inline-flex items-center justify-center px-4 py-3 text-sm font-medium rounded-xl text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
                   >
-                    <Square className="w-4 h-4 mr-1" />
+                    <Square className="w-4 h-4 mr-2" />
                     Stop
                   </button>
                 </div>
