@@ -22,7 +22,7 @@ interface Lead {
   email: string
   company: string
   notes: string
-  status: 'new' | 'called' | 'contacted' | 'converted'
+  status: 'new' | 'missed' | 'called' | 'contacted' | 'converted'
   call_attempts: number
   last_call: string | null
   created_at: string
@@ -32,6 +32,7 @@ interface Lead {
 interface LeadStats {
   total: number
   new: number
+  missed: number
   called: number
   contacted: number
   converted: number
@@ -847,6 +848,7 @@ export default function LeadsPage() {
   const getStatusBadge = useCallback((status: string) => {
     const styles = {
       new: 'bg-blue-600/20 text-blue-400 border border-blue-500/30',
+      missed: 'bg-red-600/20 text-red-400 border border-red-500/30',
       called: 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30',
       contacted: 'bg-purple-600/20 text-purple-400 border border-purple-500/30',
       converted: 'bg-orange-600/20 text-orange-400 border border-orange-500/30'
@@ -971,6 +973,17 @@ export default function LeadsPage() {
         <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 hover:border-slate-700 transition-all">
           <div className="flex items-center justify-between">
             <div>
+              <p className="text-sm font-medium text-slate-400">Missed</p>
+              <p className="text-2xl font-bold text-red-400">{stats.missed || 0}</p>
+            </div>
+            <div className="w-10 h-10 bg-red-600/20 rounded-xl flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-red-400" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 hover:border-slate-700 transition-all">
+          <div className="flex items-center justify-between">
+            <div>
               <p className="text-sm font-medium text-slate-400">Called</p>
               <p className="text-2xl font-bold text-emerald-400">{stats.called}</p>
             </div>
@@ -1037,6 +1050,7 @@ export default function LeadsPage() {
             >
               <option value="all">All Status</option>
               <option value="new">New</option>
+              <option value="missed">Missed</option>
               <option value="called">Called</option>
               <option value="contacted">Contacted</option>
               <option value="converted">Converted</option>
@@ -1359,6 +1373,7 @@ export default function LeadsPage() {
                   className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 >
                   <option value="new">New</option>
+                  <option value="missed">Missed</option>
                   <option value="called">Called</option>
                   <option value="contacted">Contacted</option>
                   <option value="converted">Converted</option>
