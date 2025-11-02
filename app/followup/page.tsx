@@ -5,7 +5,7 @@ import {
   Users, Phone, RefreshCw, Filter, Search, 
   PhoneCall, Calendar, CheckCircle, AlertCircle,
   FileText, User, Mail, Building, PhoneIcon, X,
-  Clock, TrendingUp, BarChart3, Play, Pause, Square
+  Clock, TrendingUp, BarChart3, Play, Pause, Square, Download
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../contexts/AuthContext'
@@ -480,6 +480,100 @@ export default function FollowupPage() {
     setCurrentPage(1)
   }
 
+  // Export to CSV
+  const handleExportCSV = useCallback(async () => {
+    if (leads.length === 0) {
+      toast.error('No leads to export')
+      return
+    }
+
+    try {
+      toast.loading('Preparing CSV export...', { id: 'export-loading' })
+
+      const FOLLOWUP_API_BASE = process.env.NEXT_PUBLIC_CALL_API_URL || 'https://callagent-be-2.onrender.com'
+      
+      // Build query parameters from current filters
+      const queryParams = new URLSearchParams()
+      
+      if (statusFilter !== 'all') {
+        queryParams.append('status', statusFilter)
+      }
+      
+      if (searchTerm) {
+        queryParams.append('search', searchTerm)
+      }
+      
+      if (attemptsFilter !== 'all') {
+        const [min, max] = attemptsFilter === '0' 
+          ? [0, 0] 
+          : attemptsFilter === '1-2'
+            ? [1, 2]
+            : attemptsFilter === '3+'
+              ? [3, null]
+              : [null, null]
+        
+        if (min !== null) queryParams.append('min_attempts', min.toString())
+        if (max !== null) queryParams.append('max_attempts', max.toString())
+      }
+      
+      if (dateFromFilter) {
+        queryParams.append('date_from', dateFromFilter)
+      }
+      
+      if (dateToFilter) {
+        queryParams.append('date_to', dateToFilter)
+      }
+
+      // Use the backend CSV export endpoint
+      const exportUrl = `${FOLLOWUP_API_BASE}/api/followup/export/csv?${queryParams}`
+      
+      const response = await fetch(exportUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.status} ${response.statusText}`)
+      }
+
+      // Get the CSV content as blob
+      const blob = await response.blob()
+      
+      // Extract filename from response headers or generate one
+      let filename = 'followup-leads-export.csv'
+      const contentDisposition = response.headers.get('Content-Disposition')
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename=(.+)/)
+        if (filenameMatch) {
+          filename = filenameMatch[1].replace(/['"]/g, '') // Remove quotes
+        }
+      }
+
+      // Create download link and trigger download
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      link.style.display = 'none'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      
+      toast.dismiss('export-loading')
+      toast.success(`Exported ${leads.length} leads to CSV`, { 
+        duration: 3000,
+        icon: '📊'
+      })
+      
+    } catch (error) {
+      console.error('Export failed:', error)
+      toast.dismiss('export-loading')
+      toast.error('Failed to export leads. Please try again.')
+    }
+  }, [token, leads.length, statusFilter, searchTerm, attemptsFilter, dateFromFilter, dateToFilter])
+
   // Format date for display
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Never'
@@ -534,6 +628,21 @@ export default function FollowupPage() {
               <p className="text-slate-300 max-w-2xl">Systematically follow up on missed leads to improve conversion rates and maximize opportunities</p>
             </div>
             <div className="flex items-center space-x-4">
+              <button
+                onClick={handleExportCSV}
+                disabled={loading || leads.length === 0}
+                className="group flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-xl transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:scale-105"
+                title={`Export ${leads.length > 0 ? `all ${leads.length}` : '0'} filtered leads to CSV`}
+              >
+                <Download className="w-4 h-4" />
+                <span className="text-sm font-medium">Export CSV</span>
+                {leads.length > 0 && (
+                  <span className="text-xs bg-emerald-800 px-2 py-0.5 rounded-full">
+                    {leads.length}
+                  </span>
+                )}
+              </button>
+              
               <button
                 onClick={() => {
                   fetchFollowupLeads()
