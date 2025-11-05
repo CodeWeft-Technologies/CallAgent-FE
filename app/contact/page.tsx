@@ -31,7 +31,7 @@ const contactMethods = [
         icon: MailIcon,
         title: "Email Support",
         description: "Get detailed help via email",
-        contact: "support@audixa.ai",
+        contact: "support@voiceze.ai",
         availability: "24/7 Response",
         color: "from-purple-500 to-purple-600"
     },
@@ -99,7 +99,7 @@ export default function ContactPage() {
         // Create email content
         const subject = encodeURIComponent(`Contact Form: ${formData.subject}`);
         const body = encodeURIComponent(`
-Hello Audixa AI Team,
+Hello Voiceze AI Team,
 
 I would like to get in touch regarding: ${formData.inquiryType}
 
@@ -117,7 +117,7 @@ ${formData.name}
         `);
         
         // Your company email address
-        const toEmail = 'support@audixa.ai';
+        const toEmail = 'support@voiceze.ai';
         
         // Create mailto link
         const mailtoLink = `mailto:${toEmail}?subject=${subject}&body=${body}`;

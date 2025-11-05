@@ -107,7 +107,7 @@ const Navbar = () => {
                                 <div className="h-40 w-auto rounded-lg overflow-hidden flex items-center justify-center">
                                     <img 
                                         src="/logo.png" 
-                                        alt="Audixa AI Logo" 
+                                        alt="Voiceze AI Logo" 
                                         className="h-full w-auto object-contain"
                                     />
                                 </div>

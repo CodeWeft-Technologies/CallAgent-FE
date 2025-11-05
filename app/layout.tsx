@@ -10,7 +10,7 @@ import LayoutContent from '../components/LayoutContent'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Audixa AI - AI Voice Automation',
+  title: 'Voiceze AI - AI Voice Automation',
   description: 'Advanced AI Voice Agent Management Platform for Outbound Sales',
 }
 

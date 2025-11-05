@@ -64,12 +64,12 @@ const Navigation = React.memo(() => {
             <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
               <img 
                 src="/logo.png" 
-                alt="Audixa AI Logo" 
+                alt="Voiceze AI Logo" 
                 className="w-full h-full object-contain"
               />
             </div>
             <div>
-              <span className="text-lg font-bold text-white">Audixa AI</span>
+              <span className="text-lg font-bold text-white">Voiceze AI</span>
             </div>
           </div>
 

@@ -14,7 +14,7 @@ const Footer = () => {
                 <AnimationContainer delay={0.1}>
                     <div className="flex flex-col items-start justify-start md:max-w-[200px]">
                         <div className="flex items-start">
-                            <span className="text-lg font-bold">Audixa AI</span>
+                            <span className="text-lg font-bold">Voiceze AI</span>
                         </div>
                         <p className="text-muted-foreground mt-4 text-sm text-start">
                             Automate your outbound sales with AI voice agents.
@@ -113,16 +113,16 @@ const Footer = () => {
             <div className="mt-8 border-t border-border/40 pt-4 md:pt-8 md:flex md:items-center md:justify-between w-full">
                 <AnimationContainer delay={0.6}>
                     <p className="text-sm text-muted-foreground mt-8 md:mt-0">
-                        &copy; {new Date().getFullYear()} Audixa AI. All rights reserved.
+                        &copy; {new Date().getFullYear()} Voiceze AI. All rights reserved.
                     </p>
                 </AnimationContainer>
             </div>
 
             <div className="h-[20rem] lg:h-[20rem] hidden md:flex items-center justify-center relative overflow-hidden">
                 <div 
-                    className="text-[6rem] md:text-[10rem] lg:text-[14rem] xl:text-[16rem] font-black select-none tracking-[-0.05em] leading-[0.9] whitespace-nowrap transition-colors duration-300 ease-out footer-text-hover cursor-pointer"
+                    className="text-[6rem] md:text-[10rem] lg:text-[14rem] xl:text-[16rem] font-black select-none tracking-[-0.05em] leading-[0.9] whitespace-nowrap transition-colors duration-300 ease-out footer-text-hover cursor-pointer hover:bg-gradient-to-r hover:from-blue-500 hover:via-purple-500 hover:to-violet-500 hover:bg-clip-text hover:text-transparent"
                 >
-                    AUDIXA AI
+                    VOICEZE AI
                 </div>
             </div>
         </footer>

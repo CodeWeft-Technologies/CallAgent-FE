@@ -83,14 +83,14 @@ const PROCESS_IMAGES = {
   step2img2: "/dashboard.png",
   step3img: "/dashboard.png",
   step4img: "/dashboard.png",
-  alt: "Audixa AI Process Steps"
+  alt: "Voiceze AI Process Steps"
 };
 
 const REVIEWS = [
   {
     name: "Sarah Johnson",
     username: "@sarahj_sales",
-    review: "Audixa AI transformed our outbound sales process. We've seen a 300% increase in qualified leads and our team can focus on closing deals.",
+    review: "Voiceze AI transformed our outbound sales process. We've seen a 300% increase in qualified leads and our team can focus on closing deals.",
     rating: 5
   },
   {
@@ -165,7 +165,7 @@ const HomePage = () => {
                 </span>
               </h1>
               <p className="mb-12 text-lg tracking-tight text-muted-foreground md:text-xl text-balance">
-                Effortlessly automate your outbound sales with Audixa AI.
+                Effortlessly automate your outbound sales with Voiceze AI.
                 <br className="hidden md:block" />
                 <span className="hidden md:block">Convert leads 24/7 with AI voice agents that sound human.</span>
               </p>
@@ -189,7 +189,7 @@ const HomePage = () => {
                 />
                 <Image
                   src="/dashboard.png"
-                  alt="Audixa AI Dashboard"
+                  alt="Voiceze AI Dashboard"
                   width={1200}
                   height={1200}
                   quality={100}
@@ -236,7 +236,7 @@ const HomePage = () => {
               Manage Calls Like a Pro
             </h2>
             <p className="mt-4 text-center lg:text-center text-lg text-muted-foreground max-w-lg">
-              Audixa AI is a powerful voice automation tool that helps you convert leads with AI-powered conversations.
+              Voiceze AI is a powerful voice automation tool that helps you convert leads with AI-powered conversations.
             </p>
           </div>
         </AnimationContainer>
@@ -417,7 +417,7 @@ const HomePage = () => {
               Choose a plan that works for you
             </h2>
             <p className="mt-4 text-center lg:text-center text-lg text-muted-foreground max-w-lg">
-              Get started with Audixa AI today and enjoy transparent per-minute pricing.
+              Get started with Voiceze AI today and enjoy transparent per-minute pricing.
             </p>
           </div>
         </AnimationContainer>
@@ -445,7 +445,7 @@ const HomePage = () => {
               What our users are saying
             </h2>
             <p className="mt-4 text-center lg:text-center text-lg text-muted-foreground max-w-lg">
-              Here&apos;s what some of our users have to say about Audixa AI.
+              Here&apos;s what some of our users have to say about Voiceze AI.
             </p>
           </div>
         </AnimationContainer>
