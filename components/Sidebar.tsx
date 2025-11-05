@@ -119,7 +119,7 @@ const Sidebar = React.memo(() => {
           <div className="flex items-center justify-between mb-4">
             {!isCollapsed && (
               <div className="flex items-center justify-start w-full">
-                <div className="w-20 h-50 rounded-lg overflow-hidden flex items-center justify-center">
+                <div className="w-30 h-50 rounded-lg overflow-hidden flex items-center justify-center">
                   <img 
                     src="/sidebarlogo.png" 
                     alt="Voiceze AI Logo" 
