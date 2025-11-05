@@ -118,8 +118,8 @@ const Sidebar = React.memo(() => {
         <div className="p-4 border-b border-slate-800">
           <div className="flex items-center justify-between mb-4">
             {!isCollapsed && (
-              <div className="flex items-center justify-center w-full py-2">
-                <div className="w-20 h-20 rounded-lg overflow-hidden flex items-center justify-center">
+              <div className="flex items-center justify-start w-full">
+                <div className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center">
                   <img 
                     src="/logo.png" 
                     alt="Voiceze AI Logo" 
@@ -130,7 +130,7 @@ const Sidebar = React.memo(() => {
             )}
             {isCollapsed && (
               <div className="flex items-center justify-center w-full">
-                <div className="w-14 h-14 rounded-lg overflow-hidden flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
                   <img 
                     src="/logo.png" 
                     alt="Voiceze AI Logo" 
