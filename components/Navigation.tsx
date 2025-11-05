@@ -61,11 +61,15 @@ const Navigation = React.memo(() => {
         <div className="flex items-center justify-between h-16 px-4">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Phone className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
+              <img 
+                src="/logo.png" 
+                alt="Audixa AI Logo" 
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
-              <span className="text-lg font-bold text-white">AI Agent</span>
+              <span className="text-lg font-bold text-white">Audixa AI</span>
             </div>
           </div>
 

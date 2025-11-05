@@ -103,13 +103,14 @@ const Navbar = () => {
                 <AnimationContainer reverse delay={0.1} className="size-full">
                     <MaxWidthWrapper className="flex items-center justify-between h-full">
                         <div className="flex items-center space-x-12">
-                            <Link href="/" className="flex items-center space-x-2">
-                                <div className="w-8 h-8 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-lg flex items-center justify-center">
-                                    <span className="text-white font-bold text-sm">A</span>
+                            <Link href="/" className="flex items-center">
+                                <div className="h-40 w-auto rounded-lg overflow-hidden flex items-center justify-center">
+                                    <img 
+                                        src="/logo.png" 
+                                        alt="Audixa AI Logo" 
+                                        className="h-full w-auto object-contain"
+                                    />
                                 </div>
-                                <span className="text-xl font-bold font-heading !leading-none">
-                                    Audixa AI
-                                </span>
                             </Link>
 
                             <NavigationMenu className="hidden lg:flex">

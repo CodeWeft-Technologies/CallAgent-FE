@@ -119,12 +119,27 @@ const Sidebar = React.memo(() => {
           <div className="flex items-center justify-between mb-4">
             {!isCollapsed && (
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <PhoneCall className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
+                  <img 
+                    src="/logo.png" 
+                    alt="Audixa AI Logo" 
+                    className="w-full h-full object-contain"
+                  />
                 </div>
                 <div>
                   <span className="text-lg font-bold text-white">Audixa AI</span>
                   <div className="text-xs text-slate-400">Voice Agent Platform</div>
+                </div>
+              </div>
+            )}
+            {isCollapsed && (
+              <div className="flex items-center justify-center w-full">
+                <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
+                  <img 
+                    src="/logo.png" 
+                    alt="Audixa AI Logo" 
+                    className="w-full h-full object-contain"
+                  />
                 </div>
               </div>
             )}
