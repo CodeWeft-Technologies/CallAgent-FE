@@ -159,15 +159,6 @@ export default function OrganizationPage() {
                         API Credentials
                     </button>
                     <button
-                        onClick={() => setActiveTab('users')}
-                        className={`px-3 py-2 sm:py-3 rounded-lg sm:rounded-none sm:border-b-2 transition-colors text-xs sm:text-base font-medium ${activeTab === 'users'
-                            ? 'bg-blue-600 text-white sm:bg-transparent sm:border-blue-500 sm:text-blue-500'
-                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600 sm:bg-transparent sm:border-transparent sm:text-slate-400 sm:hover:text-slate-300'
-                            }`}
-                    >
-                        Users
-                    </button>
-                    <button
                         onClick={() => setActiveTab('resources')}
                         className={`px-3 py-2 sm:py-3 rounded-lg sm:rounded-none sm:border-b-2 transition-colors text-xs sm:text-base font-medium ${activeTab === 'resources'
                             ? 'bg-blue-600 text-white sm:bg-transparent sm:border-blue-500 sm:text-blue-500'
@@ -223,15 +214,6 @@ export default function OrganizationPage() {
                             <CredentialsSettings credentials={credentials} token={token} />
                         )}
 
-                        {activeTab === 'users' && (
-                            <div className="bg-slate-800 rounded-lg p-4 sm:p-6">
-                                <h2 className="text-lg sm:text-xl font-medium text-white mb-4">Organization Users</h2>
-                                <div className="bg-slate-700 rounded-lg p-6 text-center">
-                                    <p className="text-slate-400">User management feature coming soon.</p>
-                                </div>
-                            </div>
-                        )}
-
                         {activeTab === 'resources' && (
                             <div className="bg-slate-800 rounded-lg p-4 sm:p-6">
                                 <h2 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6">Resource Usage</h2>
@@ -239,26 +221,33 @@ export default function OrganizationPage() {
                                     {/* Call Minutes Usage Card */}
                                     <ResourceUsageMinutes token={token} organizationId={user?.organization_id || null} />
                                     
-                                    {/* Resource Limits */}
+                                    {/* Resource Limits - Only Minutes */}
                                     <div>
-                                        <h3 className="text-lg font-medium text-white mb-4">Resource Limits</h3>
+                                        <h3 className="text-lg font-medium text-white mb-4">Minutes Allocation</h3>
                                         {resourceLimits.length === 0 ? (
                                             <div className="bg-slate-700 rounded-lg p-6 text-center">
-                                                <p className="text-slate-400">No resource limits configured.</p>
+                                                <p className="text-slate-400">No minutes allocation configured.</p>
                                             </div>
                                         ) : (
                                             <div className="space-y-3 sm:space-y-4">
-                                                {resourceLimits.map((limit) => (
+                                                {resourceLimits
+                                                    .filter((limit) => limit.resource_type.toLowerCase().includes('minutes') || limit.resource_type.toLowerCase().includes('call'))
+                                                    .map((limit) => (
                                                     <div key={limit.id} className="bg-slate-700 rounded-lg p-4">
                                                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
                                                             <div className="flex-1">
                                                                 <h3 className="text-white font-medium">{limit.resource_type}</h3>
                                                                 <p className="text-slate-400 text-sm">{limit.description}</p>
                                                             </div>
-                                                            <div className="text-white font-medium">{limit.limit_value}</div>
+                                                            <div className="text-white font-medium">{limit.limit_value} minutes</div>
                                                         </div>
                                                     </div>
                                                 ))}
+                                                {resourceLimits.filter((limit) => limit.resource_type.toLowerCase().includes('minutes') || limit.resource_type.toLowerCase().includes('call')).length === 0 && (
+                                                    <div className="bg-slate-700 rounded-lg p-6 text-center">
+                                                        <p className="text-slate-400">No minutes allocation configured.</p>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </div>
