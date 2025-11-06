@@ -11,7 +11,7 @@ const ChangelogPage = () => {
                         Changelog
                     </h1>
                     <p className="text-base md:text-lg mt-6 text-center text-muted-foreground max-w-2xl">
-                        Stay up to date with the latest features and improvements to Audixa AI.
+                        Stay up to date with the latest features and improvements to Voiceze AI.
                     </p>
                 </AnimationContainer>
             </div>

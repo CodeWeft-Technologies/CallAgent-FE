@@ -389,7 +389,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                 height={24}
               />
             ) : (
-              <div className="text-2xl font-bold text-white">Audixa AI</div>
+              <div className="text-2xl font-bold text-white">Voiceze AI</div>
             )}
           </div>
 

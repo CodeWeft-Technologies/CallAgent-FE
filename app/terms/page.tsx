@@ -11,7 +11,7 @@ const TermsPage = () => {
                         Terms of Service
                     </h1>
                     <p className="text-base md:text-lg mt-6 text-center text-muted-foreground max-w-2xl">
-                        These terms govern your use of Audixa AI. Please read them carefully.
+                        These terms govern your use of Voiceze AI. Please read them carefully.
                     </p>
                 </AnimationContainer>
             </div>

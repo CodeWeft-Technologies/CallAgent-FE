@@ -156,7 +156,7 @@ const PricingPage = () => {
                 Ready to get started?
               </h2>
               <p className="text-muted-foreground mt-6 max-w-md mx-auto">
-                Join thousands of businesses already using Audixa AI to automate their sales calls and boost conversions.
+                Join thousands of businesses already using Voiceze AI to automate their sales calls and boost conversions.
               </p>
               <div className="mt-6 flex flex-col sm:flex-row gap-4">
                 <Button asChild size="lg">
