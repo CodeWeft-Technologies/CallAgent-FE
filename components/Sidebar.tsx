@@ -167,7 +167,7 @@ const Sidebar = React.memo(() => {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-white truncate">
-                  {user?.username || 'User'}
+                  {user?.organization_name || 'Organization'}
                 </div>
                 <div className="text-xs text-slate-400 truncate">
                   Online
