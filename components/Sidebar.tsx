@@ -78,8 +78,6 @@ const Sidebar = React.memo(() => {
     return nav
   }
 
-
-
   const getUserInitials = () => {
     if (!user?.username) return 'U'
     const names = user.username.split(' ')
@@ -159,36 +157,39 @@ const Sidebar = React.memo(() => {
           </div>
 
           {/* User Profile */}
-          <div className="flex items-center space-x-3">
-            <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                {getUserInitials()}
+          {!isCollapsed && (
+            <div className="flex items-center space-x-3 bg-slate-800/30 rounded-xl p-3">
+              <div className="relative">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-lg">
+                  {getUserInitials()}
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-slate-900"></div>
               </div>
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-900"></div>
-            </div>
-            {!isCollapsed && (
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-white truncate">
-                  {getUserRole()}
-                </div>
-                <div className="text-xs text-slate-400 truncate">
                   {user?.username || 'User'}
                 </div>
+                <div className="text-xs text-slate-400 truncate">
+                  Online
+                </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+          {isCollapsed && (
+            <div className="flex justify-center">
+              <div className="relative">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs shadow-lg">
+                  {getUserInitials()}
+                </div>
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-900"></div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Main Navigation */}
-        {!isCollapsed && (
-          <div className="px-4 py-2">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-              MAIN
-            </div>
-          </div>
-        )}
 
-        <nav className="flex-1 px-3 space-y-1">
+
+        <nav className="flex-1 px-4 py-2 space-y-2">
           {getNavigation().map((item) => {
             // Better active state detection
             const isActive = pathname === item.href || 
@@ -200,29 +201,43 @@ const Sidebar = React.memo(() => {
                 key={item.name} 
                 href={item.href}
                 className={`
-                  group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer relative block
-                  ${isActive
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
-                    : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
+                  group flex items-center rounded-xl transition-all duration-300 cursor-pointer relative block transform hover:scale-105
+                  ${isCollapsed 
+                    ? 'justify-center w-12 h-12 mx-auto' 
+                    : 'px-4 py-3 w-full'
                   }
-                  ${isCollapsed ? 'justify-center' : ''}
+                  ${isActive
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-xl shadow-blue-500/25'
+                    : 'text-slate-400 hover:text-white hover:bg-gradient-to-r hover:from-slate-800/50 hover:to-slate-700/50 hover:shadow-lg'
+                  }
                 `}
                 onClick={(e) => {
                   // Ensure the link navigation works properly
                   setIsMobileOpen(false) // Close mobile menu on navigation
                 }}
               >
-                <item.icon className={`h-5 w-5 flex-shrink-0 ${
+                <item.icon className={`${isCollapsed ? 'h-6 w-6' : 'h-5 w-5'} flex-shrink-0 transition-all duration-300 ${
                   isActive ? 'text-white' : 'text-slate-500 group-hover:text-white'
                 }`} />
                 {!isCollapsed && (
-                  <span className="ml-3 truncate">{item.name}</span>
+                  <span className="ml-3 truncate text-sm font-medium">{item.name}</span>
+                )}
+                
+                {/* Active indicator for expanded state */}
+                {isActive && !isCollapsed && (
+                  <div className="ml-auto w-2 h-2 bg-white rounded-full animate-pulse" />
+                )}
+                
+                {/* Active indicator for collapsed state */}
+                {isActive && isCollapsed && (
+                  <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-white rounded-l-full" />
                 )}
                 
                 {/* Tooltip for collapsed state */}
                 {isCollapsed && (
-                  <div className="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 border border-slate-700">
+                  <div className="absolute left-full ml-3 px-3 py-2 bg-slate-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 border border-slate-700 shadow-xl">
                     {item.name}
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-slate-800 border-l border-b border-slate-700 rotate-45"></div>
                   </div>
                 )}
               </Link>
@@ -233,16 +248,24 @@ const Sidebar = React.memo(() => {
 
 
         {/* Logout Button */}
-        <div className="p-4 border-t border-slate-800">
+        <div className="p-4 border-t border-slate-800/50">
           <button
             onClick={() => logout()}
             className={`
-            flex items-center justify-center w-full p-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors group
-            ${isCollapsed ? 'px-3' : 'px-4'}
+            group flex items-center w-full rounded-xl transition-all duration-300 transform hover:scale-105 text-slate-400 hover:text-white hover:bg-gradient-to-r hover:from-red-600/20 hover:to-red-500/20 hover:shadow-lg hover:shadow-red-500/10
+            ${isCollapsed ? 'justify-center h-12 px-3' : 'px-4 py-3'}
           `}
           >
-            <LogOut className="h-5 w-5" />
-            {!isCollapsed && <span className="ml-3">Log Out</span>}
+            <LogOut className={`${isCollapsed ? 'h-6 w-6' : 'h-5 w-5'} transition-all duration-300`} />
+            {!isCollapsed && <span className="ml-3 text-sm font-medium">Log Out</span>}
+            
+            {/* Tooltip for collapsed state */}
+            {isCollapsed && (
+              <div className="absolute left-full ml-3 px-3 py-2 bg-slate-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 border border-slate-700 shadow-xl">
+                Log Out
+                <div className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-slate-800 border-l border-b border-slate-700 rotate-45"></div>
+              </div>
+            )}
           </button>
         </div>
       </aside>
