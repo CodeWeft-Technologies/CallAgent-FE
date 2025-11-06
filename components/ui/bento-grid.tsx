@@ -59,25 +59,33 @@ export const CARDS = [
     },
     {
         Icon: WaypointsIcon,
-        name: "CRM Integration",
-        description: "Seamlessly integrate with your existing CRM and tools.",
+        name: "Call Announcements",
+        description: "Deliver personalized announcements and messages during live calls with AI-powered voice prompts.",
         href: "#",
-        cta: "Learn more",
+        cta: "",
         className: "col-span-3 lg:col-span-2 max-w-full overflow-hidden",
         background: (
             <div className="absolute right-2 top-4 h-[300px] w-[600px] border-none transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] group-hover:scale-105">
-                <div className="grid grid-cols-3 gap-4 p-4">
-                    <div className="bg-card border border-border rounded-lg p-3 text-center">
-                        <div className="text-2xl mb-2">📊</div>
-                        <div className="text-xs text-muted-foreground">Salesforce</div>
+                <div className="grid grid-cols-2 gap-4 p-4">
+                    <div className="bg-card border border-border rounded-lg p-4 space-y-2">
+                        <div className="text-2xl mb-2">�</div>
+                        <div className="text-xs font-medium text-foreground">Live Announcements</div>
+                        <div className="text-xs text-muted-foreground">Real-time voice prompts</div>
                     </div>
-                    <div className="bg-card border border-border rounded-lg p-3 text-center">
+                    <div className="bg-card border border-border rounded-lg p-4 space-y-2">
+                        <div className="text-2xl mb-2">�️</div>
+                        <div className="text-xs font-medium text-foreground">Custom Messages</div>
+                        <div className="text-xs text-muted-foreground">Personalized content delivery</div>
+                    </div>
+                    <div className="bg-card border border-border rounded-lg p-4 space-y-2">
+                        <div className="text-2xl mb-2">⏰</div>
+                        <div className="text-xs font-medium text-foreground">Scheduled Prompts</div>
+                        <div className="text-xs text-muted-foreground">Timed message delivery</div>
+                    </div>
+                    <div className="bg-card border border-border rounded-lg p-4 space-y-2">
                         <div className="text-2xl mb-2">🎯</div>
-                        <div className="text-xs text-muted-foreground">HubSpot</div>
-                    </div>
-                    <div className="bg-card border border-border rounded-lg p-3 text-center">
-                        <div className="text-2xl mb-2">⚡</div>
-                        <div className="text-xs text-muted-foreground">Zapier</div>
+                        <div className="text-xs font-medium text-foreground">Smart Targeting</div>
+                        <div className="text-xs text-muted-foreground">Context-aware announcements</div>
                     </div>
                 </div>
             </div>
@@ -86,10 +94,10 @@ export const CARDS = [
     {
         Icon: CalendarIcon,
         name: "Campaign Scheduling",
-        description: "Schedule and manage your calling campaigns efficiently.",
+        description: "Schedule and manage your calling campaigns with seamless Google Calendar integration for efficient appointment booking.",
         className: "col-span-3 lg:col-span-1",
         href: "#",
-        cta: "Learn more",
+        cta: "",
         background: (
             <div className="absolute right-0 top-10 origin-top rounded-md border border-border transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_40%,#000_100%)] group-hover:scale-105 bg-card p-4">
                 <div className="text-center space-y-2">
@@ -176,16 +184,18 @@ const BentoCard = ({
             <p className="max-w-lg text-neutral-400">{description}</p>
         </div>
 
-        <div
-            className={cn(
-                "absolute bottom-0 flex w-full translate-y-10 flex-row items-center p-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100",
-            )}
-        >
-            <Link href={href} className={buttonVariants({ size: "sm", variant: "ghost", className: "cursor-pointer" })}>
-                {cta}
-                <ArrowRightIcon className="ml-2 h-4 w-4" />
-            </Link>
-        </div>
+        {cta && (
+            <div
+                className={cn(
+                    "absolute bottom-0 flex w-full translate-y-10 flex-row items-center p-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100",
+                )}
+            >
+                <Link href={href} className={buttonVariants({ size: "sm", variant: "ghost", className: "cursor-pointer" })}>
+                    {cta}
+                    <ArrowRightIcon className="ml-2 h-4 w-4" />
+                </Link>
+            </div>
+        )}
         <div className="pointer-events-none absolute inset-0 transition-all duration-300 group-hover:bg-black/[.03] group-hover:dark:bg-neutral-800/10" />
     </div>
 );
