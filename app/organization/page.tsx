@@ -26,6 +26,9 @@ export default function OrganizationPage() {
     })
     const [availabilitySlots, setAvailabilitySlots] = useState<any[]>([])
     const [savingCalendar, setSavingCalendar] = useState(false)
+    const [organizationName, setOrganizationName] = useState('')
+    const [editingName, setEditingName] = useState(false)
+    const [savingName, setSavingName] = useState(false)
 
     useEffect(() => {
         const fetchData = async () => {
@@ -76,7 +79,12 @@ export default function OrganizationPage() {
         }
 
         fetchData()
-    }, [token])
+        
+        // Initialize organization name from user data
+        if (user?.organization_name) {
+            setOrganizationName(user.organization_name)
+        }
+    }, [token, user?.organization_name])
 
     const saveCalendarSettings = async () => {
         if (!token) return
@@ -114,6 +122,44 @@ export default function OrganizationPage() {
         } finally {
             setSavingCalendar(false)
         }
+    }
+
+    const saveOrganizationName = async () => {
+        if (!token || !organizationName.trim()) return
+        setSavingName(true)
+
+        try {
+            const response = await fetch(`${API_URL}/api/organizations/update-name`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    organization_id: user?.organization_id,
+                    name: organizationName.trim()
+                })
+            })
+
+            if (response.ok) {
+                toast.success('Organization name updated successfully!')
+                setEditingName(false)
+                // Optionally refresh user data or update context
+                window.location.reload() // Simple refresh to update sidebar
+            } else {
+                toast.error('Failed to update organization name')
+            }
+        } catch (error) {
+            console.error('Error updating organization name:', error)
+            toast.error('Error updating organization name')
+        } finally {
+            setSavingName(false)
+        }
+    }
+
+    const cancelEditName = () => {
+        setOrganizationName(user?.organization_name || '')
+        setEditingName(false)
     }
 
     if (user && user.role !== 'admin' && user.role !== 'manager') {
@@ -191,9 +237,44 @@ export default function OrganizationPage() {
                             <div className="bg-slate-800 rounded-lg p-4 sm:p-6">
                                 <h2 className="text-lg sm:text-xl font-medium text-white mb-4">Organization Information</h2>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                                    <div>
+                                    <div className="sm:col-span-2">
                                         <label className="block text-sm font-medium text-slate-400 mb-2">Organization Name</label>
-                                        <div className="bg-slate-700 rounded-lg p-3 text-white">{user?.organization_name}</div>
+                                        {editingName ? (
+                                            <div className="flex space-x-2">
+                                                <input
+                                                    type="text"
+                                                    value={organizationName}
+                                                    onChange={(e) => setOrganizationName(e.target.value)}
+                                                    className="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                    placeholder="Enter organization name"
+                                                    disabled={savingName}
+                                                />
+                                                <button
+                                                    onClick={saveOrganizationName}
+                                                    disabled={savingName || !organizationName.trim()}
+                                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium"
+                                                >
+                                                    {savingName ? 'Saving...' : 'Save'}
+                                                </button>
+                                                <button
+                                                    onClick={cancelEditName}
+                                                    disabled={savingName}
+                                                    className="px-4 py-2 bg-slate-600 hover:bg-slate-500 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center justify-between bg-slate-700 rounded-lg p-3">
+                                                <span className="text-white">{user?.organization_name}</span>
+                                                <button
+                                                    onClick={() => setEditingName(true)}
+                                                    className="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                                                >
+                                                    Edit
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-slate-400 mb-2">Organization ID</label>
