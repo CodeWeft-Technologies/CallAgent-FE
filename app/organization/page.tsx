@@ -38,9 +38,9 @@ export default function OrganizationPage() {
         has_credentials: false
     })
     const [smsCredentials, setSmsCredentials] = useState({
-        piopiy_appid: '',
-        piopiy_secret: ''
-    })
+        app_id: '',
+        app_secret: ''
+    });
     const [savingSms, setSavingSms] = useState(false)
 
     useEffect(() => {
@@ -687,8 +687,8 @@ export default function OrganizationPage() {
                                             <label className="block text-sm font-medium text-slate-400 mb-2">App ID</label>
                                             <input
                                                 type="text"
-                                                value={smsCredentials.piopiy_appid}
-                                                onChange={(e) => setSmsCredentials(prev => ({...prev, piopiy_appid: e.target.value}))}
+                                                value={smsCredentials.app_id}
+                                                onChange={(e) => setSmsCredentials(prev => ({...prev, app_id: e.target.value}))}
                                                 className="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                 placeholder="Enter PIOPIY App ID"
                                             />
@@ -697,8 +697,8 @@ export default function OrganizationPage() {
                                             <label className="block text-sm font-medium text-slate-400 mb-2">App Secret</label>
                                             <input
                                                 type="password"
-                                                value={smsCredentials.piopiy_secret}
-                                                onChange={(e) => setSmsCredentials(prev => ({...prev, piopiy_secret: e.target.value}))}
+                                                value={smsCredentials.app_secret}
+                                                onChange={(e) => setSmsCredentials(prev => ({...prev, app_secret: e.target.value}))}
                                                 className="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                 placeholder="Enter PIOPIY App Secret"
                                             />
@@ -730,7 +730,7 @@ export default function OrganizationPage() {
                                                     setSavingSms(false)
                                                 }
                                             }}
-                                            disabled={savingSms || !smsCredentials.piopiy_appid || !smsCredentials.piopiy_secret}
+                                            disabled={savingSms || !smsCredentials.app_id || !smsCredentials.app_secret}
                                             className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
                                         >
                                             {savingSms && (

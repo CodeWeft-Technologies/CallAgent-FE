@@ -45,13 +45,6 @@ const MobileNavbar = () => {
                             >
                                 Pricing
                             </Link>
-                            <Link 
-                                href="/enterprise" 
-                                onClick={handleClose}
-                                className="text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                                Enterprise
-                            </Link>
                             {user ? (
                                 <Link 
                                     href="/dashboard" 
