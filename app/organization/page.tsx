@@ -705,7 +705,7 @@ export default function OrganizationPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-end">
+                                    <div className="flex justify-end space-x-4">
                                         <button
                                             onClick={async () => {
                                                 setSavingSms(true)
@@ -740,6 +740,77 @@ export default function OrganizationPage() {
                                         </button>
                                     </div>
                                 </div>
+
+                                {/* Test SMS Section */}
+                                {smsConfig.has_credentials && smsConfig.sms_enabled && (
+                                    <div className="bg-slate-800 rounded-lg p-6">
+                                        <h2 className="text-xl font-medium text-white mb-4">Test SMS</h2>
+                                        
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                            <div className="md:col-span-2">
+                                                <label className="block text-sm font-medium text-slate-400 mb-2">Test Phone Number</label>
+                                                <input
+                                                    type="tel"
+                                                    placeholder="Enter phone number to test SMS"
+                                                    className="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                    id="test-phone-number"
+                                                />
+                                            </div>
+                                            <div className="flex items-end">
+                                                <button
+                                                    onClick={async () => {
+                                                        const phoneInput = document.getElementById('test-phone-number') as HTMLInputElement;
+                                                        const phoneNumber = phoneInput?.value;
+                                                        
+                                                        if (!phoneNumber) {
+                                                            toast.error('Please enter a phone number');
+                                                            return;
+                                                        }
+                                                        
+                                                        setSavingSms(true);
+                                                        try {
+                                                            const response = await fetch(`${API_URL}/api/sms/send`, {
+                                                                method: 'POST',
+                                                                headers: {
+                                                                    'Content-Type': 'application/json',
+                                                                    'Authorization': `Bearer ${token}`
+                                                                },
+                                                                body: JSON.stringify({
+                                                                    phone_number: phoneNumber,
+                                                                    message: smsConfig.interested_sms_template,
+                                                                    template_type: 'interested'
+                                                                })
+                                                            });
+                                                            
+                                                            if (response.ok) {
+                                                                toast.success('Test SMS sent successfully!');
+                                                                phoneInput.value = '';
+                                                            } else {
+                                                                const error = await response.json();
+                                                                toast.error(error.detail || 'Failed to send test SMS');
+                                                            }
+                                                        } catch (error) {
+                                                            toast.error('Error sending test SMS');
+                                                        } finally {
+                                                            setSavingSms(false);
+                                                        }
+                                                    }}
+                                                    disabled={savingSms}
+                                                    className="w-full bg-green-600 hover:bg-green-700 disabled:bg-slate-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
+                                                >
+                                                    {savingSms && (
+                                                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                                                    )}
+                                                    <span>{savingSms ? 'Sending...' : 'Send Test SMS'}</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <p className="text-xs text-slate-400">
+                                            This will send a test SMS using your "Interested Lead" template to verify your PIOPIY configuration.
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         )}
 
