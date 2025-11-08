@@ -1251,7 +1251,7 @@ export default function ConfigPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium text-green-400">
-                          {availableTtsProviders.find(p => p.provider === config.tts_provider)?.name || 
+                          {(Array.isArray(availableTtsProviders) ? availableTtsProviders.find(p => p.provider === config.tts_provider) : null)?.name || 
                            (config.tts_provider === 'cartesia' ? 'Cartesia TTS' : 'Google TTS')}
                         </p>
                         <div className="flex items-center text-xs text-green-400">
@@ -1348,9 +1348,9 @@ export default function ConfigPage() {
                         ))}
                       </select>
                       <div className="mt-2 space-y-1">
-                        {availableTtsProviders.find(p => p.provider === config.tts_provider) && (
+                        {(Array.isArray(availableTtsProviders) ? availableTtsProviders.find(p => p.provider === config.tts_provider) : null) && (
                           <p className="text-sm text-slate-500">
-                            {availableTtsProviders.find(p => p.provider === config.tts_provider)?.description}
+                            {(Array.isArray(availableTtsProviders) ? availableTtsProviders.find(p => p.provider === config.tts_provider) : null)?.description}
                           </p>
                         )}
                         <p className="text-sm text-green-400">

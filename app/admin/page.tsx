@@ -119,10 +119,12 @@ export default function AdminDashboard() {
 
       if (response.ok) {
         const data = await response.json()
-        setOrganizations(data)
+        // Ensure data is an array before setting state
+        const organizationsData = Array.isArray(data) ? data : []
+        setOrganizations(organizationsData)
         
         // Fetch call minutes data for each organization
-        await fetchCallMinutesData(data)
+        await fetchCallMinutesData(organizationsData)
       } else {
         toast.error('Failed to fetch organizations')
       }
@@ -345,7 +347,7 @@ export default function AdminDashboard() {
       
       // If we're showing API keys and config doesn't exist, initialize it
       if (newState[orgId] && !apiKeyConfigs[orgId]) {
-        const org = organizations.find(o => o.id === orgId)
+        const org = Array.isArray(organizations) ? organizations.find(o => o.id === orgId) : null
         if (org) {
           setApiKeyConfigs(prevConfigs => ({
             ...prevConfigs,
@@ -429,9 +431,11 @@ export default function AdminDashboard() {
   }
 
   // Filter organizations
-  const filteredOrganizations = organizations.filter(org =>
-    org.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredOrganizations = Array.isArray(organizations) 
+    ? organizations.filter(org =>
+        org.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : []
 
   if (!user || (user.role !== 'super_admin' && !user.is_super_admin)) {
     return (

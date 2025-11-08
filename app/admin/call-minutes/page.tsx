@@ -179,7 +179,7 @@ export default function CallMinutesAdmin() {
 
   // Get organization name by ID
   const getOrgName = (orgId: number): string => {
-    const org = organizations.find(o => o.id === orgId);
+    const org = Array.isArray(organizations) ? organizations.find(o => o.id === orgId) : null;
     return org ? org.name : 'Unknown Organization';
   };
 
@@ -282,8 +282,8 @@ export default function CallMinutesAdmin() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {organizations.map((org) => {
-                    const minutesData = minutesSummary.find(m => m.organization_id === org.id) || {
+                  {Array.isArray(organizations) ? organizations.map((org) => {
+                    const minutesData = (Array.isArray(minutesSummary) ? minutesSummary.find(m => m.organization_id === org.id) : null) || {
                       total_minutes_allocated: 0,
                       minutes_used: 0,
                       minutes_remaining: 0,
@@ -350,7 +350,7 @@ export default function CallMinutesAdmin() {
                         </TableCell>
                       </TableRow>
                     );
-                  })}
+                  }) : []}
                 </TableBody>
               </Table>
             </TableContainer>
