@@ -129,7 +129,7 @@ export default function OrganizationPage() {
         setSavingName(true)
 
         try {
-            const response = await fetch(`${API_URL}/api/organizations/update-name`, {
+            const response = await fetch(`${API_URL}/api/org-config/organizations/update-name`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
