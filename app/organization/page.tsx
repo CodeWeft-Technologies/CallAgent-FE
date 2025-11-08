@@ -29,6 +29,19 @@ export default function OrganizationPage() {
     const [organizationName, setOrganizationName] = useState('')
     const [editingName, setEditingName] = useState(false)
     const [savingName, setSavingName] = useState(false)
+    
+    // SMS Configuration States
+    const [smsConfig, setSmsConfig] = useState({
+        sms_enabled: false,
+        interested_sms_template: 'Thank you for your interest! We\'ll contact you soon.',
+        followup_sms_template: 'Following up on your inquiry. Please let us know if you need any assistance.',
+        has_credentials: false
+    })
+    const [smsCredentials, setSmsCredentials] = useState({
+        piopiy_appid: '',
+        piopiy_secret: ''
+    })
+    const [savingSms, setSavingSms] = useState(false)
 
     useEffect(() => {
         const fetchData = async () => {
@@ -70,6 +83,14 @@ export default function OrganizationPage() {
                     if (availabilityData.success) {
                         setAvailabilitySlots(availabilityData.data)
                     }
+                }
+
+                // Fetch SMS configuration
+                const smsConfigResponse = await fetch(`${API_URL}/api/sms/config`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                if (smsConfigResponse.ok) {
+                    setSmsConfig(await smsConfigResponse.json())
                 }
             } catch (err) {
                 console.error('Error:', err)
@@ -223,6 +244,15 @@ export default function OrganizationPage() {
                             }`}
                     >
                         Calendar
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('sms')}
+                        className={`px-3 py-2 sm:py-3 rounded-lg sm:rounded-none sm:border-b-2 transition-colors text-xs sm:text-base font-medium ${activeTab === 'sms'
+                            ? 'bg-blue-600 text-white sm:bg-transparent sm:border-blue-500 sm:text-blue-500'
+                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600 sm:bg-transparent sm:border-transparent sm:text-slate-400 sm:hover:text-slate-300'
+                            }`}
+                    >
+                        SMS
                     </button>
 
                 </div>
@@ -558,6 +588,155 @@ export default function OrganizationPage() {
                                                 <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
                                             )}
                                             <span>{savingCalendar ? 'Saving...' : 'Save Calendar Settings'}</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'sms' && (
+                            <div className="space-y-6">
+                                {/* SMS Configuration */}
+                                <div className="bg-slate-800 rounded-lg p-6">
+                                    <h2 className="text-xl font-medium text-white mb-4">SMS Configuration</h2>
+                                    
+                                    <div className="space-y-4">
+                                        {/* Enable/Disable SMS */}
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <label className="text-sm font-medium text-white">Enable SMS Notifications</label>
+                                                <p className="text-xs text-slate-400">Send automated SMS messages to interested leads</p>
+                                            </div>
+                                            <label className="relative inline-flex items-center cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={smsConfig.sms_enabled}
+                                                    onChange={(e) => setSmsConfig(prev => ({...prev, sms_enabled: e.target.checked}))}
+                                                    className="sr-only peer"
+                                                />
+                                                <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                            </label>
+                                        </div>
+
+                                        {/* SMS Templates */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-400 mb-2">Interested Lead SMS Template</label>
+                                                <textarea
+                                                    value={smsConfig.interested_sms_template}
+                                                    onChange={(e) => setSmsConfig(prev => ({...prev, interested_sms_template: e.target.value}))}
+                                                    className="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                    rows={3}
+                                                    placeholder="Enter SMS template for interested leads"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-400 mb-2">Follow-up SMS Template</label>
+                                                <textarea
+                                                    value={smsConfig.followup_sms_template}
+                                                    onChange={(e) => setSmsConfig(prev => ({...prev, followup_sms_template: e.target.value}))}
+                                                    className="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                    rows={3}
+                                                    placeholder="Enter SMS template for follow-ups"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex justify-end">
+                                            <button
+                                                onClick={async () => {
+                                                    setSavingSms(true)
+                                                    try {
+                                                        const response = await fetch(`${API_URL}/api/sms/config`, {
+                                                            method: 'PUT',
+                                                            headers: {
+                                                                'Content-Type': 'application/json',
+                                                                'Authorization': `Bearer ${token}`
+                                                            },
+                                                            body: JSON.stringify(smsConfig)
+                                                        })
+                                                        if (response.ok) {
+                                                            toast.success('SMS configuration updated successfully!')
+                                                        } else {
+                                                            toast.error('Failed to update SMS configuration')
+                                                        }
+                                                    } catch (error) {
+                                                        toast.error('Error updating SMS configuration')
+                                                    } finally {
+                                                        setSavingSms(false)
+                                                    }
+                                                }}
+                                                disabled={savingSms}
+                                                className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                                            >
+                                                {savingSms && (
+                                                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                                                )}
+                                                <span>{savingSms ? 'Saving...' : 'Save SMS Settings'}</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* PIOPIY Credentials */}
+                                <div className="bg-slate-800 rounded-lg p-6">
+                                    <h2 className="text-xl font-medium text-white mb-4">PIOPIY SMS Credentials</h2>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-400 mb-2">App ID</label>
+                                            <input
+                                                type="text"
+                                                value={smsCredentials.piopiy_appid}
+                                                onChange={(e) => setSmsCredentials(prev => ({...prev, piopiy_appid: e.target.value}))}
+                                                className="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                placeholder="Enter PIOPIY App ID"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-400 mb-2">App Secret</label>
+                                            <input
+                                                type="password"
+                                                value={smsCredentials.piopiy_secret}
+                                                onChange={(e) => setSmsCredentials(prev => ({...prev, piopiy_secret: e.target.value}))}
+                                                className="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                placeholder="Enter PIOPIY App Secret"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-end">
+                                        <button
+                                            onClick={async () => {
+                                                setSavingSms(true)
+                                                try {
+                                                    const response = await fetch(`${API_URL}/api/sms/credentials`, {
+                                                        method: 'PUT',
+                                                        headers: {
+                                                            'Content-Type': 'application/json',
+                                                            'Authorization': `Bearer ${token}`
+                                                        },
+                                                        body: JSON.stringify(smsCredentials)
+                                                    })
+                                                    if (response.ok) {
+                                                        toast.success('PIOPIY credentials updated successfully!')
+                                                        setSmsConfig(prev => ({...prev, has_credentials: true}))
+                                                    } else {
+                                                        toast.error('Failed to update PIOPIY credentials')
+                                                    }
+                                                } catch (error) {
+                                                    toast.error('Error updating PIOPIY credentials')
+                                                } finally {
+                                                    setSavingSms(false)
+                                                }
+                                            }}
+                                            disabled={savingSms || !smsCredentials.piopiy_appid || !smsCredentials.piopiy_secret}
+                                            className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                                        >
+                                            {savingSms && (
+                                                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                                            )}
+                                            <span>{savingSms ? 'Saving...' : 'Save Credentials'}</span>
                                         </button>
                                     </div>
                                 </div>
