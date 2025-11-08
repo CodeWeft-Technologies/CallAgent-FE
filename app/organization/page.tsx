@@ -10,7 +10,7 @@ import ResourceUsageMinutes from '../../components/ResourceUsageMinutes'
 const API_URL = process.env.NEXT_PUBLIC_LEAD_API_URL || 'http://localhost:8000'
 
 export default function OrganizationPage() {
-    const { user, token } = useAuth()
+    const { user, token, refreshUser } = useAuth()
     const [activeTab, setActiveTab] = useState('general')
     const [loading, setLoading] = useState(true)
     const [credentials, setCredentials] = useState<any[]>([])
@@ -144,8 +144,10 @@ export default function OrganizationPage() {
             if (response.ok) {
                 toast.success('Organization name updated successfully!')
                 setEditingName(false)
-                // Optionally refresh user data or update context
-                window.location.reload() // Simple refresh to update sidebar
+                // Refresh user data to update sidebar and organization name display
+                if (refreshUser) {
+                    await refreshUser()
+                }
             } else {
                 toast.error('Failed to update organization name')
             }

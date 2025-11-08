@@ -29,6 +29,7 @@ interface AuthContextType {
   logout: () => void
   error: string | null
   registerOrganization: (registrationData: OrganizationRegistrationData) => Promise<boolean>
+  refreshUser: () => Promise<void>
 }
 
 // Organization registration interface
@@ -183,6 +184,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  const refreshUser = useCallback(async (): Promise<void> => {
+    if (!token) return
+    
+    try {
+      const response = await fetch(`${API_URL}/api/auth/users/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+      
+      if (response.ok) {
+        const userData = await response.json()
+        setUser(userData)
+        
+        // Update localStorage with fresh user data
+        const authData = localStorage.getItem('ai_agent_auth')
+        if (authData) {
+          const existingAuth = JSON.parse(authData)
+          localStorage.setItem('ai_agent_auth', JSON.stringify({
+            ...existingAuth,
+            user: userData,
+          }))
+        }
+      }
+    } catch (error) {
+      console.error('Error refreshing user data:', error)
+    }
+  }, [token])
+
   const value: AuthContextType = {
     isAuthenticated,
     loading,
@@ -191,7 +221,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     logout,
     error,
-    registerOrganization
+    registerOrganization,
+    refreshUser
   }
 
   return (
