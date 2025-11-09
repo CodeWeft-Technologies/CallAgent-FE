@@ -1,0 +1,21 @@
+# Cartesia TTS Demo Audio File
+
+This is a placeholder for the Cartesia TTS demo audio file.
+
+**File**: cartesia-tts-demo.mp3
+**Duration**: ~10-15 seconds
+**Content**: "Hi there! Thanks for your interest in our services. I'd love to tell you about our latest features and how they can benefit your organization."
+
+**Voice Characteristics**:
+- Highly natural, human-like voice
+- Emotional and expressive delivery
+- Advanced neural voice synthesis
+- Cartesia's Sonic technology
+
+**To Add Real Audio**:
+1. Record or generate the demo text using Cartesia TTS
+2. Save as MP3 format
+3. Replace this placeholder file
+4. Ensure file size is under 1MB for fast loading
+
+**Current Status**: PLACEHOLDER - Replace with actual audio file

@@ -1,0 +1,21 @@
+# Google TTS Demo Audio File
+
+This is a placeholder for the Google TTS demo audio file.
+
+**File**: google-tts-demo.mp3
+**Duration**: ~10-15 seconds
+**Content**: "Hello! I'm calling from your sales team. We have exciting new opportunities that might be perfect for your business needs."
+
+**Voice Characteristics**:
+- Natural, professional tone
+- Clear pronunciation
+- Warm and friendly delivery
+- Google's WaveNet technology
+
+**To Add Real Audio**:
+1. Record or generate the demo text using Google TTS
+2. Save as MP3 format
+3. Replace this placeholder file
+4. Ensure file size is under 1MB for fast loading
+
+**Current Status**: PLACEHOLDER - Replace with actual audio file

@@ -3,6 +3,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Settings, RotateCcw, Save, MessageSquare, ArrowRight, FileText, Database, RefreshCw, Languages, Mic, Volume2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '@/contexts/AuthContext'
+import TTSVoiceDemo from '@/components/TTSVoiceDemo'
+import ContactSalesModal from '@/components/ContactSalesModal'
 
 interface AgentConfig {
   greeting_message: string
@@ -410,6 +412,7 @@ export default function ConfigPage() {
   const [canSelectTtsProvider, setCanSelectTtsProvider] = useState(false)
   const [contactSalesRequired, setContactSalesRequired] = useState(false)
   const [singleProviderOnly, setSingleProviderOnly] = useState(false)
+  const [showContactSalesModal, setShowContactSalesModal] = useState(false)
   
   // Organization configuration state
   const [orgConfig, setOrgConfig] = useState<OrganizationConfig>({
@@ -1379,6 +1382,60 @@ export default function ConfigPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* Voice Demos Section */}
+                  <div className="mt-6">
+                    <h4 className="text-lg font-medium text-slate-200 mb-4 flex items-center space-x-2">
+                      <Volume2 className="w-5 h-5 text-blue-400" />
+                      <span>Voice Demos</span>
+                    </h4>
+                    <p className="text-sm text-slate-400 mb-4">
+                      Listen to voice samples from our TTS providers to choose the best fit for your needs.
+                    </p>
+                    
+                    <div className="space-y-3">
+                      {/* Google TTS Demo */}
+                      <TTSVoiceDemo
+                        provider="google"
+                        providerName="Google TTS"
+                        demoText="Hello! I'm calling from your sales team. We have exciting new opportunities that might be perfect for your business needs."
+                        isAvailable={availableTtsProviders.some(p => p.provider === 'google')}
+                        onContactSales={() => setShowContactSalesModal(true)}
+                      />
+                      
+                      {/* Cartesia TTS Demo */}
+                      <TTSVoiceDemo
+                        provider="cartesia"
+                        providerName="Cartesia TTS"
+                        demoText="Hi there! Thanks for your interest in our services. I'd love to tell you about our latest features and how they can benefit your organization."
+                        isAvailable={availableTtsProviders.some(p => p.provider === 'cartesia')}
+                        onContactSales={() => setShowContactSalesModal(true)}
+                      />
+                    </div>
+
+                    {/* Contact Sales CTA for non-configured providers */}
+                    {(!hasSuperAdminTtsConfig || availableTtsProviders.length === 0) && (
+                      <div className="mt-4 p-4 bg-orange-900/20 border border-orange-600/30 rounded-xl">
+                        <div className="flex items-start space-x-3">
+                          <Volume2 className="w-5 h-5 text-orange-400 mt-0.5" />
+                          <div className="flex-1">
+                            <h5 className="text-sm font-medium text-orange-200 mb-1">
+                              Want More Voice Options?
+                            </h5>
+                            <p className="text-sm text-orange-300/80 mb-3">
+                              Get access to premium voice providers, custom voice training, and enterprise features.
+                            </p>
+                            <button
+                              onClick={() => setShowContactSalesModal(true)}
+                              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors"
+                            >
+                              Contact Sales for Enterprise Features
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Provider Information */}
@@ -1788,6 +1845,13 @@ export default function ConfigPage() {
           </div>
         </div>
       </div>
+
+      {/* Contact Sales Modal */}
+      <ContactSalesModal
+        isOpen={showContactSalesModal}
+        onClose={() => setShowContactSalesModal(false)}
+        feature="Advanced TTS Voice Options"
+      />
     </div>
   )
 }
