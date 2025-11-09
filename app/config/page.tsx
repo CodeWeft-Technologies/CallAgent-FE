@@ -1407,7 +1407,7 @@ export default function ConfigPage() {
                       <TTSVoiceDemo
                         provider="cartesia"
                         providerName="Cartesia TTS"
-                        demoText="Hi there! Thanks for your interest in our services. I'd love to tell you about our latest features and how they can benefit your organization."
+                        demoText="In English: I will sound clear and natural — just like this! In Hindi: अब मैं हिंदी में बोलूँगा — मेरी आवाज़ सहज और स्पष्ट लगेगी। In Marathi: आता मी मराठीत बोलेन — माझा आवाज नैसर्गिक आणि गोड वाटेल."
                         isAvailable={availableTtsProviders.some(p => p.provider === 'cartesia')}
                         onContactSales={() => setShowContactSalesModal(true)}
                       />

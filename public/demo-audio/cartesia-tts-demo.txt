@@ -1,13 +1,18 @@
 # Cartesia TTS Demo Audio File
 
-This is a placeholder for the Cartesia TTS demo audio file.
+**File**: cartesia-tts-demo.wav
+**Duration**: ~15-20 seconds
+**Content**: 
 
-**File**: cartesia-tts-demo.mp3
-**Duration**: ~10-15 seconds
-**Content**: "Hi there! Thanks for your interest in our services. I'd love to tell you about our latest features and how they can benefit your organization."
+In English: I will sound clear and natural — just like this!
+
+In Hindi: अब मैं हिंदी में बोलूँगा — मेरी आवाज़ सहज और स्पष्ट लगेगी।
+
+In Marathi: आता मी मराठीत बोलेन — माझा आवाज नैसर्गिक आणि गोड वाटेल.
 
 **Voice Characteristics**:
 - Highly natural, human-like voice
+- Multilingual support (English, Hindi, Marathi)
 - Emotional and expressive delivery
 - Advanced neural voice synthesis
 - Cartesia's Sonic technology

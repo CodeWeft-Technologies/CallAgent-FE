@@ -25,7 +25,7 @@ const TTSVoiceDemo: React.FC<TTSVoiceDemoProps> = ({
   // Demo audio URLs - using actual audio files
   const demoUrls = {
     google: '/demo-audio/google-tts-demo.m4a',
-    cartesia: '/demo-audio/cartesia-tts-demo.mp3'
+    cartesia: '/demo-audio/cartesia-tts-demo.wav'
   };
 
   const handlePlayDemo = async () => {
@@ -49,11 +49,7 @@ const TTSVoiceDemo: React.FC<TTSVoiceDemoProps> = ({
     } catch (error) {
       console.error('Error playing demo audio:', error);
       // Fallback: show text demo with TTS info
-      if (provider === 'google') {
-        alert(`🎵 ${providerName} Voice Demo\n\n"${demoText}"\n\n⚠️ Audio playback failed. Please check your browser's audio settings or try refreshing the page.`);
-      } else {
-        alert(`🎵 ${providerName} Voice Demo\n\n"${demoText}"\n\n📝 Note: Audio file will be added soon. This is a preview of the text that will be spoken with ${providerName}'s natural voice technology.`);
-      }
+      alert(`🎵 ${providerName} Voice Demo\n\n"${demoText}"\n\n⚠️ Audio playback failed. Please check your browser's audio settings or try refreshing the page.`);
     } finally {
       setIsLoading(false);
     }
