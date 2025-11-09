@@ -53,14 +53,16 @@ export default function OrganizationPage() {
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
                 if (credsResponse.ok) {
-                    setCredentials(await credsResponse.json())
+                    const credsData = await credsResponse.json()
+                    setCredentials(Array.isArray(credsData) ? credsData : [])
                 }
 
                 const limitsResponse = await fetch(`${API_URL}/api/resource-limits/`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
                 if (limitsResponse.ok) {
-                    setResourceLimits(await limitsResponse.json())
+                    const limitsData = await limitsResponse.json()
+                    setResourceLimits(Array.isArray(limitsData) ? limitsData : [])
                 }
 
                 // Load calendar settings
@@ -81,7 +83,7 @@ export default function OrganizationPage() {
                 if (availabilityResponse.ok) {
                     const availabilityData = await availabilityResponse.json()
                     if (availabilityData.success) {
-                        setAvailabilitySlots(availabilityData.data)
+                        setAvailabilitySlots(Array.isArray(availabilityData.data) ? availabilityData.data : [])
                     }
                 }
 
@@ -343,7 +345,7 @@ export default function OrganizationPage() {
                                             </div>
                                         ) : (
                                             <div className="space-y-3 sm:space-y-4">
-                                                {resourceLimits
+                                                {Array.isArray(resourceLimits) ? resourceLimits
                                                     .filter((limit) => limit.resource_type.toLowerCase().includes('minutes') || limit.resource_type.toLowerCase().includes('call'))
                                                     .map((limit) => (
                                                     <div key={limit.id} className="bg-slate-700 rounded-lg p-4">
@@ -355,8 +357,8 @@ export default function OrganizationPage() {
                                                             <div className="text-white font-medium">{limit.limit_value} minutes</div>
                                                         </div>
                                                     </div>
-                                                ))}
-                                                {resourceLimits.filter((limit) => limit.resource_type.toLowerCase().includes('minutes') || limit.resource_type.toLowerCase().includes('call')).length === 0 && (
+                                                )) : []}
+                                                {(Array.isArray(resourceLimits) ? resourceLimits.filter((limit) => limit.resource_type.toLowerCase().includes('minutes') || limit.resource_type.toLowerCase().includes('call')) : []).length === 0 && (
                                                     <div className="bg-slate-700 rounded-lg p-6 text-center">
                                                         <p className="text-slate-400">No minutes allocation configured.</p>
                                                     </div>
@@ -511,7 +513,7 @@ export default function OrganizationPage() {
                                                     { name: 'Thursday', value: 4 },
                                                     { name: 'Friday', value: 5 }
                                                 ].map(day => {
-                                                    const existingSlot = availabilitySlots.find(slot => slot.day_of_week === day.value)
+                                                    const existingSlot = Array.isArray(availabilitySlots) ? availabilitySlots.find(slot => slot.day_of_week === day.value) : null
                                                     const isEnabled = !!existingSlot
                                                     const startTime = existingSlot?.start_time || '09:00:00'
                                                     const endTime = existingSlot?.end_time || '17:00:00'
@@ -525,7 +527,7 @@ export default function OrganizationPage() {
                                                                     onChange={(e) => {
                                                                         if (e.target.checked) {
                                                                             setAvailabilitySlots([
-                                                                                ...availabilitySlots.filter(slot => slot.day_of_week !== day.value),
+                                                                                ...(Array.isArray(availabilitySlots) ? availabilitySlots.filter(slot => slot.day_of_week !== day.value) : []),
                                                                                 {
                                                                                     day_of_week: day.value,
                                                                                     start_time: '09:00:00',
@@ -533,7 +535,7 @@ export default function OrganizationPage() {
                                                                                 }
                                                                             ])
                                                                         } else {
-                                                                            setAvailabilitySlots(availabilitySlots.filter(slot => slot.day_of_week !== day.value))
+                                                                            setAvailabilitySlots(Array.isArray(availabilitySlots) ? availabilitySlots.filter(slot => slot.day_of_week !== day.value) : [])
                                                                         }
                                                                     }}
                                                                     className="rounded" 
@@ -546,11 +548,11 @@ export default function OrganizationPage() {
                                                                         type="time" 
                                                                         value={startTime.slice(0, 5)}
                                                                         onChange={(e) => {
-                                                                            const updatedSlots = availabilitySlots.map(slot => 
+                                                                            const updatedSlots = Array.isArray(availabilitySlots) ? availabilitySlots.map(slot => 
                                                                                 slot.day_of_week === day.value 
                                                                                     ? { ...slot, start_time: e.target.value + ':00' }
                                                                                     : slot
-                                                                            )
+                                                                            ) : []
                                                                             setAvailabilitySlots(updatedSlots)
                                                                         }}
                                                                         className="bg-slate-700 text-white rounded px-2 py-1 text-xs"
@@ -560,11 +562,11 @@ export default function OrganizationPage() {
                                                                         type="time" 
                                                                         value={endTime.slice(0, 5)}
                                                                         onChange={(e) => {
-                                                                            const updatedSlots = availabilitySlots.map(slot => 
+                                                                            const updatedSlots = Array.isArray(availabilitySlots) ? availabilitySlots.map(slot => 
                                                                                 slot.day_of_week === day.value 
                                                                                     ? { ...slot, end_time: e.target.value + ':00' }
                                                                                     : slot
-                                                                            )
+                                                                            ) : []
                                                                             setAvailabilitySlots(updatedSlots)
                                                                         }}
                                                                         className="bg-slate-700 text-white rounded px-2 py-1 text-xs"
