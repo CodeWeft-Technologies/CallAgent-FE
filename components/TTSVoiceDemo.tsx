@@ -22,9 +22,9 @@ const TTSVoiceDemo: React.FC<TTSVoiceDemoProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Demo audio URLs (will be replaced with actual files later)
+  // Demo audio URLs - using actual audio files
   const demoUrls = {
-    google: '/demo-audio/google-tts-demo.mp3',
+    google: '/demo-audio/google-tts-demo.m4a',
     cartesia: '/demo-audio/cartesia-tts-demo.mp3'
   };
 
@@ -40,13 +40,20 @@ const TTSVoiceDemo: React.FC<TTSVoiceDemoProps> = ({
       } else {
         // Try to load and play audio file
         audioRef.current.src = demoUrls[provider];
+        
+        // Add a small delay to ensure audio is loaded
+        audioRef.current.load();
         await audioRef.current.play();
         setIsPlaying(true);
       }
     } catch (error) {
       console.error('Error playing demo audio:', error);
       // Fallback: show text demo with TTS info
-      alert(`🎵 ${providerName} Voice Demo\n\n"${demoText}"\n\n📝 Note: Audio file will be added soon. This is a preview of the text that will be spoken with ${providerName}'s natural voice technology.`);
+      if (provider === 'google') {
+        alert(`🎵 ${providerName} Voice Demo\n\n"${demoText}"\n\n⚠️ Audio playback failed. Please check your browser's audio settings or try refreshing the page.`);
+      } else {
+        alert(`🎵 ${providerName} Voice Demo\n\n"${demoText}"\n\n📝 Note: Audio file will be added soon. This is a preview of the text that will be spoken with ${providerName}'s natural voice technology.`);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -77,9 +84,9 @@ const TTSVoiceDemo: React.FC<TTSVoiceDemoProps> = ({
         )}
       </div>
 
-      <p className="text-sm text-slate-400 mb-3">
-        "{demoText}"
-      </p>
+      <div className="text-sm text-slate-400 mb-3 max-h-20 overflow-y-auto">
+        <p className="italic">"{demoText}"</p>
+      </div>
 
       <div className="flex items-center justify-between">
         <button

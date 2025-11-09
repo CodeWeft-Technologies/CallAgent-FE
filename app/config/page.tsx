@@ -1398,7 +1398,7 @@ export default function ConfigPage() {
                       <TTSVoiceDemo
                         provider="google"
                         providerName="Google TTS"
-                        demoText="Hello! I'm calling from your sales team. We have exciting new opportunities that might be perfect for your business needs."
+                        demoText="In English: I will sound clear and natural — just like this! In Hindi: अब मैं हिंदी में बोलूँगा — मेरी आवाज़ सहज और स्पष्ट लगेगी। In Marathi: आता मी मराठीत बोलेन — माझा आवाज नैसर्गिक आणि गोड वाटेल."
                         isAvailable={availableTtsProviders.some(p => p.provider === 'google')}
                         onContactSales={() => setShowContactSalesModal(true)}
                       />
