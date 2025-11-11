@@ -128,6 +128,8 @@ const REVIEWS = [
 const HomePage = () => {
   const { user } = useAuth();
 
+
+
   return (
     <div className="overflow-x-hidden scrollbar-hide size-full" style={{ scrollBehavior: 'smooth' }}>
       {/* Hero Section */}
@@ -169,9 +171,9 @@ const HomePage = () => {
                 <br className="hidden md:block" />
                 <span className="hidden md:block">Convert leads 24/7 with AI voice agents that sound human.</span>
               </p>
-              <div className="flex items-center justify-center whitespace-nowrap gap-4 z-50">
-                <Button asChild>
-                  <Link href={user ? "/dashboard" : "/register"} className="flex items-center">
+              <div className="flex items-center justify-center whitespace-nowrap gap-4 relative z-50 pointer-events-auto">
+                <Button asChild className="cursor-pointer pointer-events-auto">
+                  <Link href={user ? "/dashboard" : "/login"} className="flex items-center cursor-pointer pointer-events-auto">
                     Start creating for free
                     <ArrowRightIcon className="w-4 h-4 ml-2" />
                   </Link>
@@ -283,15 +285,15 @@ const HomePage = () => {
               <p className="text-lg text-muted-foreground max-w-lg">
                 See how our AI voice agents handle real conversations, overcome objections, and convert prospects into customers with human-like precision.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button asChild>
-                  <Link href="/register" className="flex items-center">
+              <div className="flex flex-col sm:flex-row gap-4 relative z-50 pointer-events-auto">
+                <Button asChild className="cursor-pointer pointer-events-auto">
+                  <Link href={user ? "/dashboard" : "/login"} className="flex items-center cursor-pointer pointer-events-auto">
                     Start Your Campaign
                     <ArrowRightIcon className="w-4 h-4 ml-2" />
                   </Link>
                 </Button>
-                <Button variant="outline" asChild>
-                  <Link href="/features" className="flex items-center">
+                <Button variant="outline" asChild className="cursor-pointer pointer-events-auto">
+                  <Link href="/features" className="flex items-center cursor-pointer pointer-events-auto">
                     Learn More
                   </Link>
                 </Button>
@@ -388,15 +390,15 @@ const HomePage = () => {
               </div>
 
               {/* CTA */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                <Button asChild className="w-full sm:w-auto">
-                  <Link href="/register" className="flex items-center justify-center">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4 relative z-50 pointer-events-auto">
+                <Button asChild className="w-full sm:w-auto cursor-pointer pointer-events-auto">
+                  <Link href={user ? "/dashboard" : "/login"} className="flex items-center justify-center cursor-pointer pointer-events-auto">
                     Start Your Campaign
                     <ArrowRightIcon className="w-4 h-4 ml-2" />
                   </Link>
                 </Button>
-                <Button variant="outline" asChild className="w-full sm:w-auto">
-                  <Link href="/features" className="flex items-center justify-center">
+                <Button variant="outline" asChild className="w-full sm:w-auto cursor-pointer pointer-events-auto">
+                  <Link href="/features" className="flex items-center justify-center cursor-pointer pointer-events-auto">
                     Learn More
                   </Link>
                 </Button>
@@ -549,9 +551,9 @@ const HomePage = () => {
                 <p className="text-muted-foreground mt-6 max-w-md mx-auto">
                   Experience the cutting-edge solution that transforms how you handle outbound sales. Elevate your conversion rates with our AI-powered platform.
                 </p>
-                <div className="mt-6">
-                  <Button asChild>
-                    <Link href="/register">
+                <div className="mt-6 relative z-50 pointer-events-auto">
+                  <Button asChild className="cursor-pointer pointer-events-auto">
+                    <Link href={user ? "/dashboard" : "/login"} className="cursor-pointer pointer-events-auto">
                       Get started for free
                       <ArrowRightIcon className="w-4 h-4 ml-2" />
                     </Link>

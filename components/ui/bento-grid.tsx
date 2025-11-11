@@ -10,8 +10,6 @@ export const CARDS = [
         Icon: Link2Icon,
         name: "AI Voice Agents",
         description: "Advanced conversational AI that handles calls naturally and professionally.",
-        href: "#",
-        cta: "Learn more",
         className: "col-span-3 lg:col-span-1",
         background: (
             <Card className="absolute top-10 left-10 origin-top rounded-none rounded-tl-md transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_0%,#000_100%)] group-hover:scale-105 border border-border border-r-0">
@@ -35,8 +33,7 @@ export const CARDS = [
         Icon: SearchIcon,
         name: "Real-time Analytics",
         description: "Track performance, conversion rates, and ROI in real-time.",
-        href: "#",
-        cta: "Learn more",
+        
         className: "col-span-3 lg:col-span-2",
         background: (
             <div className="absolute right-10 top-10 w-[70%] origin-to translate-x-0 border border-border transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_40%,#000_100%)] group-hover:-translate-x-10 p-4 bg-card rounded-lg">
@@ -164,8 +161,8 @@ const BentoCard = ({
     background: ReactNode;
     Icon: any;
     description: string;
-    href: string;
-    cta: string;
+    href?: string;
+    cta?: string;
 }) => (
     <div
         key={name}
@@ -184,7 +181,7 @@ const BentoCard = ({
             <p className="max-w-lg text-neutral-400">{description}</p>
         </div>
 
-        {cta && (
+        {cta && href && (
             <div
                 className={cn(
                     "absolute bottom-0 flex w-full translate-y-10 flex-row items-center p-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100",
