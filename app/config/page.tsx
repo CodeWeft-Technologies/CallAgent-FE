@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Settings, RotateCcw, Save, MessageSquare, ArrowRight, FileText, Database, RefreshCw, Languages, Mic, Volume2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '@/contexts/AuthContext'
+import { useRouter } from 'next/navigation'
 import TTSVoiceDemo from '@/components/TTSVoiceDemo'
 import ContactSalesModal from '@/components/ContactSalesModal'
 
@@ -382,6 +383,7 @@ const API_BASE = process.env.NEXT_PUBLIC_CONFIG_API_URL || 'https://callagent-be
 
 export default function ConfigPage() {
   const { user, token } = useAuth()
+  const router = useRouter()
   
   const [config, setConfig] = useState<AgentConfig>({
     greeting_message: '',
@@ -413,6 +415,11 @@ export default function ConfigPage() {
   const [contactSalesRequired, setContactSalesRequired] = useState(false)
   const [singleProviderOnly, setSingleProviderOnly] = useState(false)
   const [showContactSalesModal, setShowContactSalesModal] = useState(false)
+  
+  // Handle contact sales navigation
+  const handleContactSales = () => {
+    router.push('/contact')
+  }
   
   // Organization configuration state
   const [orgConfig, setOrgConfig] = useState<OrganizationConfig>({
@@ -1297,7 +1304,10 @@ export default function ConfigPage() {
                             To enable voice capabilities for your AI agent, please contact our sales team.
                           </p>
                           <div className="flex flex-col sm:flex-row gap-2">
-                            <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors">
+                            <button 
+                              onClick={handleContactSales}
+                              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
+                            >
                               Contact Sales Team
                             </button>
                             <button className="px-4 py-2 bg-blue-900/50 hover:bg-blue-800/50 text-blue-200 rounded-lg text-sm transition-colors">
@@ -1322,7 +1332,10 @@ export default function ConfigPage() {
                             Your organization has access to <strong>{availableTtsProviders[0]?.name}</strong> for voice synthesis.
                             For additional voice options, contact our sales team to upgrade your plan.
                           </p>
-                          <button className="px-4 py-2 bg-green-900/50 hover:bg-green-800/50 text-green-200 rounded-lg text-sm transition-colors">
+                          <button 
+                            onClick={handleContactSales}
+                            className="px-4 py-2 bg-green-900/50 hover:bg-green-800/50 text-green-200 rounded-lg text-sm transition-colors"
+                          >
                             Contact Sales for More Options
                           </button>
                         </div>
@@ -1400,7 +1413,7 @@ export default function ConfigPage() {
                         providerName="Google TTS"
                         demoText="In English: I will sound clear and natural — just like this! In Hindi: अब मैं हिंदी में बोलूँगा — मेरी आवाज़ सहज और स्पष्ट लगेगी। In Marathi: आता मी मराठीत बोलेन — माझा आवाज नैसर्गिक आणि गोड वाटेल."
                         isAvailable={availableTtsProviders.some(p => p.provider === 'google')}
-                        onContactSales={() => setShowContactSalesModal(true)}
+                        onContactSales={handleContactSales}
                       />
                       
                       {/* Cartesia TTS Demo */}
@@ -1409,7 +1422,7 @@ export default function ConfigPage() {
                         providerName="Cartesia TTS"
                         demoText="In English: I will sound clear and natural — just like this! In Hindi: अब मैं हिंदी में बोलूँगा — मेरी आवाज़ सहज और स्पष्ट लगेगी। In Marathi: आता मी मराठीत बोलेन — माझा आवाज नैसर्गिक आणि गोड वाटेल."
                         isAvailable={availableTtsProviders.some(p => p.provider === 'cartesia')}
-                        onContactSales={() => setShowContactSalesModal(true)}
+                        onContactSales={handleContactSales}
                       />
                     </div>
 
@@ -1426,7 +1439,7 @@ export default function ConfigPage() {
                               Get access to premium voice providers, custom voice training, and enterprise features.
                             </p>
                             <button
-                              onClick={() => setShowContactSalesModal(true)}
+                              onClick={handleContactSales}
                               className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors"
                             >
                               Contact Sales for Enterprise Features

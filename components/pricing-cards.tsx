@@ -53,7 +53,7 @@ const PRICING_PLANS = [
             "Advanced security"
         ],
         cta: "Contact Sales",
-        href: "/enterprise",
+        href: "/contact",
         popular: false
     }
 ];
