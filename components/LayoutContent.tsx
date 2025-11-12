@@ -24,7 +24,7 @@ export default function LayoutContent({ children }: LayoutContentProps) {
   }
   
   // Marketing pages (show navbar and footer, no sidebar)
-  const isMarketingPage = pathname === '/' || pathname === '/login' || pathname === '/register' || pathname === '/pricing' || pathname === '/admin-login' || pathname === '/features' || pathname === '/contact' || pathname === '/enterprise' || pathname === '/changelog' || pathname === '/privacy' || pathname === '/terms'
+  const isMarketingPage = pathname === '/' || pathname === '/login' || pathname === '/register' || pathname === '/pricing' || pathname === '/admin-login' || pathname === '/features' || pathname === '/contact' || pathname === '/about' || pathname === '/enterprise' || pathname === '/changelog' || pathname === '/privacy' || pathname === '/terms'
   
   if (isMarketingPage) {
     return (
