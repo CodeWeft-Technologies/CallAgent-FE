@@ -93,7 +93,7 @@ const PricingCards = () => {
             setError('');
             
             try {
-                const response = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=INR,EUR,GBP', {
+                const response = await fetch('https://api.freeapi.app/api/v1/public/currency?base=USD', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -107,11 +107,15 @@ const PricingCards = () => {
                 const data = await response.json();
                 console.log('Exchange rate data:', data);
                 
-                if (data.success && data.rates) {
-                    setExchangeRates({
+                if (data.success && data.data && data.data.rates) {
+                    // Extract only the currencies we support
+                    const supportedRates = {
                         USD: 1,
-                        ...data.rates
-                    });
+                        INR: data.data.rates.INR || 83.50,
+                        EUR: data.data.rates.EUR || 0.92,
+                        GBP: data.data.rates.GBP || 0.80,
+                    };
+                    setExchangeRates(supportedRates);
                 } else {
                     throw new Error('Failed to fetch rates: Invalid response format');
                 }
