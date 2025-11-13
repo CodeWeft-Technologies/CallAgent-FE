@@ -1,19 +1,11 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
-import { CheckIcon, Globe, DollarSign, IndianRupee } from "lucide-react";
+import { CheckIcon, Globe, DollarSign, IndianRupee, Loader2 } from "lucide-react";
 import Link from "next/link";
-
-// Exchange rates (in real app, fetch from API)
-const EXCHANGE_RATES = {
-  USD: 1,
-  INR: 83.50, // 1 USD = 83.50 INR (approximate)
-  EUR: 0.92,  // 1 USD = 0.92 EUR (approximate)
-  GBP: 0.80,  // 1 USD = 0.80 GBP (approximate)
-};
 
 const CURRENCY_SYMBOLS = {
   USD: '$',
@@ -28,6 +20,9 @@ const CURRENCY_ICONS = {
   EUR: DollarSign,
   GBP: DollarSign,
 };
+
+// Supported currencies for our pricing
+const SUPPORTED_CURRENCIES = ['USD', 'INR', 'EUR', 'GBP'];
 
 const PRICING_PLANS = [
     {
@@ -85,23 +80,76 @@ const PRICING_PLANS = [
 ];
 
 const PricingCards = () => {
-    const [selectedCurrency, setSelectedCurrency] = useState<keyof typeof EXCHANGE_RATES>('USD');
+    const [selectedCurrency, setSelectedCurrency] = useState<string>('USD');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [exchangeRates, setExchangeRates] = useState<Record<string, number>>({ USD: 1 });
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string>('');
 
-    const currencies = Object.keys(EXCHANGE_RATES) as Array<keyof typeof EXCHANGE_RATES>;
+    // Fetch real-time exchange rates
+    useEffect(() => {
+        const fetchExchangeRates = async () => {
+            setIsLoading(true);
+            setError('');
+            
+            try {
+                const response = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=INR,EUR,GBP', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Exchange rate data:', data);
+                
+                if (data.success && data.rates) {
+                    setExchangeRates({
+                        USD: 1,
+                        ...data.rates
+                    });
+                } else {
+                    throw new Error('Failed to fetch rates: Invalid response format');
+                }
+            } catch (err) {
+                console.error('Currency API error:', err);
+                setError('');
+                // Fallback to static rates
+                setExchangeRates({
+                    USD: 1,
+                    INR: 88.78,
+                    EUR: 0.86,
+                    GBP: 0.80,
+                });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchExchangeRates();
+        // Refresh rates every 10 minutes
+        const interval = setInterval(fetchExchangeRates, 10 * 60 * 1000);
+        
+        return () => clearInterval(interval);
+    }, []);
 
     const convertPrice = (usdPrice: number | null) => {
         if (usdPrice === null) return { amount: "Custom", symbol: "", currency: selectedCurrency };
         
-        const converted = usdPrice * EXCHANGE_RATES[selectedCurrency];
+        const rate = exchangeRates[selectedCurrency] || 1;
+        const converted = usdPrice * rate;
         return {
             amount: converted.toFixed(2),
-            symbol: CURRENCY_SYMBOLS[selectedCurrency],
+            symbol: CURRENCY_SYMBOLS[selectedCurrency as keyof typeof CURRENCY_SYMBOLS] || '$',
             currency: selectedCurrency
         };
     };
 
-    const IconComponent = CURRENCY_ICONS[selectedCurrency];
+    const IconComponent = CURRENCY_ICONS[selectedCurrency as keyof typeof CURRENCY_ICONS] || DollarSign;
 
     return (
         <div className="w-full">
@@ -110,6 +158,7 @@ const PricingCards = () => {
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Globe className="w-4 h-4" />
                     <span>Currency:</span>
+                    {isLoading && <Loader2 className="w-3 h-3 animate-spin" />}
                 </div>
                 
                 <div className="relative">
@@ -118,6 +167,7 @@ const PricingCards = () => {
                         size="sm"
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                         className="flex items-center gap-2 min-w-[80px]"
+                        disabled={isLoading}
                     >
                         <IconComponent className="w-4 h-4" />
                         <span>{selectedCurrency}</span>
@@ -126,8 +176,8 @@ const PricingCards = () => {
                     {isDropdownOpen && (
                         <Card className="absolute top-full left-0 mt-1 z-50 min-w-[120px] shadow-lg">
                             <CardContent className="p-1">
-                                {currencies.map((currency) => {
-                                    const CurrencyIcon = CURRENCY_ICONS[currency];
+                                {SUPPORTED_CURRENCIES.map((currency) => {
+                                    const CurrencyIcon = CURRENCY_ICONS[currency as keyof typeof CURRENCY_ICONS];
                                     return (
                                         <Button
                                             key={currency}
@@ -142,7 +192,7 @@ const PricingCards = () => {
                                             <CurrencyIcon className="w-3 h-3" />
                                             <span>{currency}</span>
                                             <span className="ml-auto text-muted-foreground">
-                                                {CURRENCY_SYMBOLS[currency]}
+                                                {CURRENCY_SYMBOLS[currency as keyof typeof CURRENCY_SYMBOLS]}
                                             </span>
                                         </Button>
                                     );
