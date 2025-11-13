@@ -131,7 +131,7 @@ const PricingCards = () => {
                                     return (
                                         <Button
                                             key={currency}
-                                            variant={selectedCurrency === currency ? "secondary" : "ghost"}
+                                            variant={selectedCurrency === currency ? "default" : "ghost"}
                                             size="sm"
                                             className="w-full justify-start gap-2 text-xs"
                                             onClick={() => {
