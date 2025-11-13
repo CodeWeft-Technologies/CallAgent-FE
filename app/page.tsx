@@ -88,39 +88,21 @@ const PROCESS_IMAGES = {
 
 const REVIEWS = [
   {
-    name: "Sarah Johnson",
-    username: "@sarahj_sales",
+    name: "Raj Patel",
+    username: "@rajpatel_sales",
     review: "Voiceze AI transformed our outbound sales process. We've seen a 300% increase in qualified leads and our team can focus on closing deals.",
     rating: 5
   },
   {
-    name: "Michael Chen",
-    username: "@mikec_ceo",
+    name: "Priya Sharma",
+    username: "@priyasharma_ceo",
     review: "The AI voice agents are incredibly natural. Our customers can't tell the difference from human agents.",
     rating: 5
   },
   {
-    name: "David Kim",
-    username: "@davidk_startup",
+    name: "Arjun Singh",
+    username: "@arjunsingh_startup",
     review: "The ROI has been incredible. We're converting 40% more leads with half the effort.",
-    rating: 5
-  },
-  {
-    name: "James Wilson",
-    username: "@jameswilson_biz",
-    review: "The integration with our existing CRM was seamless. Our sales team loves it.",
-    rating: 5
-  },
-  {
-    name: "Alex Rivera",
-    username: "@alex_startup",
-    review: "Game-changer for our sales team. The AI handles objections better than most humans.",
-    rating: 5
-  },
-  {
-    name: "Maria Garcia",
-    username: "@maria_sales",
-    review: "Incredible results in just the first month. Our conversion rates doubled.",
     rating: 5
   }
 ];
@@ -160,16 +142,14 @@ const HomePage = () => {
                 </span>
               </button>
               <h1 className="text-foreground text-center py-6 text-5xl font-medium tracking-normal text-balance sm:text-6xl md:text-7xl lg:text-8xl !leading-[1.15] w-full font-heading">
-                Smart Calls
+                Automate your calls
                 <br />
-                with <span className="text-transparent bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text inline-block">
-                  Precision
+                effortlessly with <span className="text-transparent bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text inline-block">
+                  Voiceze AI
                 </span>
               </h1>
               <p className="mb-12 text-lg tracking-tight text-muted-foreground md:text-xl text-balance">
-                Effortlessly automate your outbound sales with Voiceze AI.
-                <br className="hidden md:block" />
-                <span className="hidden md:block">Convert leads 24/7 with AI voice agents that sound human.</span>
+                Convert leads 24/7 with AI voice agents that sounds like human.
               </p>
               <div className="flex items-center justify-center whitespace-nowrap gap-4 relative z-50 pointer-events-auto">
                 <Button asChild className="cursor-pointer pointer-events-auto">
@@ -205,7 +185,8 @@ const HomePage = () => {
         </MaxWidthWrapper>
       </div>
 
-      {/* Companies Section */}
+      {/* Companies Section - Temporarily Hidden */}
+      {/* 
       <MaxWidthWrapper>
         <AnimationContainer delay={0.4}>
           <div className="py-10 sm:py-12 md:py-14">
@@ -228,6 +209,7 @@ const HomePage = () => {
           </div>
         </AnimationContainer>
       </MaxWidthWrapper>
+      */}
 
       {/* Features Section */}
       <MaxWidthWrapper className="pt-10">
@@ -451,91 +433,33 @@ const HomePage = () => {
             </p>
           </div>
         </AnimationContainer>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 place-items-start gap-4 md:gap-8 py-10">
-          <div className="flex flex-col items-start gap-6">
-            {REVIEWS.slice(0, 2).map((review, index) => (
-              <AnimationContainer delay={0.2 * index} key={index}>
-                <MagicCard key={index} className="md:p-0 h-full">
-                  <Card className="flex flex-col w-full border-none h-[280px]">
-                    <CardHeader className="space-y-0">
-                      <CardTitle className="text-lg font-medium text-muted-foreground">
-                        {review.name}
-                      </CardTitle>
-                      <CardDescription>
-                        {review.username}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4 pb-4 flex-1">
-                      <p className="text-muted-foreground">
-                        {review.review}
-                      </p>
-                    </CardContent>
-                    <CardFooter className="w-full space-x-1 mt-auto">
-                      {Array.from({ length: review.rating }, (_, i) => (
-                        <StarIcon key={i} className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-                      ))}
-                    </CardFooter>
-                  </Card>
-                </MagicCard>
-              </AnimationContainer>
-            ))}
-          </div>
-          <div className="flex flex-col items-start gap-6">
-            {REVIEWS.slice(2, 4).map((review, index) => (
-              <AnimationContainer delay={0.2 * index} key={index}>
-                <MagicCard key={index} className="md:p-0 h-full">
-                  <Card className="flex flex-col w-full border-none h-[280px]">
-                    <CardHeader className="space-y-0">
-                      <CardTitle className="text-lg font-medium text-muted-foreground">
-                        {review.name}
-                      </CardTitle>
-                      <CardDescription>
-                        {review.username}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4 pb-4 flex-1">
-                      <p className="text-muted-foreground">
-                        {review.review}
-                      </p>
-                    </CardContent>
-                    <CardFooter className="w-full space-x-1 mt-auto">
-                      {Array.from({ length: review.rating }, (_, i) => (
-                        <StarIcon key={i} className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-                      ))}
-                    </CardFooter>
-                  </Card>
-                </MagicCard>
-              </AnimationContainer>
-            ))}
-          </div>
-          <div className="flex flex-col items-start gap-6">
-            {REVIEWS.slice(4, 6).map((review, index) => (
-              <AnimationContainer delay={0.2 * index} key={index}>
-                <MagicCard key={index} className="md:p-0 h-full">
-                  <Card className="flex flex-col w-full border-none h-[280px]">
-                    <CardHeader className="space-y-0">
-                      <CardTitle className="text-lg font-medium text-muted-foreground">
-                        {review.name}
-                      </CardTitle>
-                      <CardDescription>
-                        {review.username}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4 pb-4 flex-1">
-                      <p className="text-muted-foreground">
-                        {review.review}
-                      </p>
-                    </CardContent>
-                    <CardFooter className="w-full space-x-1 mt-auto">
-                      {Array.from({ length: review.rating }, (_, i) => (
-                        <StarIcon key={i} className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-                      ))}
-                    </CardFooter>
-                  </Card>
-                </MagicCard>
-              </AnimationContainer>
-            ))}
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-10 max-w-6xl mx-auto">
+          {REVIEWS.map((review, index) => (
+            <AnimationContainer delay={0.2 * index} key={index}>
+              <MagicCard className="md:p-0 h-full">
+                <Card className="flex flex-col w-full border-none h-[280px]">
+                  <CardHeader className="space-y-0">
+                    <CardTitle className="text-lg font-medium text-muted-foreground">
+                      {review.name}
+                    </CardTitle>
+                    <CardDescription>
+                      {review.username}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4 pb-4 flex-1">
+                    <p className="text-muted-foreground">
+                      {review.review}
+                    </p>
+                  </CardContent>
+                  <CardFooter className="w-full space-x-1 mt-auto">
+                    {Array.from({ length: review.rating }, (_, i) => (
+                      <StarIcon key={i} className="w-4 h-4 fill-yellow-500 text-yellow-500" />
+                    ))}
+                  </CardFooter>
+                </Card>
+              </MagicCard>
+            </AnimationContainer>
+          ))}
         </div>
       </MaxWidthWrapper>
 

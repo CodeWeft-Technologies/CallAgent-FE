@@ -33,7 +33,7 @@ const AboutPage = () => {
             {/* Mission Statement */}
             <div className="prose prose-lg prose-invert max-w-none">
               <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-                We're a team of innovators, AI engineers, and voice technology enthusiasts building the future of business communication. Voiceze AI combines the power of Artificial Intelligence, Natural Language Processing (NLP), and real-time voice automation to help companies talk to their customers like never before.
+                Experience the cutting-edge solution that transforms how you handle calls. Elevate your conversion rates with our AI-powered platform.
               </p>
               
               <p className="text-lg text-muted-foreground leading-relaxed mb-6">

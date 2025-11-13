@@ -48,8 +48,8 @@ const contactMethods = [
 const officeLocations = [
     {
         city: "Mumbai",
-        address: "Tower A, Business Hub, Bandra Kurla Complex",
-        zipCode: "Mumbai, Maharashtra 400051, India",
+        address: "Mumbai, MH, India",
+        zipCode: "",
         phone: "+91 22 1234 5678",
         isHeadquarters: true
     }
@@ -422,32 +422,7 @@ ${formData.name}
                                 </div>
                             </div>
 
-                            {/* Business Hours */}
-                            <div className="p-4 sm:p-6 bg-card/30 backdrop-blur-sm border border-border/30 rounded-xl">
-                                <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-foreground flex items-center">
-                                    <ClockIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-purple-500" />
-                                    Business Hours
-                                </h3>
-                                <div className="space-y-2 text-xs sm:text-sm">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-muted-foreground">Monday - Friday</span>
-                                        <span className="text-foreground font-medium">9:00 AM - 6:00 PM IST</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-muted-foreground">Saturday</span>
-                                        <span className="text-foreground font-medium">10:00 AM - 4:00 PM IST</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-muted-foreground">Sunday</span>
-                                        <span className="text-foreground font-medium">Closed</span>
-                                    </div>
-                                    <div className="mt-3 pt-3 border-t border-border/30">
-                                        <p className="text-xs text-muted-foreground">
-                                            💬 Live chat and email support available 24/7
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
+
                         </motion.div>
                     </div>
                 </div>
@@ -491,7 +466,7 @@ ${formData.name}
                             <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-4 sm:p-6">
                                 <h3 className="font-bold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">What kind of support do you offer?</h3>
                                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                                    We provide 24/7 chat support, email support, and phone support during business hours, plus comprehensive documentation.
+                                    We provide 24/7 chat support, email support, and phone support, plus comprehensive documentation.
                                 </p>
                             </div>
                         </div>
