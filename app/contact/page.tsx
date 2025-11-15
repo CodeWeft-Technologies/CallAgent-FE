@@ -96,40 +96,42 @@ export default function ContactPage() {
         e.preventDefault();
         setIsSubmitting(true);
         
-        // Create email content
-        const subject = encodeURIComponent(`Contact Form: ${formData.subject}`);
-        const body = encodeURIComponent(`
-Hello Voiceze AI Team,
+        try {
+            // Prepare form data for Web3Forms
+            const formDataToSend = new FormData();
+            formDataToSend.append('access_key', process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY || '');
+            formDataToSend.append('name', formData.name);
+            formDataToSend.append('email', formData.email);
+            formDataToSend.append('company', formData.company || 'Not provided');
+            formDataToSend.append('phone', formData.phone || 'Not provided');
+            formDataToSend.append('subject', `Contact Form: ${formData.subject}`);
+            formDataToSend.append('message', `
+Inquiry Type: ${formData.inquiryType}
 
-I would like to get in touch regarding: ${formData.inquiryType}
-
-Name: ${formData.name}
-Email: ${formData.email}
-Company: ${formData.company || 'Not provided'}
-Phone: ${formData.phone || 'Not provided'}
-Subject: ${formData.subject}
-
-Message:
 ${formData.message}
-
-Best regards,
-${formData.name}
-        `);
-        
-        // Your company email address
-        const toEmail = 'support@voiceze.ai';
-        
-        // Create mailto link
-        const mailtoLink = `mailto:${toEmail}?subject=${subject}&body=${body}`;
-        
-        // Simulate loading for better UX
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Open email client
-        window.location.href = mailtoLink;
-        
-        setIsSubmitting(false);
-        setIsSubmitted(true);
+            `);
+            formDataToSend.append('from_name', 'Voiceze AI Contact Form');
+            formDataToSend.append('to_email', 'sales-support@codeweft.in');
+            
+            // Submit to Web3Forms
+            const response = await fetch('https://api.web3forms.com/submit', {
+                method: 'POST',
+                body: formDataToSend
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                setIsSubmitted(true);
+            } else {
+                throw new Error(result.message || 'Failed to send message');
+            }
+        } catch (error) {
+            console.error('Error sending message:', error);
+            alert('Sorry, there was an error sending your message. Please try again or contact us directly at support@voiceze.ai');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     if (isSubmitted) {
@@ -144,9 +146,9 @@ ${formData.name}
                     <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
                         <CheckCircleIcon className="w-10 h-10 text-white" />
                     </div>
-                    <h1 className="text-2xl font-bold mb-4">Email Client Opened!</h1>
+                    <h1 className="text-2xl font-bold mb-4">Message Sent Successfully!</h1>
                     <p className="text-muted-foreground mb-6">
-                        Your email client should have opened with a pre-filled message. Please send the email to complete your inquiry, and we'll get back to you within 24 hours.
+                        Thank you for contacting us! Your message has been sent successfully and we'll get back to you within 24 hours.
                     </p>
                     <Link 
                         href="/" 
