@@ -104,14 +104,13 @@ export default function ContactPage() {
             formDataToSend.append('email', formData.email);
             formDataToSend.append('company', formData.company || 'Not provided');
             formDataToSend.append('phone', formData.phone || 'Not provided');
-            formDataToSend.append('subject', `Contact Form: ${formData.subject}`);
+            formDataToSend.append('subject', `[${formData.inquiryType.toUpperCase()}] ${formData.subject}`);
             formDataToSend.append('message', `
 Inquiry Type: ${formData.inquiryType}
 
 ${formData.message}
             `);
             formDataToSend.append('from_name', 'Voiceze AI Contact Form');
-            formDataToSend.append('to_email', 'sales-support@codeweft.in');
             
             // Submit to Web3Forms
             const response = await fetch('https://api.web3forms.com/submit', {
