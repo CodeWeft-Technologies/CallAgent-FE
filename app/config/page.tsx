@@ -19,6 +19,8 @@ interface AgentConfig {
   stt_provider?: string
   active_template?: string
   agent_number?: string
+  google_tts_voice_preference?: string
+  google_tts_language_code?: string
 }
 
 interface OrganizationConfig {
@@ -394,7 +396,9 @@ export default function ConfigPage() {
     max_retries: 0,
     retry_delay: 0,
     tts_provider: 'google',
-    stt_provider: 'assemblyai'
+    stt_provider: 'assemblyai',
+    google_tts_voice_preference: 'female',
+    google_tts_language_code: 'mr-IN'
   })
   const [activeTab, setActiveTab] = useState('greeting')
   const [loading, setLoading] = useState(false)
@@ -465,7 +469,9 @@ export default function ConfigPage() {
           retry_delay: data.retry_delay || 0,
           tts_provider: data.tts_provider || 'google',
           stt_provider: data.stt_provider || 'assemblyai',
-          agent_number: data.agent_number || ''
+          agent_number: data.agent_number || '',
+          google_tts_voice_preference: data.google_tts_voice_preference || 'female',
+          google_tts_language_code: data.google_tts_language_code || 'mr-IN'
         })
         
         // Restore the selected template if it exists in the backend config
@@ -686,6 +692,30 @@ export default function ConfigPage() {
     } catch (error) {
       console.error('❌ Error updating TTS provider:', error)
       toast.error('Failed to update TTS provider')
+    }
+  }, [token])
+
+  const handleGoogleVoicePreferenceChange = useCallback(async (preference: 'male' | 'female') => {
+    setConfig(prev => ({ ...prev, google_tts_voice_preference: preference }))
+    try {
+      const response = await fetch(`${API_BASE}/api/org-config/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ google_tts_voice_preference: preference })
+      })
+      if (response.ok) {
+        const data = await response.json()
+        toast.success(`Google voice set to ${data.google_tts_voice_preference === 'male' ? 'Male' : 'Female'}`)
+      } else {
+        const errorData = await response.json()
+        toast.error(errorData.detail || 'Failed to update Google voice')
+      }
+    } catch (error) {
+      console.error('❌ Error updating Google voice preference:', error)
+      toast.error('Failed to update Google voice')
     }
   }, [token])
 
@@ -1373,6 +1403,39 @@ export default function ConfigPage() {
                           ✅ Both providers configured by super admin - choose your preference
                         </p>
                       </div>
+                      
+                      {config.tts_provider === 'google' && (
+                        <div className="mt-4">
+                          <label className="block text-sm font-medium text-slate-200 mb-2">
+                            Google Voice: Male or Female
+                          </label>
+                          <div className="flex items-center gap-3">
+                            <label className="inline-flex items-center gap-2">
+                              <input
+                                type="radio"
+                                name="googleVoice"
+                                value="female"
+                                checked={(config.google_tts_voice_preference || 'female') === 'female'}
+                                onChange={() => handleGoogleVoicePreferenceChange('female')}
+                              />
+                              <span className="text-slate-300 text-sm">Female (mr-IN-Chirp3-HD-Achernar)</span>
+                            </label>
+                            <label className="inline-flex items-center gap-2">
+                              <input
+                                type="radio"
+                                name="googleVoice"
+                                value="male"
+                                checked={(config.google_tts_voice_preference || 'female') === 'male'}
+                                onChange={() => handleGoogleVoicePreferenceChange('male')}
+                              />
+                              <span className="text-slate-300 text-sm">Male (mr-IN-Chirp3-HD-Orus)</span>
+                            </label>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-2">
+                            Multi-tenant: stored per organization, applies to live calls immediately.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
                   
@@ -1393,6 +1456,36 @@ export default function ConfigPage() {
                           ✅ Configured and ready to use
                         </p>
                       </div>
+                      
+                      {availableTtsProviders[0]?.provider === 'google' && (
+                        <div className="mt-4">
+                          <label className="block text-sm font-medium text-slate-200 mb-2">
+                            Google Voice: Male or Female
+                          </label>
+                          <div className="flex items-center gap-3">
+                            <label className="inline-flex items-center gap-2">
+                              <input
+                                type="radio"
+                                name="googleVoiceSingle"
+                                value="female"
+                                checked={(config.google_tts_voice_preference || 'female') === 'female'}
+                                onChange={() => handleGoogleVoicePreferenceChange('female')}
+                              />
+                              <span className="text-slate-300 text-sm">Female (mr-IN-Chirp3-HD-Achernar)</span>
+                            </label>
+                            <label className="inline-flex items-center gap-2">
+                              <input
+                                type="radio"
+                                name="googleVoiceSingle"
+                                value="male"
+                                checked={(config.google_tts_voice_preference || 'female') === 'male'}
+                                onChange={() => handleGoogleVoicePreferenceChange('male')}
+                              />
+                              <span className="text-slate-300 text-sm">Male (mr-IN-Chirp3-HD-Orus)</span>
+                            </label>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
