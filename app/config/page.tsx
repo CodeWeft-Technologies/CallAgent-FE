@@ -1418,7 +1418,7 @@ export default function ConfigPage() {
                                 checked={(config.google_tts_voice_preference || 'female') === 'female'}
                                 onChange={() => handleGoogleVoicePreferenceChange('female')}
                               />
-                              <span className="text-slate-300 text-sm">Female (mr-IN-Chirp3-HD-Achernar)</span>
+                              <span className="text-slate-300 text-sm">Riya</span>
                             </label>
                             <label className="inline-flex items-center gap-2">
                               <input
@@ -1428,7 +1428,7 @@ export default function ConfigPage() {
                                 checked={(config.google_tts_voice_preference || 'female') === 'male'}
                                 onChange={() => handleGoogleVoicePreferenceChange('male')}
                               />
-                              <span className="text-slate-300 text-sm">Male (mr-IN-Chirp3-HD-Orus)</span>
+                              <span className="text-slate-300 text-sm">Suresh</span>
                             </label>
                           </div>
                           <p className="text-xs text-slate-500 mt-2">
@@ -1471,7 +1471,7 @@ export default function ConfigPage() {
                                 checked={(config.google_tts_voice_preference || 'female') === 'female'}
                                 onChange={() => handleGoogleVoicePreferenceChange('female')}
                               />
-                              <span className="text-slate-300 text-sm">Female (mr-IN-Chirp3-HD-Achernar)</span>
+                              <span className="text-slate-300 text-sm">Riya</span>
                             </label>
                             <label className="inline-flex items-center gap-2">
                               <input
@@ -1481,7 +1481,7 @@ export default function ConfigPage() {
                                 checked={(config.google_tts_voice_preference || 'female') === 'male'}
                                 onChange={() => handleGoogleVoicePreferenceChange('male')}
                               />
-                              <span className="text-slate-300 text-sm">Male (mr-IN-Chirp3-HD-Orus)</span>
+                              <span className="text-slate-300 text-sm">Suresh</span>
                             </label>
                           </div>
                         </div>
