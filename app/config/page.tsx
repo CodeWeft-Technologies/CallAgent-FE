@@ -1409,27 +1409,58 @@ export default function ConfigPage() {
                           <label className="block text-sm font-medium text-slate-200 mb-2">
                             Google Voice: Male or Female
                           </label>
-                          <div className="flex items-center gap-3">
-                            <label className="inline-flex items-center gap-2">
-                              <input
-                                type="radio"
-                                name="googleVoice"
-                                value="female"
-                                checked={(config.google_tts_voice_preference || 'female') === 'female'}
-                                onChange={() => handleGoogleVoicePreferenceChange('female')}
-                              />
-                              <span className="text-slate-300 text-sm">Riya</span>
-                            </label>
-                            <label className="inline-flex items-center gap-2">
-                              <input
-                                type="radio"
-                                name="googleVoice"
-                                value="male"
-                                checked={(config.google_tts_voice_preference || 'female') === 'male'}
-                                onChange={() => handleGoogleVoicePreferenceChange('male')}
-                              />
-                              <span className="text-slate-300 text-sm">Suresh</span>
-                            </label>
+                          <div className="grid grid-cols-2 gap-3">
+                            <button
+                              type="button"
+                              onClick={() => handleGoogleVoicePreferenceChange('female')}
+                              className={[
+                                "w-full px-4 py-3 rounded-xl border transition-all text-left",
+                                (config.google_tts_voice_preference || 'female') === 'female'
+                                  ? "border-blue-500 ring-2 ring-blue-500/40 bg-slate-800"
+                                  : "border-slate-700 bg-slate-900 hover:bg-slate-800"
+                              ].join(" ")}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-pink-600/20 border border-pink-600/40 flex items-center justify-center">
+                                    <Mic className="w-4 h-4 text-pink-400" />
+                                  </div>
+                                  <div>
+                                    <div className="text-sm font-medium text-slate-200">Riya</div>
+                                    <div className="text-xs text-slate-400">natural clarity</div>
+                                  </div>
+                                </div>
+                                {(config.google_tts_voice_preference || 'female') === 'female' && (
+                                  <span className="px-2 py-0.5 text-xs rounded-full bg-blue-600 text-white">Selected</span>
+                                )}
+                              </div>
+                            </button>
+                            
+                            <button
+                              type="button"
+                              onClick={() => handleGoogleVoicePreferenceChange('male')}
+                              className={[
+                                "w-full px-4 py-3 rounded-xl border transition-all text-left",
+                                (config.google_tts_voice_preference || 'female') === 'male'
+                                  ? "border-blue-500 ring-2 ring-blue-500/40 bg-slate-800"
+                                  : "border-slate-700 bg-slate-900 hover:bg-slate-800"
+                              ].join(" ")}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-indigo-600/20 border border-indigo-600/40 flex items-center justify-center">
+                                    <Mic className="w-4 h-4 text-indigo-400" />
+                                  </div>
+                                  <div>
+                                    <div className="text-sm font-medium text-slate-200">Suresh</div>
+                                    <div className="text-xs text-slate-400">warm tone</div>
+                                  </div>
+                                </div>
+                                {(config.google_tts_voice_preference || 'female') === 'male' && (
+                                  <span className="px-2 py-0.5 text-xs rounded-full bg-blue-600 text-white">Selected</span>
+                                )}
+                              </div>
+                            </button>
                           </div>
                           <p className="text-xs text-slate-500 mt-2">
                             Multi-tenant: stored per organization, applies to live calls immediately.
@@ -1462,27 +1493,58 @@ export default function ConfigPage() {
                           <label className="block text-sm font-medium text-slate-200 mb-2">
                             Google Voice: Male or Female
                           </label>
-                          <div className="flex items-center gap-3">
-                            <label className="inline-flex items-center gap-2">
-                              <input
-                                type="radio"
-                                name="googleVoiceSingle"
-                                value="female"
-                                checked={(config.google_tts_voice_preference || 'female') === 'female'}
-                                onChange={() => handleGoogleVoicePreferenceChange('female')}
-                              />
-                              <span className="text-slate-300 text-sm">Riya</span>
-                            </label>
-                            <label className="inline-flex items-center gap-2">
-                              <input
-                                type="radio"
-                                name="googleVoiceSingle"
-                                value="male"
-                                checked={(config.google_tts_voice_preference || 'female') === 'male'}
-                                onChange={() => handleGoogleVoicePreferenceChange('male')}
-                              />
-                              <span className="text-slate-300 text-sm">Suresh</span>
-                            </label>
+                          <div className="grid grid-cols-2 gap-3">
+                            <button
+                              type="button"
+                              onClick={() => handleGoogleVoicePreferenceChange('female')}
+                              className={[
+                                "w-full px-4 py-3 rounded-xl border transition-all text-left",
+                                (config.google_tts_voice_preference || 'female') === 'female'
+                                  ? "border-blue-500 ring-2 ring-blue-500/40 bg-slate-800"
+                                  : "border-slate-700 bg-slate-900 hover:bg-slate-800"
+                              ].join(" ")}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-pink-600/20 border border-pink-600/40 flex items-center justify-center">
+                                    <Mic className="w-4 h-4 text-pink-400" />
+                                  </div>
+                                  <div>
+                                    <div className="text-sm font-medium text-slate-200">Riya</div>
+                                    <div className="text-xs text-slate-400">Marathi • natural clarity</div>
+                                  </div>
+                                </div>
+                                {(config.google_tts_voice_preference || 'female') === 'female' && (
+                                  <span className="px-2 py-0.5 text-xs rounded-full bg-blue-600 text-white">Selected</span>
+                                )}
+                              </div>
+                            </button>
+                            
+                            <button
+                              type="button"
+                              onClick={() => handleGoogleVoicePreferenceChange('male')}
+                              className={[
+                                "w-full px-4 py-3 rounded-xl border transition-all text-left",
+                                (config.google_tts_voice_preference || 'female') === 'male'
+                                  ? "border-blue-500 ring-2 ring-blue-500/40 bg-slate-800"
+                                  : "border-slate-700 bg-slate-900 hover:bg-slate-800"
+                              ].join(" ")}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-indigo-600/20 border border-indigo-600/40 flex items-center justify-center">
+                                    <Mic className="w-4 h-4 text-indigo-400" />
+                                  </div>
+                                  <div>
+                                    <div className="text-sm font-medium text-slate-200">Suresh</div>
+                                    <div className="text-xs text-slate-400">Marathi • warm tone</div>
+                                  </div>
+                                </div>
+                                {(config.google_tts_voice_preference || 'female') === 'male' && (
+                                  <span className="px-2 py-0.5 text-xs rounded-full bg-blue-600 text-white">Selected</span>
+                                )}
+                              </div>
+                            </button>
                           </div>
                         </div>
                       )}
